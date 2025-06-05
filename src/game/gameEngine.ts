@@ -2,6 +2,7 @@ import { BALL_SPEED, PADDLE_HEIGHT } from '../constants.js';
 import { CollisionHandler } from './collisionDetection.js';
 import { InputHandler } from './inputHandler.js';
 import { RenderEngine } from './renderEngine.js';
+import { StartScreen } from './startScreen.js';
 import { getRandomAngle, getRandomDirection } from './utils.js';
 
 export class PongGame {
@@ -17,6 +18,9 @@ export class PongGame {
 	private collisionHandler: CollisionHandler;
 	private inputHandler: InputHandler;
 	private renderEngine: RenderEngine;
+	private startScreen: StartScreen;
+
+	public isPaused: boolean = false;
 
 	constructor(canvasID: string) {
 		this.canvas = document.getElementById(canvasID) as HTMLCanvasElement;
@@ -41,14 +45,25 @@ export class PongGame {
 		this.collisionHandler = new CollisionHandler(this);
 		this.inputHandler = new InputHandler(this);
 		this.renderEngine = new RenderEngine(this);
+		this.startScreen = new StartScreen(this);
 
 		this.inputHandler.setupEventListeners();
+		this.startScreen.draw();
 	}
-
+	
+	public startGame(): void {
+		this.startScreen.draw();
+	}
+	
 	public startGameLoop(): void {
 		console.log("game loop started")
-		setInterval(() => this.update(), 16);
+		const setIntervalId = setInterval(() => {
+			if(!this.isPaused) {
+				this.update();
+			}
+		}, 16);
 		//roughly 60fps
+		
 	}
 
 	private update(): void {

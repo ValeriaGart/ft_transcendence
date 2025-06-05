@@ -49,7 +49,7 @@ export class RenderEngine {
 	private drawScore(): void {
 		this.pongGame.ctx.font = '75px Arial';
 		this.pongGame.ctx.fillStyle = 'white';
-
+		
 		this.pongGame.ctx.fillText(
 			this.pongGame.gameState.scores.left.toString(),
 			this.pongGame.canvas.width / 3,

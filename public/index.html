@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="./out.css" rel="stylesheet">
+	<title>pong game</title>
+</head>
+<body>
+	<div class="flex items-center  justify-center min-h-screen bg-black">
+		<canvas id="gameCanvas"></canvas>
+
+		<script type = "module">
+			console.log('loading game');
+			import { PongGame } from "./src/game/gameEngine.js"
+			console.log('PongGame: ', PongGame);
+			
+			const game = new PongGame('gameCanvas');
+			game.startGameLoop();
+		</script>
+	</div>
+</body>
+</html>

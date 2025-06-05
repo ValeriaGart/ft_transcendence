@@ -9,6 +9,8 @@ the ./devcontainer/devcontainer.json needs to be at the root of the directory an
 
 to install dependencies run `npm install` which is accessing package-lock.json in the root of the repository. then it is set up.
 
+when running in school it needs to run as root, so if something fails when opening the dev container, try going to devcontainer.json and uncomment `"remoteUser": "root"` (and add a comma to the previous statement).
+
 # setting up basic node.js server
 https://www.geeksforgeeks.org/how-to-build-a-simple-web-server-with-node-js/
 

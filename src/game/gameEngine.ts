@@ -1,24 +1,21 @@
-import { BALL_SPEED, PADDLE_HEIGHT } from '../constants.js';
-import { CollisionHandler } from './collisionDetection.js';
-import { InputHandler } from './inputHandler.js';
-import { RenderEngine } from './renderEngine.js';
+import { GameStateMachine } from './gameStateMachine.js';
+import { SelectScreen } from './selectScreen.js';
 import { StartScreen } from './startScreen.js';
-import { getRandomAngle, getRandomDirection } from './utils.js';
+import { InputHandler } from './inputHandler.js';
+import { PongGame } from './pongGame.js';
+import { GameState } from '../types.js';
 
-export class PongGame {
+export class GameEngine {
 	//standard classes
 	public readonly canvas: HTMLCanvasElement;
 	public readonly ctx: CanvasRenderingContext2D;
 
-	//custom interfaces
-	public	gameState: GameState;
-	public readonly paddleSides: PaddleSide[] = ['left', 'right'];
-
 	//custom classes
-	private collisionHandler: CollisionHandler;
+	public startScreen: StartScreen;
+	public selectScreen: SelectScreen;
+	public gameStateMachine: GameStateMachine;
+	public pongGame: PongGame;
 	private inputHandler: InputHandler;
-	private renderEngine: RenderEngine;
-	private startScreen: StartScreen;
 
 	public isPaused: boolean = false;
 
@@ -33,29 +30,21 @@ export class PongGame {
 		console.log('Canvas height: ', this.canvas.height);
 		console.log('Context: ', this.ctx);
 
-		const randomDirection = getRandomDirection();
-		const randomAngle = getRandomAngle()
-		const speed = BALL_SPEED;
-		this.gameState = {
-			ballPosition: { x: this.canvas.width / 2, y: this.canvas.height / 2},
-			ballVelocity: { x: randomDirection * Math.cos(randomAngle) * speed, y: Math.sin(randomAngle) * speed},
-			paddlePositions: { left: (this.canvas.height / 2) - (PADDLE_HEIGHT / 2), right: (this.canvas.height / 2) - (PADDLE_HEIGHT / 2)},
-			scores: { left: 0, right: 0}
-		};
-		this.collisionHandler = new CollisionHandler(this);
-		this.inputHandler = new InputHandler(this);
-		this.renderEngine = new RenderEngine(this);
-		this.startScreen = new StartScreen(this);
 
-		this.inputHandler.setupEventListeners();
-		this.startScreen.draw();
+		this.startScreen = new StartScreen(this);
+		this.selectScreen = new SelectScreen(this);
+		this.gameStateMachine = new GameStateMachine(this);
+		this.pongGame = new PongGame(this, 0);
+		this.inputHandler = new InputHandler(this);
+		
 	}
 	
-	public startGame(): void {
-		this.startScreen.draw();
+	public startGame(mode: number): void {
+		this.pongGame = new PongGame(this, mode);
 	}
 	
 	public startGameLoop(): void {
+		this.inputHandler.setupEventListeners();
 		console.log("game loop started")
 		const setIntervalId = setInterval(() => {
 			if(!this.isPaused) {
@@ -67,13 +56,8 @@ export class PongGame {
 	}
 
 	private update(): void {
-		this.gameState.ballPosition.x += this.gameState.ballVelocity.x;
-		this.gameState.ballPosition.y += this.gameState.ballVelocity.y;
-
-		this.collisionHandler.checkCollisions();
-
-		this.renderEngine.renderFrame();
+		this.gameStateMachine.update();
 	}
 }
 
-export default PongGame;
+export default GameEngine;

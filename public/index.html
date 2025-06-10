@@ -14,11 +14,11 @@
 
 	<script type = "module">
 		console.log('loading game');
-		import { PongGame } from "./src/game/gameEngine.js"
-		console.log('PongGame: ', PongGame);
+		import { GameEngine } from "./src/game/gameEngine.js"
+		console.log('PongGame: ', GameEngine);
 		
-		const game = new PongGame('gameCanvas');
-		game.startGame();
+		const game = new GameEngine('gameCanvas');
+		game.startGameLoop();
 	</script>
 </body>
 </html>

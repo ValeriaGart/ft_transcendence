@@ -17,8 +17,6 @@ export class GameEngine {
 	public pongGame: PongGame;
 	private inputHandler: InputHandler;
 
-	public isPaused: boolean = false;
-
 	constructor(canvasID: string) {
 		this.canvas = document.getElementById(canvasID) as HTMLCanvasElement;
 		this.ctx = this.canvas.getContext('2d')!;
@@ -46,11 +44,7 @@ export class GameEngine {
 	public startGameLoop(): void {
 		this.inputHandler.setupEventListeners();
 		console.log("game loop started")
-		const setIntervalId = setInterval(() => {
-			if(!this.isPaused) {
-				this.update();
-			}
-		}, 16);
+		const setIntervalId = setInterval(() => { this.update(); }, 16);
 		//roughly 60fps
 		
 	}

@@ -14,6 +14,7 @@ export class RenderEngine {
 		this.drawBall();
 		this.drawPaddles();
 		this.drawScore();
+		this.drawCenterLine();
 	}
 
 	private drawBall(): void {
@@ -60,5 +61,20 @@ export class RenderEngine {
 			(this.pongGame.engine.canvas.width / 3) * 2,
 			75
 		);
+	}
+
+	private drawCenterLine(): void {
+		this.pongGame.engine.ctx.strokeStyle = '#565656';
+		this.pongGame.engine.ctx.lineWidth = 4;
+
+		this.pongGame.engine.ctx.beginPath();
+		this.pongGame.engine.ctx.moveTo(this.pongGame.engine.canvas.width / 2, 0);
+		this.pongGame.engine.ctx.lineTo(this.pongGame.engine.canvas.width / 2, this.pongGame.engine.canvas.height);
+		this.pongGame.engine.ctx.stroke();
+
+		this.pongGame.engine.ctx.setLineDash([10, 10]);
+		this.pongGame.engine.ctx.stroke();
+
+		// this.pongGame.engine.ctx.setLineDash([]);
 	}
 }

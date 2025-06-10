@@ -26,6 +26,9 @@ export class InputHandler {
 			case GameState.GAME:
 				this.handleGameScreen(event);
 				break;
+			case GameState.PAUSED:
+				this.handlePauseScreen(event);
+				break;
 		}
 	}
 
@@ -68,6 +71,20 @@ export class InputHandler {
 				break;
 			case 'ArrowDown':
 				this.movePaddle('right', PADDLE_SPEED);
+				break;
+			case 'Escape':
+				this.engine.gameStateMachine.transition(GameState.PAUSED);
+				break;
+			}
+		}
+		
+	private handlePauseScreen(event: KeyboardEvent): void {
+		switch (event.key) {
+			case 'Escape':
+				this.engine.gameStateMachine.transition(GameState.GAME);
+				break;
+			case 'Enter':
+				this.engine.gameStateMachine.transition(GameState.SELECT);
 				break;
 		}
 	}

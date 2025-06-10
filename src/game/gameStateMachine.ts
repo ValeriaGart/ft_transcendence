@@ -50,7 +50,7 @@ export class GameStateMachine {
 	}
 
 	private handlePausedState() {
-		//todo
+		this.engine.pongGame.pauseScreen.drawPauseScreen();
 	}
 
 	private handleGameOverState() {

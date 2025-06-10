@@ -1,6 +1,7 @@
 import { CollisionHandler } from './collisionDetection.js';
 import { RenderEngine } from './renderEngine.js';
 import { getRandomAngle, getRandomDirection } from './utils.js';
+import { PauseScreen } from './pauseScreen.js';
 import GameEngine from './gameEngine.js';
 
 import { GameState, GameStats, PaddleSide } from '../types.js';
@@ -14,15 +15,17 @@ export class PongGame {
 	//custom classes
 	private collisionHandler: CollisionHandler;
 	public renderEngine: RenderEngine;
+	public pauseScreen: PauseScreen
 	public engine: GameEngine;
 
 	//variables
-	public isPaused: boolean = false;
 	public mode: number;
 
 	constructor(engine: GameEngine, mode: number) {
 		this.engine = engine;
 		this.mode = mode
+
+		console.log('game running in mode: ', this.mode);
 
 		const randomDirection = getRandomDirection();
 		const randomAngle = getRandomAngle()
@@ -35,6 +38,7 @@ export class PongGame {
 		};
 		this.collisionHandler = new CollisionHandler(this);
 		this.renderEngine = new RenderEngine(this);
+		this.pauseScreen = new PauseScreen(this.engine);
 	}
 
 	public drawGameScreen(): void {
@@ -42,7 +46,7 @@ export class PongGame {
 		this.gameStats.ballPosition.y += this.gameStats.ballVelocity.y;
 
 		this.collisionHandler.checkCollisions();
-		if (this.mode = 1) {
+		if (this.mode == 1) {
 			this.checkWinCondition();
 		}
 		this.renderEngine.renderFrame();

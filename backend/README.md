@@ -11,33 +11,28 @@ to install dependencies run `npm install` which is accessing package-lock.json i
 
 when running in school it needs to run as root, so if something fails when opening the dev container, try going to devcontainer.json and uncomment `"remoteUser": "root"` (and add a comma to the previous statement).
 
-# setting up basic node.js server
-https://www.geeksforgeeks.org/how-to-build-a-simple-web-server-with-node-js/
-
-you can run `node index.js` to get the simplest webpage you've ever seen on your localhost.
-
-
 # fastify
-after setting up the dev container you can try running `node fastify2.js` (the other ones are work in progress). This will start the server on http://localhost:3000/ . from your terminal you can type some curl commands to call the API.
+after setting up the dev container you can try running `node backend/app.js`. This will start the server on http://localhost:3000/ . from your terminal you can type some curl commands to call the API.
+
 
 ```
 # Get all users
 curl http://localhost:3000/users
 
-# Get single user
+# Get single user (NOT IN USE ATM)
 curl http://localhost:3000/users/1
 
 # Create new user
 curl -X POST http://localhost:3000/users \
   -H "Content-Type: application/json" \
-  -d '{"name":"Alice Brown","email":"alice@example.com"}'
+  -d '{"email":"alice@example.com", "passwordString":"abcdef124"}'
 
-# Update user
+# Update user (NOT IN USE ATM)
 curl -X PUT http://localhost:3000/users/1 \
   -H "Content-Type: application/json" \
   -d '{"name":"John Smith","email":"john.smith@example.com"}'
 
-# Delete user
+# Delete user (NOT IN USE ATM)
 curl -X DELETE http://localhost:3000/users/1
 ```
 

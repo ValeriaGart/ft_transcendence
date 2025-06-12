@@ -6,7 +6,7 @@
  * @param {Object} options plugin options, refer to https://fastify.dev/docs/latest/Reference/Plugins/#plugin-options
  */
 
-const { db } = require('./our-db-route');
+const { db } = require('./db-connector');
 
 async function routes (fastify, options) {
 

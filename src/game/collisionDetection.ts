@@ -46,7 +46,7 @@ export class CollisionHandler {
 		return isWithinVerticalRange && isTouchingPaddle;
 	}
 
-		private scorePoint(side: 'left' | 'right'): void {
+	private scorePoint(side: 'left' | 'right'): void {
 		this.pongGame.gameStats.scores[side]++;
 		this.pongGame.gameStats.ballPosition = {
 			x: this.pongGame.engine.canvas.width / 2,

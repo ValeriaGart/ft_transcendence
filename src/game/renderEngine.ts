@@ -14,6 +14,7 @@ export class RenderEngine {
 		this.drawBall();
 		this.drawPaddles();
 		this.drawScore();
+		this.drawNames();
 		this.drawCenterLine();
 	}
 
@@ -53,12 +54,28 @@ export class RenderEngine {
 		
 		this.pongGame.engine.ctx.fillText(
 			this.pongGame.gameStats.scores.left.toString(),
-			this.pongGame.engine.canvas.width / 3,
+			(this.pongGame.engine.canvas.width / 8) * 3,
 			75
 		);
 		this.pongGame.engine.ctx.fillText(
 			this.pongGame.gameStats.scores.right.toString(),
-			(this.pongGame.engine.canvas.width / 3) * 2,
+			(this.pongGame.engine.canvas.width / 8) * 5,
+			75
+		);
+	}
+
+	private drawNames(): void {
+		this.pongGame.engine.ctx.font = '50px Arial';
+		this.pongGame.engine.ctx.fillStyle = 'white';
+		
+		this.pongGame.engine.ctx.fillText(
+			this.pongGame._p1.getName(),
+			this.pongGame.engine.canvas.width / 8,
+			75
+		);
+		this.pongGame.engine.ctx.fillText(
+			this.pongGame._p2.getName(),
+			(this.pongGame.engine.canvas.width / 8) * 7,
 			75
 		);
 	}

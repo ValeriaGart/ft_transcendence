@@ -3,7 +3,10 @@ import { SelectScreen } from './selectScreen.js';
 import { StartScreen } from './startScreen.js';
 import { InputHandler } from './inputHandler.js';
 import { PongGame } from './pongGame.js';
-import { GameState } from '../types.js';
+import { GameMode, GameState, OpponentMode } from '../types.js';
+import { OPEN } from 'ws';
+import { Player } from './player.js';
+import { BotAI } from './botAI.js';
 
 export class GameEngine {
 	//standard classes
@@ -32,13 +35,39 @@ export class GameEngine {
 		this.startScreen = new StartScreen(this);
 		this.selectScreen = new SelectScreen(this);
 		this.gameStateMachine = new GameStateMachine(this);
-		this.pongGame = new PongGame(this, 0);
+		this.pongGame = new PongGame(this, GameMode.INFINITE, OpponentMode.SINGLE, new Player('def', 0, true), new Player('def', 0, true));
 		this.inputHandler = new InputHandler(this);
 		
 	}
 	
-	public startGame(mode: number): void {
-		this.pongGame = new PongGame(this, mode);
+	public startGame(mode: GameMode): void {
+		//!!!	this needs to be passed from select screen	!!!
+		var opponent: OpponentMode = OpponentMode.SINGLE;
+		//!!!	this needs to be passed from select screen	!!!
+		if (mode == GameMode.TOURNAMENT) {
+			this.tournamentHandler(mode, opponent);
+		}
+		else {
+			this.singleGameHandler(mode, opponent);
+		}
+	}
+	
+	private tournamentHandler(mode: GameMode, opponent: OpponentMode):void {
+		var playerOne: Player = new Player('Player1', 4, false);
+		var playerTwo: Player = new Player('Bot1', 4, true);
+		var playerThree: Player = new Player('Bot2', 4, true);
+		var playerFour: Player = new Player('Bot3', 4, true);
+	}
+	
+	private singleGameHandler(mode: GameMode, opponent: OpponentMode):void {
+		switch(opponent) {
+			case OpponentMode.SINGLE:
+				var playerOne: Player = new Player('Player1', 0, false);
+				var playerTwo: Player = new Player('Bot1', 0, true);
+				// var playerTwo: Player = new Player('Bot1', 0);
+				this.pongGame = new PongGame(this, mode, opponent, playerOne, playerTwo);
+				break;
+		}
 	}
 	
 	public startGameLoop(): void {

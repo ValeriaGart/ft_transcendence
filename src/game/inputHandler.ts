@@ -44,14 +44,21 @@ export class InputHandler {
 	private handleSelectScreen(event: KeyboardEvent): void {
 		switch(event.key) {
 			case 'ArrowUp':
-				this.engine.selectScreen.currentOption = (this.engine.selectScreen.currentOption -1 + this.engine.selectScreen.options.length) % this.engine.selectScreen.options.length;
+				var currentIndex = this.engine.selectScreen.options.indexOf(this.engine.selectScreen.currentOption);
+				// this.engine.selectScreen.currentOption = (this.engine.selectScreen.currentOption -1 + this.engine.selectScreen.options.length) % this.engine.selectScreen.options.length;
+				this.engine.selectScreen.currentOption = this.engine.selectScreen.options[
+					(currentIndex - 1 + this.engine.selectScreen.options.length) % this.engine.selectScreen.options.length
+				];
 				break;
 			case 'ArrowDown':
-				this.engine.selectScreen.currentOption = (this.engine.selectScreen.currentOption + 1) % this.engine.selectScreen.options.length;
+				// this.engine.selectScreen.currentOption = (this.engine.selectScreen.currentOption + 1) % this.engine.selectScreen.options.length;
+				var currentIndex = this.engine.selectScreen.options.indexOf(this.engine.selectScreen.currentOption);
+				this.engine.selectScreen.currentOption = this.engine.selectScreen.options[
+					(currentIndex + 1) % this.engine.selectScreen.options.length
+				];
 				break;
 			case 'Enter':
-				this.engine.selectScreen.selectedText = this.engine.selectScreen.options[this.engine.selectScreen.currentOption];
-				console.log(`selected mode: ${this.engine.selectScreen.selectedText}`);
+				console.log("selected mode: ", this.engine.selectScreen.currentOption);
 				this.engine.startGame(this.engine.selectScreen.currentOption);
 				this.engine.gameStateMachine.transition(GameState.GAME);
 				break;
@@ -91,7 +98,7 @@ export class InputHandler {
 
 	private movePaddle(side: 'left' | 'right', direction: number): void {
 		const currentPosition = this.engine.pongGame.gameStats.paddlePositions[side];
-		const newPosition = currentPosition + (direction * 10);
+		const newPosition = currentPosition + (direction);
 
 		if (newPosition < 0) {
 			this.engine.pongGame.gameStats.paddlePositions[side] = 0;

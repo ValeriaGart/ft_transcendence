@@ -1,11 +1,13 @@
 import GameEngine from "./gameEngine.js";
-import { GameState } from "../types.js";
+import { GameMode, GameState } from "../types.js";
 
 export class SelectScreen {
 	private engine: GameEngine
 
-	public options: string[] = ["infinite", "best of 5"];
-	public currentOption: number = 0;
+	// public options: string[] = ["infinite", "best of 5", "tournament"];
+	public options: GameMode[] = [GameMode.INFINITE, GameMode.BEST_OF, GameMode.TOURNAMENT];
+	// public currentOption: number = 0;
+	public currentOption: GameMode = GameMode.INFINITE;
 	public selectedText: string = "";
 	private arrowHeight = 0;
 
@@ -42,15 +44,25 @@ export class SelectScreen {
 			this.engine.canvas.width / 2,
 			this.engine.canvas.height / 2 + 100
 		);
+		
+		//option 3
+		this.engine.ctx.fillText(
+			this.options[2],
+			this.engine.canvas.width / 2,
+			this.engine.canvas.height / 2 + 300
+		);
 
 		// selection
 
 		switch (this.currentOption) {
-			case 0:
+			case GameMode.INFINITE:
 				this.arrowHeight = this.engine.canvas.height / 2 - 100;
 				break;
-			case 1:
+			case GameMode.BEST_OF:
 				this.arrowHeight = this.engine.canvas.height / 2 + 100;
+				break;
+			case GameMode.TOURNAMENT:
+				this.arrowHeight = this.engine.canvas.height / 2 + 300;
 				break;
 		}
 		this.engine.ctx.fillText(

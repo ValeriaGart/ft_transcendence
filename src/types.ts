@@ -6,6 +6,17 @@ export enum GameState {
 	GAME_OVER
 }
 
+export enum GameMode {
+	INFINITE = 'infinite',
+	BEST_OF = 'best of 5',
+	TOURNAMENT = 'tournament'
+}
+
+export enum OpponentMode {
+	SINGLE = 'single player',
+	MULTI = 'multi player'
+}
+
 export interface GameStats {
 	ballPosition: { x: number; y: number};
 	ballVelocity: { x: number; y: number};

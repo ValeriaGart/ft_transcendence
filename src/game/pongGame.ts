@@ -3,9 +3,11 @@ import { RenderEngine } from './renderEngine.js';
 import { getRandomAngle, getRandomDirection } from './utils.js';
 import { PauseScreen } from './pauseScreen.js';
 import GameEngine from './gameEngine.js';
+import { Player } from './player.js';
 
-import { GameState, GameStats, PaddleSide } from '../types.js';
+import { GameMode, GameState, GameStats, OpponentMode, PaddleSide } from '../types.js';
 import { BALL_SPEED, PADDLE_HEIGHT } from '../constants.js';
+import { BotAI } from './botAI.js';
 
 export class PongGame {
 	//custom interfaces
@@ -19,13 +21,20 @@ export class PongGame {
 	public engine: GameEngine;
 
 	//variables
-	public mode: number;
+	public mode: GameMode;
+	public _opponent: OpponentMode;
+	public _p1: Player;
+	public _p2: Player;
 
-	constructor(engine: GameEngine, mode: number) {
+	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1: Player, p2: Player) {
 		this.engine = engine;
 		this.mode = mode
+		this._opponent = opponent;
+		this._p1 = p1;
+		this._p2 = p2;
 
 		console.log('game running in mode: ', this.mode);
+		console.log(this._opponent);
 
 		const randomDirection = getRandomDirection();
 		const randomAngle = getRandomAngle()
@@ -45,8 +54,12 @@ export class PongGame {
 		this.gameStats.ballPosition.x += this.gameStats.ballVelocity.x;
 		this.gameStats.ballPosition.y += this.gameStats.ballVelocity.y;
 
+		if (this._opponent == OpponentMode.SINGLE) {
+			this._p2.AI.update(this);
+		}
+
 		this.collisionHandler.checkCollisions();
-		if (this.mode == 1) {
+		if (this.mode == GameMode.BEST_OF) {
 			this.checkWinCondition();
 		}
 		this.renderEngine.renderFrame();

@@ -15,7 +15,7 @@ const dbAll = util.promisify(db.all.bind(db));
 // Initialize database
 async function initialize() {
   // drop table to reset everything (during dev)
-  await db.run(`DROP TABLE IF EXISTS users`);
+  // await db.run(`DROP TABLE IF EXISTS users`);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS users (
@@ -37,13 +37,13 @@ async function initialize() {
   //     FOREIGN KEY (userId) REFERENCES users (id)
   //   )
   // `);
+  dbAll('SELECT * FROM users', (err, rows) => {
+    console.log('DB QUERY: SELECT * FROM users');
+    if (err) console.error(err);
+    else console.log('DB RESULT:', rows);
+  });
 }
 
 // filepath: /workspaces/nodejs/db.js
-dbAll('SELECT * FROM users', (err, rows) => {
-  console.log('DB QUERY: SELECT * FROM users');
-  if (err) console.error(err);
-  else console.log('DB RESULT:', rows);
-});
 
 module.exports = { db, initialize };

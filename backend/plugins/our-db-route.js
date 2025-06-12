@@ -8,20 +8,18 @@ const db = new sqlite3.Database(dbPath);
 
 // Initialize database
 async function initialize() {
+  // drop table to reset everything (during dev)
+  // await db.run(`DROP TABLE IF EXISTS users`);
+
   await db.run(`
     CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT UNIQUE NOT NULL,
       passwordHash TEXT NOT NULL,
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
-
-  await db.run(`
-    INSERT INTO users (id, email, passwordHash, createdAt)
-    VALUES ('1', 'lucamail', 'secret123', '21312312')
-    ON CONFLICT (id) DO NOTHING;
-    `)
+  
   // await db.run(`
   //   CREATE TABLE IF NOT EXISTS profiles (
   //     id TEXT PRIMARY KEY,

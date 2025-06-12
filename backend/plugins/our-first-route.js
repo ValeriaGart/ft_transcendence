@@ -28,24 +28,24 @@ async function routes (fastify, options) {
   });
 
   fastify.post('/users', async (request, reply) => {
-    const { id, email, passwordString } = request.body;
+    const { email, passwordString } = request.body;
 
-    if (!id || !email || !passwordString) {
+    if (!email || !passwordString) {
       reply.code(400);
-      return { error: 'id, email and password are required'};
+      return { error: 'email and passwordString are required'};
     }
 
     return new Promise((resolve, reject) => {
       db.run(
-        `INSERT INTO users (id, email, passwordHash, createdAt)
-        VALUES (?, ?, ?, ?)`,
-        [id, email, passwordString, new Date().toISOString()],
+        `INSERT INTO users (email, passwordHash, createdAt)
+        VALUES (?, ?, ?)`,
+        [email, passwordString, new Date().toISOString()],
         function (err) {
           if (err) {
             reply.code(500);
             return reject({ error: 'Database error', details: err.message });
           }
-          resolve({ success: true, userId: id});
+          resolve({ success: true, userId: this.lastID});
         }
       );
     });

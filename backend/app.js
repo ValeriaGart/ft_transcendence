@@ -6,9 +6,9 @@ const fastify = require('fastify')({
   logger: true
 })
 
-const { db, initialize } = require('./plugins/our-db-route');
+const { db, initialize } = require('./plugins/db-connector');
 
-fastify.register(require('./plugins/our-first-route'))
+fastify.register(require('./plugins/route-users'))
 
 
 

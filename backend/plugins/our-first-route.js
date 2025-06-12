@@ -27,7 +27,30 @@ async function routes (fastify, options) {
     });
   });
 
+  fastify.post('/users', async (request, reply) => {
+    const { id, email, passwordString } = request.body;
 
+    if (!id || !email || !passwordString) {
+      reply.code(400);
+      return { error: 'id, email and password are required'};
+    }
+
+    return new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO users (id, email, passwordHash, createdAt)
+        VALUES (?, ?, ?, ?)`,
+        [id, email, passwordString, new Date().toISOString()],
+        function (err) {
+          if (err) {
+            reply.code(500);
+            return reject({ error: 'Database error', details: err.message });
+          }
+          resolve({ success: true, userId: id});
+        }
+      );
+    });
+  });
+  
   
 }
 

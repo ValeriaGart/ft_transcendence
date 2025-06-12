@@ -4,5 +4,24 @@
     "fastify-plugin": "^5.0.1",
     "fastify-sqlite": "^1.1.0",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "name": "transcendence",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ValeriaGart/ft_transcendence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ValeriaGart/ft_transcendence/issues"
+  },
+  "homepage": "https://github.com/ValeriaGart/ft_transcendence#readme"
 }

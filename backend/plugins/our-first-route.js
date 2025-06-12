@@ -8,7 +8,6 @@
 
 const { db } = require('./our-db-route');
 
-
 async function routes (fastify, options) {
 
   fastify.get('/', async (request, reply) => {
@@ -27,13 +26,21 @@ async function routes (fastify, options) {
     });
   });
 
-  fastify.post('/users', async (request, reply) => {
+
+  fastify.post('/users', {
+    schema : {
+      body: {
+        type: "object",
+        properties: {
+          email: { type: 'string', format: 'email' },
+          passwordString: { type: 'string', minLength: 6 },
+        },
+        required: ["email", "passwordString"],
+      },
+    },
+  }, async (request, reply) => {
     const { email, passwordString } = request.body;
 
-    if (!email || !passwordString) {
-      reply.code(400);
-      return { error: 'email and passwordString are required'};
-    }
 
     return new Promise((resolve, reject) => {
       db.run(

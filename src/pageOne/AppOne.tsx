@@ -4,6 +4,7 @@ import { SigninScreen } from './SigninScreen';
 import { SigninPage } from './SigninPage';
 import { SignupPage } from './SignupPage';
 import { useState } from '../util/state/state';
+import { SoundButton } from '../global/SoundButton';
 
 interface AppOneProps {
     onEnterClick: () => void;
@@ -26,7 +27,10 @@ export function AppOne({ onEnterClick }: AppOneProps) {
 
     return (
         <div id="app1" class="flex flex-col h-screen">
-            <div id="mainpart" class="flex items-center flex-1 justify-center bg-[#C4DADA] px-7 py-1">
+            <div id="mainpart" class="relative flex items-center flex-1 justify-center bg-[#C4DADA] px-7 py-1">
+                <div class="absolute bottom-4 right-4">
+                    <SoundButton />
+                </div>
                 <div class="relative">
                     <img
                         src="/art/controller.svg"

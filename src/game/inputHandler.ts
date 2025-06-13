@@ -1,8 +1,6 @@
 import { PADDLE_HEIGHT, PADDLE_SPEED } from '../constants.js';
-import { PongGame } from './pongGame.js';
 import GameEngine from './gameEngine.js';
 import { GameState } from '../types.js';
-import { SelectScreen } from './selectScreen.js';
 
 export class InputHandler {
 	private engine: GameEngine;
@@ -29,6 +27,17 @@ export class InputHandler {
 			case GameState.PAUSED:
 				this.handlePauseScreen(event);
 				break;
+			case GameState.GAME_OVER:
+				this.handleGameOverScreen(event);
+				break;
+			case GameState.ROUND_ONE:
+			case GameState.ROUND_TWO:
+			case GameState.ROUND_THREE:
+			case GameState.ROUND_FOUR:
+				this.handlePreBattleScreen(event);
+				break;
+			case GameState.TOURNAMENT_MIDDLE:
+				this.handleTournamentMiddle(event);
 		}
 	}
 
@@ -45,22 +54,18 @@ export class InputHandler {
 		switch(event.key) {
 			case 'ArrowUp':
 				var currentIndex = this.engine.selectScreen.options.indexOf(this.engine.selectScreen.currentOption);
-				// this.engine.selectScreen.currentOption = (this.engine.selectScreen.currentOption -1 + this.engine.selectScreen.options.length) % this.engine.selectScreen.options.length;
 				this.engine.selectScreen.currentOption = this.engine.selectScreen.options[
-					(currentIndex - 1 + this.engine.selectScreen.options.length) % this.engine.selectScreen.options.length
-				];
+					(currentIndex - 1 + this.engine.selectScreen.options.length) % this.engine.selectScreen.options.length];
 				break;
 			case 'ArrowDown':
-				// this.engine.selectScreen.currentOption = (this.engine.selectScreen.currentOption + 1) % this.engine.selectScreen.options.length;
 				var currentIndex = this.engine.selectScreen.options.indexOf(this.engine.selectScreen.currentOption);
 				this.engine.selectScreen.currentOption = this.engine.selectScreen.options[
-					(currentIndex + 1) % this.engine.selectScreen.options.length
-				];
+					(currentIndex + 1) % this.engine.selectScreen.options.length];
 				break;
 			case 'Enter':
 				console.log("selected mode: ", this.engine.selectScreen.currentOption);
-				this.engine.startGame(this.engine.selectScreen.currentOption);
 				this.engine.gameStateMachine.transition(GameState.GAME);
+				this.engine.startGame(this.engine.selectScreen.currentOption);
 				break;
 		}
 	}
@@ -84,7 +89,22 @@ export class InputHandler {
 				break;
 			}
 		}
+
+	private movePaddle(side: 'left' | 'right', direction: number): void {
+		const currentPosition = this.engine.pongGame.gameStats.paddlePositions[side];
+		const newPosition = currentPosition + (direction);
 		
+		if (newPosition < 0) {
+			this.engine.pongGame.gameStats.paddlePositions[side] = 0;
+		}
+		else if(newPosition > this.engine.pongGame.engine.canvas.height - PADDLE_HEIGHT) {
+			this.engine.pongGame.gameStats.paddlePositions[side] = this.engine.pongGame.engine.canvas.height - PADDLE_HEIGHT;
+		}
+		else {
+			this.engine.pongGame.gameStats.paddlePositions[side] = newPosition;
+		}
+	}
+	
 	private handlePauseScreen(event: KeyboardEvent): void {
 		switch (event.key) {
 			case 'Escape':
@@ -95,19 +115,28 @@ export class InputHandler {
 				break;
 		}
 	}
-
-	private movePaddle(side: 'left' | 'right', direction: number): void {
-		const currentPosition = this.engine.pongGame.gameStats.paddlePositions[side];
-		const newPosition = currentPosition + (direction);
-
-		if (newPosition < 0) {
-			this.engine.pongGame.gameStats.paddlePositions[side] = 0;
+		
+	private handleGameOverScreen(event: KeyboardEvent): void {
+		switch (event.key) {
+			case 'Enter':
+				this.engine.gameStateMachine.transition(GameState.SELECT);
+				break;
 		}
-		else if(newPosition > this.engine.pongGame.engine.canvas.height - PADDLE_HEIGHT) {
-			this.engine.pongGame.gameStats.paddlePositions[side] = this.engine.pongGame.engine.canvas.height - PADDLE_HEIGHT;
+	}
+
+	private handlePreBattleScreen(event: KeyboardEvent): void {
+		switch (event.key) {
+			case 'Enter':
+				this.engine.gameStateMachine.transition(GameState.GAME);
+				break;
 		}
-		else {
-			this.engine.pongGame.gameStats.paddlePositions[side] = newPosition;
+	}
+
+	private handleTournamentMiddle(event: KeyboardEvent): void {
+		switch (event.key) {
+			case 'Enter':
+				this.engine.startRoundThree();
+				break;
 		}
 	}
 }

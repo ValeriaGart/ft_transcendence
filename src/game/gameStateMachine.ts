@@ -1,4 +1,4 @@
-import PongGame, { GameEngine } from "./gameEngine.js";
+import { GameEngine } from "./gameEngine.js";
 import { GameState } from "../types.js";
 
 export class GameStateMachine {
@@ -15,6 +15,7 @@ export class GameStateMachine {
 
 	public transition(state: GameState) {
 		this.currentState = state;
+		console.log("switched state to: ", state);
 	}
 
 	public update() {
@@ -32,9 +33,16 @@ export class GameStateMachine {
 				this.handlePausedState();
 				break;
 			case GameState.GAME_OVER:
-				this.handleGameOverState();
+				this.handleGameOverScreen();
 				break;
-		}
+			case GameState.ROUND_ONE:
+			case GameState.ROUND_TWO:
+			case GameState.ROUND_THREE:
+			case GameState.ROUND_FOUR:
+			case GameState.TOURNAMENT_MIDDLE:
+				this.handlePreBattleScreen();
+				break;
+			}
 	}
 
 	private handleStartState() {
@@ -53,7 +61,11 @@ export class GameStateMachine {
 		this.engine.pongGame.pauseScreen.drawPauseScreen();
 	}
 
-	private handleGameOverState() {
+	private handleGameOverScreen() {
+		//todo
+	}
+
+	private handlePreBattleScreen() {
 		//todo
 	}
 }

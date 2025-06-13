@@ -27,7 +27,6 @@ export class CollisionHandler {
 		if (this.pongGame.gameStats.ballPosition.x <= 0) {
 			this.scorePoint('right');
 		}
-		
 		if (this.pongGame.gameStats.ballPosition.x >= this.pongGame.engine.canvas.width) {
 			this.scorePoint('left');
 		}

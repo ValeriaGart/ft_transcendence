@@ -2,12 +2,12 @@ import { CollisionHandler } from './collisionDetection.js';
 import { RenderEngine } from './renderEngine.js';
 import { getRandomAngle, getRandomDirection } from './utils.js';
 import { PauseScreen } from './pauseScreen.js';
-import GameEngine from './gameEngine.js';
 import { Player } from './player.js';
+import { WinScreen } from './winScreen.js';
+import GameEngine from './gameEngine.js';
 
 import { GameMode, GameState, GameStats, OpponentMode, PaddleSide } from '../types.js';
 import { BALL_SPEED, PADDLE_HEIGHT } from '../constants.js';
-import { BotAI } from './botAI.js';
 
 export class PongGame {
 	//custom interfaces
@@ -19,22 +19,25 @@ export class PongGame {
 	public renderEngine: RenderEngine;
 	public pauseScreen: PauseScreen
 	public engine: GameEngine;
+	private _winScreen: WinScreen
 
 	//variables
-	public mode: GameMode;
-	public _opponent: OpponentMode;
+	public _mode: GameMode;
+	public _oppMode: OpponentMode;
 	public _p1: Player;
 	public _p2: Player;
+	private _round: number = 0;
 
-	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1: Player, p2: Player) {
+	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1: Player, p2: Player, round?: number) {
 		this.engine = engine;
-		this.mode = mode
-		this._opponent = opponent;
+		this._mode = mode
+		this._oppMode = opponent;
 		this._p1 = p1;
 		this._p2 = p2;
+		this._round = round || this._round;
 
-		console.log('game running in mode: ', this.mode);
-		console.log(this._opponent);
+		console.log('game running in mode: ', this._mode);
+		console.log(this._oppMode);
 
 		const randomDirection = getRandomDirection();
 		const randomAngle = getRandomAngle()
@@ -48,26 +51,62 @@ export class PongGame {
 		this.collisionHandler = new CollisionHandler(this);
 		this.renderEngine = new RenderEngine(this);
 		this.pauseScreen = new PauseScreen(this.engine);
+		this._winScreen = new WinScreen(this);
 	}
 
 	public drawGameScreen(): void {
 		this.gameStats.ballPosition.x += this.gameStats.ballVelocity.x;
 		this.gameStats.ballPosition.y += this.gameStats.ballVelocity.y;
 
-		if (this._opponent == OpponentMode.SINGLE) {
+		if (this._oppMode == OpponentMode.SINGLE) {
 			this._p2.AI.update(this);
 		}
 
-		this.collisionHandler.checkCollisions();
-		if (this.mode == GameMode.BEST_OF) {
-			this.checkWinCondition();
-		}
 		this.renderEngine.renderFrame();
+
+		this.collisionHandler.checkCollisions();
+		if (this._mode == GameMode.BEST_OF || this._mode == GameMode.TOURNAMENT) {
+			if (this.checkWinCondition()) {
+				switch (this._round) {
+					case 1:
+						this.engine.startRoundTwo();
+						break;
+					case 2:
+						this.engine.startRoundThree();
+						break;
+					case 3:
+						this.engine.startRoundFour();
+						break;
+					case 4:
+						this.engine.endTournament();
+						break;
+				}
+			}
+		}
 	}
 
-	private checkWinCondition(): void {
-		if (this.gameStats.scores.left >= 3 || this.gameStats.scores.right >= 3) {
-			this.engine.gameStateMachine.transition(GameState.SELECT);
+	private checkWinCondition(): boolean {
+		if (this.gameStats.scores.left >= 3) {
+			this._p1.setPosition(this._p1.getPosition() - 1)
+			console.log('winner: ', this._p1.getName(), " pos: ", this._p1.getPosition());
+			if (this._mode == GameMode.TOURNAMENT) {
+				return true;
+			}
+			this.engine.gameStateMachine.transition(GameState.GAME_OVER);
+			this._winScreen.drawWinScreen(this._p1.getName());
+			return false;
 		}
+		
+		if (this.gameStats.scores.right >= 3) {
+			this._p2.setPosition(this._p2.getPosition() - 1)
+			console.log('winner: ', this._p2.getName(), " pos: ", this._p2.getPosition());
+			if (this._mode == GameMode.TOURNAMENT) {
+				return true;
+			}
+			this.engine.gameStateMachine.transition(GameState.GAME_OVER);
+			this._winScreen.drawWinScreen(this._p2.getName());
+			return false;
+		}
+		return false;
 	}
 }

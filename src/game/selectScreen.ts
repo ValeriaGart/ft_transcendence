@@ -1,12 +1,10 @@
 import GameEngine from "./gameEngine.js";
-import { GameMode, GameState } from "../types.js";
+import { GameMode } from "../types.js";
 
 export class SelectScreen {
 	private engine: GameEngine
 
-	// public options: string[] = ["infinite", "best of 5", "tournament"];
 	public options: GameMode[] = [GameMode.INFINITE, GameMode.BEST_OF, GameMode.TOURNAMENT];
-	// public currentOption: number = 0;
 	public currentOption: GameMode = GameMode.INFINITE;
 	public selectedText: string = "";
 	private arrowHeight = 0;

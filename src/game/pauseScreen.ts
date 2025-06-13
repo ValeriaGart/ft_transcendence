@@ -1,5 +1,4 @@
 import PongGame from "./gameEngine.js";
-import { GameState } from "../types.js";
 
 export class PauseScreen {
 	private pongGame: PongGame

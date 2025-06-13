@@ -2,7 +2,6 @@
   "name": "transcendence_game",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "npm run build; npm run up",
     "up": "parcel public/index.html --port 3000",
@@ -24,6 +23,7 @@
     "@types/node": "^22.15.29",
     "@types/ws": "^8.18.1",
     "autoprefixer": "^10.4.21",
+    "parcel": "^2.15.2",
     "parcel-bundler": "^1.12.5",
     "postcss": "^8.5.4",
     "tailwindcss": "^4.1.8",

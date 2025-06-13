@@ -3,7 +3,12 @@ export enum GameState {
 	SELECT,
 	GAME,
 	PAUSED,
-	GAME_OVER
+	GAME_OVER,
+	ROUND_ONE,
+	ROUND_TWO,
+	ROUND_THREE,
+	ROUND_FOUR,
+	TOURNAMENT_MIDDLE
 }
 
 export enum GameMode {

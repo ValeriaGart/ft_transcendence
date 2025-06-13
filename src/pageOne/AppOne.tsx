@@ -27,12 +27,28 @@ export function AppOne({ onEnterClick }: AppOneProps) {
     return (
         <div id="app1" class="flex flex-col h-screen">
             <div id="mainpart" class="flex items-center flex-1 justify-center bg-[#C4DADA] px-7 py-1">
-                <img
-                    src="/art/controller.svg"
-                    alt="Controller"
-                    class="min-w-7xl"
-                />
-
+                <div class="relative">
+                    <img
+                        src="/art/controller.svg"
+                        alt="Controller"
+                        class="min-w-6xl"
+                    />
+                    {currentScreen === 'entry' ? (
+                        <EntryScreen onPlayClick={() => setCurrentScreen('signin')} />
+                    ) : currentScreen === 'signin' ? (
+                        <SigninScreen onSignInClick={handleSignInClick} onSignUpClick={handleSignUpClick} />
+                    ) : currentScreen === 'signinPage' ? (
+                        <SigninPage onEnterClick={() => {
+                            console.log('AppOne: Enter clicked, calling parent handler');
+                            onEnterClick();
+                        }} />
+                    ) : (
+                        <SignupPage onEnterClick={() => {
+                            console.log('AppOne: Enter clicked from signup, calling parent handler');
+                            onEnterClick();
+                        }} />
+                    )}
+                </div>
             </div>
             <div class="w-screen h-[10%] bg-[#B0D5D5] flex items-center justify-center">
                 <a href="https://github.com/ValeriaGart/ft_transcendence" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 hover:opacity-80">

@@ -1,0 +1,27 @@
+// CommonJs
+/**
+ * @type {import('fastify').FastifyInstance} Instance of Fastify
+ */
+const fastify = require('fastify')({
+  logger: true
+})
+
+const { db, initialize } = require('./plugins/db-connector');
+
+fastify.register(require('./plugins/route-users'))
+
+
+
+
+
+
+async function bootstrap() {
+  try {
+    await initialize();
+    await fastify.listen({ port: 3000 });
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+}
+bootstrap();

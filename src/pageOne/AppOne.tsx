@@ -25,30 +25,19 @@ export function AppOne({ onEnterClick }: AppOneProps) {
     console.log('AppOne: Rendering screen:', currentScreen);
 
     return (
-        <div id="app1" class="flex flex-col items-center justify-between h-screen bg-[#C4DADA]">
-            <div class="relative">
+        <div id="app1" class="flex flex-col h-screen">
+            <div id="mainpart" class="flex items-center flex-1 justify-center bg-[#C4DADA] px-7 py-1">
                 <img
                     src="/art/controller.svg"
                     alt="Controller"
-                    class="w-full h-auto object-contain shrink-0 px-24 pt-8"
+                    class="min-w-7xl"
                 />
-                {currentScreen === 'entry' ? (
-                    <EntryScreen onPlayClick={() => setCurrentScreen('signin')} />
-                ) : currentScreen === 'signin' ? (
-                    <SigninScreen onSignInClick={handleSignInClick} onSignUpClick={handleSignUpClick} />
-                ) : currentScreen === 'signinPage' ? (
-                    <SigninPage onEnterClick={() => {
-                        console.log('AppOne: Enter clicked, calling parent handler');
-                        onEnterClick();
-                    }} />
-                ) : (
-                    <SignupPage />
-                )}
+
             </div>
-            <div class="w-screen h-[80px] bg-[#B0D5D5] flex items-center justify-center">
+            <div class="w-screen h-[10%] bg-[#B0D5D5] flex items-center justify-center">
                 <a href="https://github.com/ValeriaGart/ft_transcendence" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 hover:opacity-80">
-                    <img src="/art/githubicon.svg" alt="Controller" class="h-[40px] w-auto" />
-                    <span class="text-[#81C3C3] font-['Irish_Grover'] text-[52px]">Our project on github</span>
+                    <img src="/art/githubicon.svg" alt="githubicon" class="h-[40px] w-auto" />
+                    <span class="text-[#81C3C3] font-['Irish_Grover'] text-[200%] md:text-[300%]">Our project on github</span>
                 </a>
             </div>
         </div>

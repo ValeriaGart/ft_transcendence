@@ -13,7 +13,7 @@ export function App() {
   };
 
   return (
-    <div id="app-container" class="relative w-full h-full">
+    <div id="app-container">
       <AppOne onEnterClick={handleEnterClick} />
     </div>
   );

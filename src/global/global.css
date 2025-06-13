@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@keyframes pulse-slow {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 1s ease-in-out infinite;
+}

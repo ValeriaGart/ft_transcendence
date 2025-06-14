@@ -1,26 +1,16 @@
-// CommonJs
-/**
- * @type {import('fastify').FastifyInstance} Instance of Fastify
- */
-const fastify = require('fastify')({
-  logger: true
-})
+import fastify from 'fastify';
+import { db, initialize } from './plugins/db-connector.js';
+import routes from './plugins/route-users.js';
 
-const { db, initialize } = require('./plugins/db-connector');
-
-fastify.register(require('./plugins/route-users'))
-
-
-
-
-
+const app = fastify({ logger: true });
+app.register(routes);
 
 async function bootstrap() {
   try {
     await initialize();
-    await fastify.listen({ port: 3000 });
+    await app.listen({ port: 3000 });
   } catch (err) {
-    fastify.log.error(err);
+    app.log.error(err);
     process.exit(1);
   }
 }

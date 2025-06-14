@@ -51,9 +51,9 @@ async function routes (fastify, options) {
         db.run('BEGIN TRANSACTION');
 
         db.run(
-          `INSERT INTO users (email, passwordHash, createdAt)
-          VALUES (?, ?, ?)`,
-          [email, passwordString, new Date().toISOString()],
+          `INSERT INTO users (email, passwordHash, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?)`,
+          [email, passwordString, new Date().toISOString(), new Date().toISOString()],
           function (err) {
             if (err) {
               db.run('ROLLBACK')
@@ -111,7 +111,7 @@ async function routes (fastify, options) {
             return reject({ error: 'Database error', details: err.message });
           }
           if (!row){
-            return reply.code(409).send({ error: 'Email not in Database' });
+            return reply.code(409).send({ error: 'Login Failure: Email not in Database' });
           }
           db.get(
             `SELECT * FROM users
@@ -123,7 +123,7 @@ async function routes (fastify, options) {
                 return reject({ error: 'Database error', details: err.message });
               }
               if (!row){
-                return reply.code(409).send({ error: 'Password doesn\'t match up' });
+                return reply.code(401).send({ error: 'Login Failure: Password doesn\'t match up' });
               }
               
               resolve({ success: true, message: "Login Authentication successful"});

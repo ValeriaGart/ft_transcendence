@@ -6,7 +6,7 @@
 //  * @param {Object} options plugin options, refer to https://fastify.dev/docs/latest/Reference/Plugins/#plugin-options
 //  */
 
-import { db, initialize } from './/db-connector.js';
+import { db, initialize } from './db-connector.js';
 
 // const { db } = require('./db-connector');
 

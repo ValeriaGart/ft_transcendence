@@ -101,16 +101,35 @@ async function routes (fastify, options) {
 
 
     return new Promise((resolve, reject) => {
-      db.run(
+      db.get(
         `SELECT * FROM users
         WHERE email = ?`,
         [email],
-        function (err) {
+        function (err, row)  {
           if (err) {
             reply.code(500);
             return reject({ error: 'Database error', details: err.message });
           }
-          resolve({ success: true});
+          if (!row){
+            return reply.code(409).send({ error: 'Email not in Database' });
+          }
+          db.get(
+            `SELECT * FROM users
+            WHERE email = ? and passwordHash = ?`,
+            [email, passwordString],
+            function (err, row)  {
+              if (err) {
+                reply.code(500);
+                return reject({ error: 'Database error', details: err.message });
+              }
+              if (!row){
+                return reply.code(409).send({ error: 'Password doesn\'t match up' });
+              }
+              
+              resolve({ success: true, message: "Login Authentication successful"});
+            }
+          );
+          
         }
       );
     });

@@ -1,5 +1,5 @@
-import { GameMode, GameState, OpponentMode } from "../types.js";
 import GameEngine from "./gameEngine.js";
+import { GameMode, GameState, OpponentMode } from "../types.js";
 import { Player } from "./player.js";
 import { PongGame } from "./pongGame.js";
 import { PreBattleScreen } from "./preBattleScreen.js";
@@ -56,37 +56,37 @@ export class Tournament {
 		console.log("p4: ", this._players[this._p4].getName());
 	}
 	
-	public BattleOne(): void {
+	public battleOne(): void {
 		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
 		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
 		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
 		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
-		this._engine.gameStateMachine.transition(GameState.ROUND_ONE);
+		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
-		this._engine.pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 1);
+		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 1);
 	}
 	
-	public BattleTwo(): void {
+	public battleTwo(): void {
 		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
 		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
 		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
 		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
-		this._engine.gameStateMachine.transition(GameState.ROUND_TWO);
+		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
-		this._engine.pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 2);
+		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 2);
 	}
 	
-	public TournamentMiddle(): void {
-		this._engine.gameStateMachine.transition(GameState.TOURNAMENT_MIDDLE)
+	public tournamentMiddle(): void {
+		this._engine._gameStateMachine.transition(GameState.TOURNAMENT_MIDDLE)
 		this._PreBattleScreen.drawBrackets(this._players[this._p1], this._players[this._p2], this._players[this._p3], this._players[this._p4]);
 	}
 
-	public BattleThree(): void {
+	public battleThree(): void {
 		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
 		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
 		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
 		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
-		this._engine.gameStateMachine.transition(GameState.ROUND_THREE);
+		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 
 		this._p1 = 0;
 		this._p2 = 0;
@@ -124,25 +124,25 @@ export class Tournament {
 
 
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
-		this._engine.pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 3);
+		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 3);
 	}
 
-	public BattleFour(): void {
+	public battleFour(): void {
 		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
 		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
 		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
 		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
-		this._engine.gameStateMachine.transition(GameState.ROUND_FOUR);
+		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
-		this._engine.pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 4);
+		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 4);
 	}
 
-	public WinScreen(): void {
+	public winScreen(): void {
 		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
 		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
 		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
 		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
-		this._engine.gameStateMachine.transition(GameState.GAME_OVER);
+		this._engine._gameStateMachine.transition(GameState.GAME_OVER);
 		this._p1 = 0;
 		this._p2 = 0;
 		this._p3 = 0;

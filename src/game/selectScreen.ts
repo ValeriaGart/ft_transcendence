@@ -2,71 +2,71 @@ import GameEngine from "./gameEngine.js";
 import { GameMode } from "../types.js";
 
 export class SelectScreen {
-	private engine: GameEngine
+	private _engine: GameEngine
 
-	public options: GameMode[] = [GameMode.INFINITE, GameMode.BEST_OF, GameMode.TOURNAMENT];
-	public currentOption: GameMode = GameMode.INFINITE;
-	public selectedText: string = "";
-	private arrowHeight = 0;
+	public _options: GameMode[] = [GameMode.INFINITE, GameMode.BEST_OF, GameMode.TOURNAMENT];
+	public _currentOption: GameMode = GameMode.INFINITE;
+	public _selectedText: string = "";
+	private _arrowHeight: number = 0;
 
 	constructor(engine: GameEngine) {
-		this.engine = engine;
+		this._engine = engine;
 	}
 	
 	public drawSelectScreen(): void {
-		this.engine.ctx.fillStyle = 'black';
-		this.engine.ctx.fillRect(0, 0, this.engine.canvas.width, this.engine.canvas.height);
+		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 
 		//title
-		this.engine.ctx.fillStyle = 'white';
-		this.engine.ctx.font = '100px Arial';
-		this.engine.ctx.textAlign = "center";
-		this.engine.ctx.textBaseline = "middle";
-		this.engine.ctx.fillText('select game mode', this.engine.canvas.width / 2, 150);
+		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.font = '100px Arial';
+		this._engine._ctx.textAlign = "center";
+		this._engine._ctx.textBaseline = "middle";
+		this._engine._ctx.fillText('select game mode', this._engine._canvas.width / 2, 150);
 
-		this.engine.ctx.fillStyle = 'white';
-		this.engine.ctx.font = '75px Arial';
-		this.engine.ctx.textAlign = "center";
-		this.engine.ctx.textBaseline = "middle";
+		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.font = '75px Arial';
+		this._engine._ctx.textAlign = "center";
+		this._engine._ctx.textBaseline = "middle";
 		
 		//option 1
-		this.engine.ctx.fillText(
-			this.options[0],
-			this.engine.canvas.width / 2,
-			this.engine.canvas.height / 2 - 100
+		this._engine._ctx.fillText(
+			this._options[0],
+			this._engine._canvas.width / 2,
+			this._engine._canvas.height / 2 - 100
 		);
 		
 		//option 2
-		this.engine.ctx.fillText(
-			this.options[1],
-			this.engine.canvas.width / 2,
-			this.engine.canvas.height / 2 + 100
+		this._engine._ctx.fillText(
+			this._options[1],
+			this._engine._canvas.width / 2,
+			this._engine._canvas.height / 2 + 100
 		);
 		
 		//option 3
-		this.engine.ctx.fillText(
-			this.options[2],
-			this.engine.canvas.width / 2,
-			this.engine.canvas.height / 2 + 300
+		this._engine._ctx.fillText(
+			this._options[2],
+			this._engine._canvas.width / 2,
+			this._engine._canvas.height / 2 + 300
 		);
 
 		// selection
 
-		switch (this.currentOption) {
+		switch (this._currentOption) {
 			case GameMode.INFINITE:
-				this.arrowHeight = this.engine.canvas.height / 2 - 100;
+				this._arrowHeight = this._engine._canvas.height / 2 - 100;
 				break;
 			case GameMode.BEST_OF:
-				this.arrowHeight = this.engine.canvas.height / 2 + 100;
+				this._arrowHeight = this._engine._canvas.height / 2 + 100;
 				break;
 			case GameMode.TOURNAMENT:
-				this.arrowHeight = this.engine.canvas.height / 2 + 300;
+				this._arrowHeight = this._engine._canvas.height / 2 + 300;
 				break;
 		}
-		this.engine.ctx.fillText(
+		this._engine._ctx.fillText(
 			'-->',
-			this.engine.canvas.width / 2 - 300,
-			this.arrowHeight
+			this._engine._canvas.width / 2 - 300,
+			this._arrowHeight
 		);
 	}
 }

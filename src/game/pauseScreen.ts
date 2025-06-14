@@ -1,32 +1,32 @@
-import PongGame from "./gameEngine.js";
+import GameEngine from "./gameEngine.js";
 
 export class PauseScreen {
-	private pongGame: PongGame
+	private _engine: GameEngine
 
-	constructor(game: PongGame) {
-		this.pongGame = game;
+	constructor(engine: GameEngine) {
+		this._engine = engine;
 	}
 	
 	public drawPauseScreen(): void {
-		this.pongGame.ctx.fillStyle = 'blue';
-		this.pongGame.ctx.fillRect(300, 200, this.pongGame.canvas.width - 600, this.pongGame.canvas.height - 400);
+		this._engine._ctx.fillStyle = 'blue';
+		this._engine._ctx.fillRect(300, 200, this._engine._canvas.width - 600, this._engine._canvas.height - 400);
 		
-		this.pongGame.ctx.font = '250px Arial';
-		this.pongGame.ctx.fillStyle = 'white';
-		this.pongGame.ctx.textAlign = 'center';
-		this.pongGame.ctx.textBaseline = 'middle';
+		this._engine._ctx.font = '250px Arial';
+		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.textAlign = 'center';
+		this._engine._ctx.textBaseline = 'middle';
 		
-		this.pongGame.ctx.fillText('PAUSED', this.pongGame.canvas.width / 2, this.pongGame.canvas.height / 2 - 110);
-		this.pongGame.ctx.font = '75px Arial';
-		this.pongGame.ctx.fillText(
+		this._engine._ctx.fillText('PAUSED', this._engine._canvas.width / 2, this._engine._canvas.height / 2 - 110);
+		this._engine._ctx.font = '75px Arial';
+		this._engine._ctx.fillText(
 			'ESC to resume',
-			this.pongGame.canvas.width / 2,
-			this.pongGame.canvas.height / 2 + 75
+			this._engine._canvas.width / 2,
+			this._engine._canvas.height / 2 + 75
 		);
-		this.pongGame.ctx.fillText(
+		this._engine._ctx.fillText(
 			'ENTER to return to menu',
-			this.pongGame.canvas.width / 2,
-			this.pongGame.canvas.height / 2 + 200
+			this._engine._canvas.width / 2,
+			this._engine._canvas.height / 2 + 200
 		);
 	}
 }

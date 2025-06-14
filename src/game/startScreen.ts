@@ -1,24 +1,24 @@
-import PongGame from "./gameEngine.js";
+import GameEngine from "./gameEngine.js";
 
 export class StartScreen {
-	private pongGame: PongGame
+	private _engine: GameEngine
 
-	constructor(game: PongGame) {
-		this.pongGame = game;
+	constructor(engine: GameEngine) {
+		this._engine = engine;
 	}
 	
 	public drawStartScreen(): void {
-		this.pongGame.ctx.fillStyle = 'black';
-		this.pongGame.ctx.fillRect(0, 0, this.pongGame.canvas.width, this.pongGame.canvas.height);
+		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 		
-		this.pongGame.ctx.font = '250px Arial';
-		this.pongGame.ctx.fillStyle = 'white';
-		this.pongGame.ctx.textAlign = 'center';
-		this.pongGame.ctx.textBaseline = 'middle';
+		this._engine._ctx.font = '250px Arial';
+		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.textAlign = 'center';
+		this._engine._ctx.textBaseline = 'middle';
 		
-		this.pongGame.ctx.fillText('Pong Game', this.pongGame.canvas.width / 2, this.pongGame.canvas.height / 2);
+		this._engine._ctx.fillText('Pong Game', this._engine._canvas.width / 2, this._engine._canvas.height / 2);
 		
-		this.pongGame.ctx.font = '100px Arial';
-		this.pongGame.ctx.fillText('press enter to start', this.pongGame.canvas.width / 2, this.pongGame.canvas.height * 0.75);
+		this._engine._ctx.font = '100px Arial';
+		this._engine._ctx.fillText('press enter to start', this._engine._canvas.width / 2, this._engine._canvas.height * 0.75);
 	}
 }

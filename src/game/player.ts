@@ -1,20 +1,17 @@
-import { PaddleSide } from "../types.js";
 import { BotAI } from "./botAI.js";
 
 export class Player {
-	private	_name: string = "player";
+	private	_name: string = "default";
 	private	_position: number = 0;
 	private _isBot: boolean = true;
-	private _side: string = 'left';
 
-	public AI: BotAI;
+	public _AI: BotAI;
 
-	constructor(name: string, pos: number, isBot: boolean, side?: string) {
-		this._name = name;
-		this._position = pos;
-		this._isBot = isBot;
-		this.AI = new BotAI();
-		this._side = side || this._side;
+	constructor(name?: string, pos?: number, isBot?: boolean) {
+		this._name = name || this._name;
+		this._position = pos || this._position;
+		this._isBot = isBot || this._isBot;
+		this._AI = new BotAI();
 	}
 
 	public getName(): string {
@@ -23,10 +20,6 @@ export class Player {
 
 	public getPosition(): number {
 		return this._position;
-	}
-
-	public getSide(): string {
-		return this._side;
 	}
 
 	public getBot(): boolean {

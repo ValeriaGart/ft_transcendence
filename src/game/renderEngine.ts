@@ -2,14 +2,14 @@ import { BALL_RADIUS, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH }
 import { PongGame } from './pongGame.js';
 
 export class RenderEngine {
-	private pongGame: PongGame
+	private _pongGame: PongGame
 
 	constructor(game: PongGame) {
-		this.pongGame = game;
+		this._pongGame = game;
 	}
 
 	public renderFrame(): void {
-		this.pongGame.engine.ctx.clearRect(0, 0, this.pongGame.engine.canvas.width, this.pongGame.engine.canvas.height);
+		this._pongGame._engine._ctx.clearRect(0, 0, this._pongGame._engine._canvas.width, this._pongGame._engine._canvas.height);
 
 		this.drawBall();
 		this.drawPaddles();
@@ -19,79 +19,79 @@ export class RenderEngine {
 	}
 
 	private drawBall(): void {
-		const { x, y } = this.pongGame.gameStats.ballPosition;
+		const { x, y } = this._pongGame._gameStats.ballPosition;
 		const ballRadius = BALL_RADIUS;
 
-		this.pongGame.engine.ctx.beginPath();
-		this.pongGame.engine.ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-		this.pongGame.engine.ctx.fillStyle = 'white';
-		this.pongGame.engine.ctx.fill();
-		this.pongGame.engine.ctx.closePath();
+		this._pongGame._engine._ctx.beginPath();
+		this._pongGame._engine._ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+		this._pongGame._engine._ctx.fillStyle = 'white';
+		this._pongGame._engine._ctx.fill();
+		this._pongGame._engine._ctx.closePath();
 	}
 
 	private drawPaddles(): void {
 		const paddleWidth = PADDLE_WIDTH;
 		const paddleHeight = PADDLE_HEIGHT;
 
-		this.pongGame.engine.ctx.fillStyle = 'white';
-		this.pongGame.engine.ctx.fillRect(
+		this._pongGame._engine._ctx.fillStyle = 'white';
+		this._pongGame._engine._ctx.fillRect(
 			PADDLE_DISTANCE_FROM_BORDER,
-			this.pongGame.gameStats.paddlePositions.left,
+			this._pongGame._gameStats.paddlePositions.left,
 			paddleWidth,
 			paddleHeight
 		);
-		this.pongGame.engine.ctx.fillRect(
-			this.pongGame.engine.canvas.width - paddleWidth - PADDLE_DISTANCE_FROM_BORDER,
-			this.pongGame.gameStats.paddlePositions.right,
+		this._pongGame._engine._ctx.fillRect(
+			this._pongGame._engine._canvas.width - paddleWidth - PADDLE_DISTANCE_FROM_BORDER,
+			this._pongGame._gameStats.paddlePositions.right,
 			paddleWidth,
 			paddleHeight
 		);
 	}
 
 	private drawScore(): void {
-		this.pongGame.engine.ctx.font = '75px Arial';
-		this.pongGame.engine.ctx.fillStyle = 'white';
+		this._pongGame._engine._ctx.font = '75px Arial';
+		this._pongGame._engine._ctx.fillStyle = 'white';
 		
-		this.pongGame.engine.ctx.fillText(
-			this.pongGame.gameStats.scores.left.toString(),
-			(this.pongGame.engine.canvas.width / 8) * 3,
+		this._pongGame._engine._ctx.fillText(
+			this._pongGame._gameStats.scores.left.toString(),
+			(this._pongGame._engine._canvas.width / 8) * 3,
 			75
 		);
-		this.pongGame.engine.ctx.fillText(
-			this.pongGame.gameStats.scores.right.toString(),
-			(this.pongGame.engine.canvas.width / 8) * 5,
+		this._pongGame._engine._ctx.fillText(
+			this._pongGame._gameStats.scores.right.toString(),
+			(this._pongGame._engine._canvas.width / 8) * 5,
 			75
 		);
 	}
 
 	private drawNames(): void {
-		this.pongGame.engine.ctx.font = '50px Arial';
-		this.pongGame.engine.ctx.fillStyle = 'white';
+		this._pongGame._engine._ctx.font = '50px Arial';
+		this._pongGame._engine._ctx.fillStyle = 'white';
 		
-		this.pongGame.engine.ctx.fillText(
-			this.pongGame._p1.getName(),
-			this.pongGame.engine.canvas.width / 8,
+		this._pongGame._engine._ctx.fillText(
+			this._pongGame._p1.getName(),
+			this._pongGame._engine._canvas.width / 8,
 			75
 		);
-		this.pongGame.engine.ctx.fillText(
-			this.pongGame._p2.getName(),
-			(this.pongGame.engine.canvas.width / 8) * 7,
+		this._pongGame._engine._ctx.fillText(
+			this._pongGame._p2.getName(),
+			(this._pongGame._engine._canvas.width / 8) * 7,
 			75
 		);
 	}
 
 	private drawCenterLine(): void {
-		this.pongGame.engine.ctx.strokeStyle = '#565656';
-		this.pongGame.engine.ctx.lineWidth = 4;
+		this._pongGame._engine._ctx.strokeStyle = '#565656';
+		this._pongGame._engine._ctx.lineWidth = 4;
 
-		this.pongGame.engine.ctx.beginPath();
-		this.pongGame.engine.ctx.moveTo(this.pongGame.engine.canvas.width / 2, 0);
-		this.pongGame.engine.ctx.lineTo(this.pongGame.engine.canvas.width / 2, this.pongGame.engine.canvas.height);
-		this.pongGame.engine.ctx.stroke();
+		this._pongGame._engine._ctx.beginPath();
+		this._pongGame._engine._ctx.moveTo(this._pongGame._engine._canvas.width / 2, 0);
+		this._pongGame._engine._ctx.lineTo(this._pongGame._engine._canvas.width / 2, this._pongGame._engine._canvas.height);
+		this._pongGame._engine._ctx.stroke();
 
-		this.pongGame.engine.ctx.setLineDash([10, 10]);
-		this.pongGame.engine.ctx.stroke();
+		this._pongGame._engine._ctx.setLineDash([10, 10]);
+		this._pongGame._engine._ctx.stroke();
 
-		// this.pongGame.engine.ctx.setLineDash([]);
+		// this._pongGame._engine._ctx.setLineDash([]);
 	}
 }

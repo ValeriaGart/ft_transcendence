@@ -3,59 +3,59 @@ import { PongGame } from './pongGame.js';
 import { getRandomAngle, getRandomDirection } from './utils.js';
 
 export class CollisionHandler {
-	private pongGame: PongGame
+	private _pongGame: PongGame
 
 	constructor(pongGame: PongGame) {
-		this.pongGame = pongGame;
+		this._pongGame = pongGame;
 	}
 
 	public checkCollisions(): void {
 		//wall collisions
-		if (this.pongGame.gameStats.ballPosition.y <= 0 + BALL_RADIUS || this.pongGame.gameStats.ballPosition.y >= this.pongGame.engine.canvas.height - BALL_RADIUS) {
-				this.pongGame.gameStats.ballVelocity.y *= -1;
+		if (this._pongGame._gameStats.ballPosition.y <= 0 + BALL_RADIUS || this._pongGame._gameStats.ballPosition.y >= this._pongGame._engine._canvas.height - BALL_RADIUS) {
+				this._pongGame._gameStats.ballVelocity.y *= -1;
 		}
 
 		//paddle collisions
-		this.pongGame.paddleSides.forEach(side => {
-			const paddleY = this.pongGame.gameStats.paddlePositions[side];
+		this._pongGame._paddleSides.forEach(side => {
+			const paddleY = this._pongGame._gameStats.paddlePositions[side];
 			if (this.isBallHittingPaddle(side)) {
-				this.pongGame.gameStats.ballVelocity.x *= -1;
+				this._pongGame._gameStats.ballVelocity.x *= -1;
 			}
 		});
 
 		//goal collision
-		if (this.pongGame.gameStats.ballPosition.x <= 0) {
+		if (this._pongGame._gameStats.ballPosition.x <= 0) {
 			this.scorePoint('right');
 		}
-		if (this.pongGame.gameStats.ballPosition.x >= this.pongGame.engine.canvas.width) {
+		if (this._pongGame._gameStats.ballPosition.x >= this._pongGame._engine._canvas.width) {
 			this.scorePoint('left');
 		}
 	}
 
 	private isBallHittingPaddle(side: 'left' | 'right'): boolean {
-		const paddleY = this.pongGame.gameStats.paddlePositions[side];
+		const paddleY = this._pongGame._gameStats.paddlePositions[side];
 		const paddleHeight = PADDLE_HEIGHT;
 		const ballRadius = BALL_RADIUS;
 
-		const isWithinVerticalRange = this.pongGame.gameStats.ballPosition.y >= paddleY - ballRadius && this.pongGame.gameStats.ballPosition.y <= paddleY + paddleHeight + ballRadius;
+		const isWithinVerticalRange = this._pongGame._gameStats.ballPosition.y >= paddleY - ballRadius && this._pongGame._gameStats.ballPosition.y <= paddleY + paddleHeight + ballRadius;
 		const isTouchingPaddle = side === 'left'
-			? this.pongGame.gameStats.ballPosition.x <= ballRadius + PADDLE_DISTANCE_FROM_BORDER + PADDLE_WIDTH - 2
-			: this.pongGame.gameStats.ballPosition.x >= this.pongGame.engine.canvas.width - ballRadius - PADDLE_DISTANCE_FROM_BORDER - PADDLE_WIDTH + 2;
+			? this._pongGame._gameStats.ballPosition.x <= ballRadius + PADDLE_DISTANCE_FROM_BORDER + PADDLE_WIDTH - 2
+			: this._pongGame._gameStats.ballPosition.x >= this._pongGame._engine._canvas.width - ballRadius - PADDLE_DISTANCE_FROM_BORDER - PADDLE_WIDTH + 2;
 		
 		return isWithinVerticalRange && isTouchingPaddle;
 	}
 
 	private scorePoint(side: 'left' | 'right'): void {
-		this.pongGame.gameStats.scores[side]++;
-		this.pongGame.gameStats.ballPosition = {
-			x: this.pongGame.engine.canvas.width / 2,
-			y: this.pongGame.engine.canvas.height / 2
+		this._pongGame._gameStats.scores[side]++;
+		this._pongGame._gameStats.ballPosition = {
+			x: this._pongGame._engine._canvas.width / 2,
+			y: this._pongGame._engine._canvas.height / 2
 		};
 
 		const randomDirection = getRandomDirection()
 		const randomAngle = getRandomAngle();
 		const speed = BALL_SPEED;
-		this.pongGame.gameStats.ballVelocity = {
+		this._pongGame._gameStats.ballVelocity = {
 			x: randomDirection * Math.cos(randomAngle) * speed,
 			y: Math.sin(randomAngle) * speed
 		};

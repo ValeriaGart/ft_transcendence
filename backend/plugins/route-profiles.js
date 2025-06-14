@@ -25,36 +25,39 @@ async function routes (fastify, options) {
   });
 
 
-  // fastify.post('/users', {
-  //   schema : {
-  //     body: {
-  //       type: "object",
-  //       properties: {
-  //         email: { type: 'string', format: 'email' },
-  //         passwordString: { type: 'string', minLength: 6 },
-  //       },
-  //       required: ["email", "passwordString"],
-  //     },
-  //   },
-  // }, async (request, reply) => {
-  //   const { email, passwordString } = request.body;
+  fastify.put('/profiles', {
+    schema : {
+      body: {
+        type: "object",
+        properties: {
+          id: { type: 'integer' },
+          nickname: { type: 'string',  minLength: 2 },
+          profilePictureUrl: { type: 'string', format: "url" },
+          bio: { type: 'string', maxLength: 500}
+        },
+        required: ["id"],
+      },
+    },
+  }, async (request, reply) => {
+    const { id, nickname, profilePictureUrl, bio } = request.body;
 
 
-  //   return new Promise((resolve, reject) => {
-  //     db.run(
-  //       `INSERT INTO users (email, passwordHash, createdAt)
-  //       VALUES (?, ?, ?)`,
-  //       [email, passwordString, new Date().toISOString()],
-  //       function (err) {
-  //         if (err) {
-  //           reply.code(500);
-  //           return reject({ error: 'Database error', details: err.message });
-  //         }
-  //         resolve({ success: true, userId: this.lastID});
-  //       }
-  //     );
-  //   });
-  // });
+    return new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE profiles
+        SET nickname = ?, updatedAt = ?
+        WHERE id = ?`,
+        [nickname, new Date().toISOString(), id],
+        function (err) {
+          if (err) {
+            reply.code(500);
+            return reject({ error: 'Database error', details: err.message });
+          }
+          resolve({ success: true, userId: this.lastID});
+        }
+      );
+    });
+  });
   
   
 }

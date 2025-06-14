@@ -20,6 +20,7 @@ you can run `node index.js` to get the simplest webpage you've ever seen on your
 # fastify
 after setting up the dev container you can try running `node fastify2.js` (the other ones are work in progress). This will start the server on http://localhost:3000/ . from your terminal you can type some curl commands to call the API.
 
+## users routes
 ```
 # Get all users
 curl http://localhost:3000/users
@@ -39,6 +40,19 @@ curl -X PUT http://localhost:3000/users/1 \
 
 # Delete user
 curl -X DELETE http://localhost:3000/users/1
+```
+
+## profiles routes
+```
+# Get all profiles
+curl http://localhost:3000/profiles
+
+# Update entire profile per id (all fields required)
+curl -X PUT http://localhost:3000/profiles/1 \
+  -H "Content-Type: application/json" \
+  -d '{"nickname":"John Smith", "bio":"something about my life", "profilePictureUrl":"https://www.mypage.com/picture.jpeg"}'
+
+
 ```
 
 # sqlite

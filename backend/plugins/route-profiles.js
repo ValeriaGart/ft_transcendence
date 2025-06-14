@@ -25,35 +25,42 @@ async function routes (fastify, options) {
   });
 
 
-  fastify.put('/profiles', {
+  fastify.put('/profiles/:id', {
     schema : {
       body: {
         type: "object",
         properties: {
-          id: { type: 'integer' },
           nickname: { type: 'string',  minLength: 2 },
           profilePictureUrl: { type: 'string', format: "url" },
           bio: { type: 'string', maxLength: 500}
         },
-        required: ["id"],
+        required: [ "nickname", "profilePictureUrl", "bio" ],
       },
+      params: {
+        type: "object",
+        properties: {
+          id: { type: "number" }
+        },
+        required: [ "id" ]
+      }
     },
   }, async (request, reply) => {
-    const { id, nickname, profilePictureUrl, bio } = request.body;
+    const { nickname, profilePictureUrl, bio } = request.body;
+    const { id } = request.params;
 
 
     return new Promise((resolve, reject) => {
       db.run(
         `UPDATE profiles
-        SET nickname = ?, updatedAt = ?
+        SET nickname = ?, profilePictureUrl = ?, bio = ?, updatedAt = ?
         WHERE id = ?`,
-        [nickname, new Date().toISOString(), id],
+        [nickname, profilePictureUrl, bio, new Date().toISOString(), id],
         function (err) {
           if (err) {
             reply.code(500);
             return reject({ error: 'Database error', details: err.message });
           }
-          resolve({ success: true, userId: this.lastID});
+          resolve({ success: true, message: "Profile updated"});
         }
       );
     });

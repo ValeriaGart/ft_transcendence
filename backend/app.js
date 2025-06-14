@@ -1,9 +1,11 @@
 import fastify from 'fastify';
 import { db, initialize } from './plugins/db-connector.js';
-import routes from './plugins/route-users.js';
+import routesUser from './plugins/route-users.js';
+import routesProfiles from './plugins/route-profiles.js';
 
 const app = fastify({ logger: true });
-app.register(routes);
+app.register(routesUser);
+app.register(routesProfiles);
 
 async function bootstrap() {
   try {

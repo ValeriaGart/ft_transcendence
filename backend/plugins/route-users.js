@@ -57,6 +57,18 @@ async function routes (fastify, options) {
           resolve({ success: true, userId: this.lastID});
         }
       );
+      db.run(
+        `INSERT INTO profiles (updatedAt)
+        VALUES (?)`,
+        [new Date().toISOString()],
+        function (err) {
+          if (err) {
+            reply.code(500);
+            return reject({ error: 'Database error', details: err.message });
+          }
+          resolve({ success: true, userId: this.lastID});
+        }
+      );
     });
   });
   

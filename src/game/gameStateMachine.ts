@@ -23,6 +23,9 @@ export class GameStateMachine {
 			case GameState.START:
 				this.handleStartState();
 				break;
+			case GameState.OPPONENT:
+				this.handleOpponentSelectState();
+				break;
 			case GameState.SELECT:
 				this.handleSelectState();
 				break;
@@ -41,6 +44,10 @@ export class GameStateMachine {
 
 	private handleStartState() {
 		this._engine._startScreen.drawStartScreen();
+	}
+
+	private handleOpponentSelectState() {
+		this._engine._opponentScreen.drawOpponentScreen();
 	}
 
 	private handleSelectState() {

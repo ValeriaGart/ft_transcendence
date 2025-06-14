@@ -1,9 +1,10 @@
 import GameEngine from './gameEngine.js';
-import { GameState } from '../types.js';
+import { GameState, OpponentMode } from '../types.js';
 import { PADDLE_HEIGHT, PADDLE_SPEED } from '../constants.js';
 
 export class InputHandler {
 	private _engine: GameEngine;
+	private _oppMode: OpponentMode = OpponentMode.SINGLE;
 
 	constructor(engine: GameEngine) {
 		this._engine = engine;
@@ -17,6 +18,9 @@ export class InputHandler {
 		switch(this._engine._gameStateMachine.getCurrentState()) {
 			case GameState.START:
 				this.handleStartScreen(event);
+				break;
+			case GameState.OPPONENT:
+				this.handleOpponentScreen(event);
 				break;
 			case GameState.SELECT:
 				this.handleSelectScreen(event);
@@ -42,7 +46,7 @@ export class InputHandler {
 		switch (event.key) {
 			case 'Enter':
 				console.log("pressed start");
-				this._engine._gameStateMachine.transition(GameState.SELECT);
+				this._engine._gameStateMachine.transition(GameState.OPPONENT);
 				break;
 		}
 	}
@@ -62,7 +66,34 @@ export class InputHandler {
 			case 'Enter':
 				console.log("selected mode: ", this._engine._selectScreen._currentOption);
 				this._engine._gameStateMachine.transition(GameState.GAME);
-				this._engine.startGame(this._engine._selectScreen._currentOption);
+				this._engine.startGame(this._engine._selectScreen._currentOption, this._oppMode);
+				break;
+			case 'Escape':
+				this._engine._gameStateMachine.transition(GameState.OPPONENT);
+		}
+	}
+
+	private handleOpponentScreen(event: KeyboardEvent): void {
+		switch(event.key) {
+			case 'ArrowUp':
+				var currentIndex = this._engine._opponentScreen._options.indexOf(this._engine._opponentScreen._currentOption);
+				this._engine._opponentScreen._currentOption = this._engine._opponentScreen._options[
+					(currentIndex - 1 + this._engine._opponentScreen._options.length) % this._engine._opponentScreen._options.length];
+				break;
+			case 'ArrowDown':
+				var currentIndex = this._engine._opponentScreen._options.indexOf(this._engine._opponentScreen._currentOption);
+				this._engine._opponentScreen._currentOption = this._engine._opponentScreen._options[
+					(currentIndex + 1) % this._engine._opponentScreen._options.length];
+				break;
+			case 'Enter':
+				console.log("selected mode: ", this._engine._opponentScreen._currentOption);
+				this._oppMode = this._engine._opponentScreen._currentOption;
+				if (this._oppMode == OpponentMode.ONLINE) {
+					this._engine._gameStateMachine.transition(GameState.START);
+				}
+				else {
+					this._engine._gameStateMachine.transition(GameState.SELECT);
+				}
 				break;
 		}
 	}

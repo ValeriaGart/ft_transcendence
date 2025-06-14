@@ -1,5 +1,6 @@
 export enum GameState {
 	START,
+	OPPONENT,
 	SELECT,
 	GAME,
 	PAUSED,
@@ -16,7 +17,8 @@ export enum GameMode {
 
 export enum OpponentMode {
 	SINGLE = 'single player',
-	MULTI = 'multi player'
+	MULTI = 'local multi player',
+	ONLINE = 'online multi player'
 }
 
 export interface GameStats {

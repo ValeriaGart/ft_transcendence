@@ -1,4 +1,4 @@
-import { GameMode, GameState, OpponentMode } from '../types.js';
+import { GameMode, OpponentMode } from '../types.js';
 import { GameStateMachine } from './gameStateMachine.js';
 import { SelectScreen } from './selectScreen.js';
 import { StartScreen } from './startScreen.js';
@@ -6,6 +6,7 @@ import { InputHandler } from './inputHandler.js';
 import { PongGame } from './pongGame.js';
 import { Player } from './player.js';
 import { Tournament } from './tournament.js';
+import { OpponentScreen } from './opponentSelectScreen.js';
 
 export class GameEngine {
 	//standard classes
@@ -14,6 +15,7 @@ export class GameEngine {
 
 	//custom classes
 	public _startScreen: StartScreen;
+	public _opponentScreen: OpponentScreen
 	public _selectScreen: SelectScreen;
 	public _gameStateMachine: GameStateMachine;
 	public _pongGame: PongGame;
@@ -33,16 +35,14 @@ export class GameEngine {
 
 
 		this._startScreen = new StartScreen(this);
+		this._opponentScreen = new OpponentScreen(this);
 		this._selectScreen = new SelectScreen(this);
 		this._gameStateMachine = new GameStateMachine(this);
 		this._pongGame = new PongGame(this);
 		this._inputHandler = new InputHandler(this);
 	}
 	
-	public startGame(mode: GameMode): void {
-		//!!!	this needs to be passed from select screen	!!!
-		var oppMode: OpponentMode = OpponentMode.SINGLE;
-		//!!!	this needs to be passed from select screen	!!!
+	public startGame(mode: GameMode, oppMode: OpponentMode): void {
 		if (mode == GameMode.TOURNAMENT) {
 			this.tournamentHandler(mode, oppMode);
 		}
@@ -62,7 +62,13 @@ export class GameEngine {
 			this._tournament.battleOne();
 		}
 		if (oppMode == OpponentMode.MULTI) {
-			//todo
+			var p1: Player = new Player('Player1', 4, false);
+			var p2: Player = new Player('Player2', 4, false);
+			var p3: Player = new Player('Player3', 4, false);
+			var p4: Player = new Player('Player4', 4, false);
+
+			this._tournament = new Tournament(this, p1, p2, p3, p4, mode, oppMode);
+			this._tournament.battleOne();
 		}
 	}
 

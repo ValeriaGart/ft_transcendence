@@ -25,21 +25,26 @@ after setting up the dev container you can try running `node fastify2.js` (the o
 # Get all users
 curl http://localhost:3000/users
 
-# Get single user
+# Get single user (NOT IN USE ATM)
 curl http://localhost:3000/users/1
 
 # Create new user
 curl -X POST http://localhost:3000/users \
   -H "Content-Type: application/json" \
-  -d '{"name":"Alice Brown","email":"alice@example.com"}'
+  -d '{"email":"alice@example.com", "passwordString":"abcdef124"}'
 
-# Update user
+# Update user (NOT IN USE ATM)
 curl -X PUT http://localhost:3000/users/1 \
   -H "Content-Type: application/json" \
   -d '{"name":"John Smith","email":"john.smith@example.com"}'
 
-# Delete user
+# Delete user (NOT IN USE ATM)
 curl -X DELETE http://localhost:3000/users/1
+
+# Login as user
+curl -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com", "passwordString":"abcdef124"}'
 ```
 
 ## profiles routes

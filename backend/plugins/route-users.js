@@ -51,9 +51,9 @@ async function routes (fastify, options) {
         db.run('BEGIN TRANSACTION');
 
         db.run(
-          `INSERT INTO users (email, passwordHash, createdAt, updatedAt)
-          VALUES (?, ?, ?, ?)`,
-          [email, passwordString, new Date().toISOString(), new Date().toISOString()],
+          `INSERT INTO users (email, passwordHash)
+          VALUES (?, ?)`,
+          [email, passwordString],
           function (err) {
             if (err) {
               db.run('ROLLBACK')
@@ -63,9 +63,9 @@ async function routes (fastify, options) {
             }
 
             db.run(
-              `INSERT INTO profiles (updatedAt)
-              VALUES (?)`,
-              [new Date().toISOString()],
+              `INSERT INTO profiles (nickname, bio, profilePictureUrl)
+              VALUES (NULL, NULL, NULL)`,
+              [],
               function (err) {
                 if (err) {
                   reply.code(500);

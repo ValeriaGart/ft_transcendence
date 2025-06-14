@@ -52,9 +52,9 @@ async function routes (fastify, options) {
     return new Promise((resolve, reject) => {
       db.run(
         `UPDATE profiles
-        SET nickname = ?, profilePictureUrl = ?, bio = ?, updatedAt = ?
+        SET nickname = ?, profilePictureUrl = ?, bio = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?`,
-        [nickname, profilePictureUrl, bio, new Date().toISOString(), id],
+        [nickname, profilePictureUrl, bio, id],
         function (err) {
           if (err) {
             reply.code(500);

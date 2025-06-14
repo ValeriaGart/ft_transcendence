@@ -16,8 +16,8 @@ function initialize() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE,
         passwordHash TEXT,
-        createdAt TEXT,
-        updatedAt TEXT
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       `,
       (err) => {

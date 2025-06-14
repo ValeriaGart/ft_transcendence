@@ -16,6 +16,7 @@ async function routes (fastify, options) {
     return { hello: 'world' }
   });
 
+// get all users
   fastify.get('/users', async (request, reply) => {
     return new Promise((resolve, reject) => {
       db.all('SELECT * FROM users', (err, rows) => {
@@ -28,7 +29,7 @@ async function routes (fastify, options) {
     });
   });
 
-
+// register user
   fastify.post('/users', {
     schema : {
       body: {
@@ -45,28 +46,71 @@ async function routes (fastify, options) {
 
 
     return new Promise((resolve, reject) => {
+
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+
+        db.run(
+          `INSERT INTO users (email, passwordHash, createdAt)
+          VALUES (?, ?, ?)`,
+          [email, passwordString, new Date().toISOString()],
+          function (err) {
+            if (err) {
+              db.run('ROLLBACK')
+              console.error('User insert failed:', err.message);
+              reply.code(500);
+              return reject({ error: 'Database error', details: err.message });
+            }
+
+            db.run(
+              `INSERT INTO profiles (updatedAt)
+              VALUES (?)`,
+              [new Date().toISOString()],
+              function (err) {
+                if (err) {
+                  reply.code(500);
+                  console.error('Profile insert failed:', err.message);
+                  return reject({ error: 'Database error', details: err.message });
+
+                }
+
+                db.run('COMMIT');
+                console.log('Both inserts succeeded!');
+
+                resolve({ success: true, userId: this.lastID});
+              });
+            });
+          });
+        });
+      });
+  
+  // login user
+  fastify.post('/users/login', {
+    schema : {
+      body: {
+        type: "object",
+        properties: {
+          email: { type: 'string', format: 'email' },
+          passwordString: { type: 'string', minLength: 6 },
+        },
+        required: ["email", "passwordString"],
+      },
+    },
+  }, async (request, reply) => {
+    const { email, passwordString } = request.body;
+
+
+    return new Promise((resolve, reject) => {
       db.run(
-        `INSERT INTO users (email, passwordHash, createdAt)
-        VALUES (?, ?, ?)`,
-        [email, passwordString, new Date().toISOString()],
+        `SELECT * FROM users
+        WHERE email = ?`,
+        [email],
         function (err) {
           if (err) {
             reply.code(500);
             return reject({ error: 'Database error', details: err.message });
           }
-          resolve({ success: true, userId: this.lastID});
-        }
-      );
-      db.run(
-        `INSERT INTO profiles (updatedAt)
-        VALUES (?)`,
-        [new Date().toISOString()],
-        function (err) {
-          if (err) {
-            reply.code(500);
-            return reject({ error: 'Database error', details: err.message });
-          }
-          resolve({ success: true, userId: this.lastID});
+          resolve({ success: true});
         }
       );
     });

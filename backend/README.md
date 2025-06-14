@@ -25,7 +25,7 @@ after setting up the dev container you can try running `node fastify2.js` (the o
 # Get all users
 curl http://localhost:3000/users
 
-# Get single user (NOT IN USE ATM)
+# Get single user by ID
 curl http://localhost:3000/users/1
 
 # Create new user

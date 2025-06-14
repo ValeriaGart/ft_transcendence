@@ -29,6 +29,20 @@ async function routes (fastify, options) {
     });
   });
 
+// get user by ID
+  fastify.get('/users/:id', async (request, reply) => {
+    const { id } = request.params;
+    return new Promise((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE id = ?', [id], (err, row) => {
+        if (err) {
+          reply.code(500);
+          return reject({ error: 'Database error', details: err.message });
+        }
+        resolve (row);
+      });
+    });
+  });
+
 // register user
   fastify.post('/users', {
     schema : {

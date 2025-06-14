@@ -7,4 +7,7 @@ export default defineConfig({
 		jsxFactory: "myJSX",
 		jsxFragment: "Fragment",
 	},
+	server: {
+		host: "0.0.0.0",
+	}
 });

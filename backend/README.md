@@ -33,10 +33,10 @@ curl -X POST http://localhost:3000/users \
   -H "Content-Type: application/json" \
   -d '{"email":"alice@example.com", "passwordString":"abcdef124"}'
 
-# Update user (NOT IN USE ATM)
+# Update user 
 curl -X PUT http://localhost:3000/users/1 \
   -H "Content-Type: application/json" \
-  -d '{"name":"John Smith","email":"john.smith@example.com"}'
+  -d '{"email":"alice@newmail.com", "passwordString":"newpw123432"}'
 
 # Delete user (NOT IN USE ATM)
 curl -X DELETE http://localhost:3000/users/1
@@ -51,6 +51,9 @@ curl -X POST http://localhost:3000/users/login \
 ```
 # Get all profiles
 curl http://localhost:3000/profiles
+
+# Get profile by ID
+curl http://localhost:3000/profiles/1
 
 # Update entire profile per id (all fields required)
 curl -X PUT http://localhost:3000/profiles/1 \

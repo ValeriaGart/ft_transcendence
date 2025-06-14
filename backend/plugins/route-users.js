@@ -98,6 +98,54 @@ async function routes (fastify, options) {
         });
       });
   
+// update user information
+  fastify.put('/users/:id', {
+    schema : {
+      body: {
+        type: "object",
+        properties: {
+          email: { type: 'string', format: 'email' },
+          passwordString: { type: 'string', minLength: 6 },
+        },
+        required: ["email", "passwordString"],
+      },
+      params: {
+        type: "object",
+        properties: {
+          id: { type: "number" }
+        },
+        required: [ "id" ]
+      }
+    },
+  }, async (request, reply) => {
+    const { email, passwordString } = request.body;
+    const { id } = request.params;
+
+
+    return new Promise((resolve, reject) => {
+
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+
+        db.run(
+          `UPDATE users 
+          SET email = ? , passwordHash = ?, updatedAt = CURRENT_TIMESTAMP
+          WHERE id = ?`,
+          [email, passwordString, id],
+          function (err) {
+            if (err) {
+              db.run('ROLLBACK')
+              console.error('User information update failed:', err.message);
+              reply.code(500);
+              return reject({ error: 'Database error', details: err.message });
+            }
+            db.run('COMMIT');
+            resolve({ success: true, userId: this.lastID});
+            });
+          });
+        });
+      });
+  
   // login user
   fastify.post('/users/login', {
     schema : {

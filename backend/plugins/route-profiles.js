@@ -12,6 +12,7 @@ import { db } from './db-connector.js';
 
 async function routes (fastify, options) {
 
+  // get all profiles
   fastify.get('/profiles', async (request, reply) => {
     return new Promise((resolve, reject) => {
       db.all('SELECT * FROM profiles', (err, rows) => {
@@ -20,6 +21,20 @@ async function routes (fastify, options) {
           return reject({ error: 'Database error', details: err.message });
         }
         resolve (rows);
+      });
+    });
+  });
+
+  // get profiles by ID 
+  fastify.get('/profiles/:id', async (request, reply) => {
+    const { id } = request.params;
+    return new Promise((resolve, reject) => {
+      db.get('SELECT * FROM profiles where id = ?', [id], (err, row) => {
+        if (err) {
+          reply.code(500);
+          return reject({ error: 'Database error', details: err.message });
+        }
+        resolve (row);
       });
     });
   });

@@ -27,6 +27,7 @@ type EventBinding = {
 
 // Pre-load all component templates from the filesystem
 const templates = import.meta.glob<string>('/src/components/*/template.html', { eager: true, query: '?raw', import: 'default' });
+console.log('Loaded templates:', Object.keys(templates));
 
 /**
  * Base Component class that provides core functionality for UI components
@@ -151,13 +152,16 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
     
     // Find the template path that matches this component
     const templatePath = `/src/components/${componentName}/template.html`;
+    console.log('Loading template from:', templatePath);
     const template = templates[templatePath];
     
     if (!template) {
       throw new Error(`Template not found for component: ${componentName}`);
     }
 
+    console.log('Processing template with state:', this.state);
     this.element.innerHTML = this.processTemplate(template);
+    console.log('Processed template result:', this.element.innerHTML);
     
     // Re-bind all elements with their current values
     this.boundElements.forEach((element, property) => {

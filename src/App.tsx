@@ -1,6 +1,6 @@
 import { myJSX } from './util/mini-jsx';
-import { AppOne } from './pageOne/AppOne';
-import { LoadingPage } from './pageOne/LoadingPage';
+import { AppOne } from './legacy/AppOne';
+import { LoadingPage } from './legacy/LoadingPage';
 
 export function App() {
   const handleEnterClick = () => {

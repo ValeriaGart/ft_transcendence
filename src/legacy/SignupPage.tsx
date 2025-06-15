@@ -1,9 +1,9 @@
 import { myJSX } from '../util/mini-jsx';
-import { SoundButton } from '../global/SoundButton';
+import { SoundButton } from './global/SoundButton';
 import { useState } from '../util/state/state';
-import { EmailInput } from '../global/EmailInput';
-import { PasswordInput } from '../global/PasswordInput';
-import { Error } from '../global/Error';
+import { EmailInput } from './global/EmailInput';
+import { PasswordInput } from './global/PasswordInput';
+import { Error } from './global/Error';
 
 interface SignupPageProps {
     onEnterClick: () => void;

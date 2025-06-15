@@ -1,5 +1,5 @@
 import { myJSX } from '../util/mini-jsx';
-import { SoundButton } from '../global/SoundButton';
+import { SoundButton } from './global/SoundButton';
 
 interface SigninPageProps {
     onEnterClick: () => void;

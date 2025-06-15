@@ -4,7 +4,7 @@ import { SigninScreen } from './SigninScreen';
 import { SigninPage } from './SigninPage';
 import { SignupPage } from './SignupPage';
 import { useState } from '../util/state/state';
-import { SoundButton } from '../global/SoundButton';
+import { SoundButton } from './global/SoundButton';
 
 interface AppOneProps {
     onEnterClick: () => void;

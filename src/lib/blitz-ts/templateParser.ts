@@ -64,10 +64,10 @@ export function parseTemplate(template: string, state: Record<string, any>): str
   });
 
   // Then handle conditional rendering with else support
-  let lastIfCondition: boolean | null = null;
-  let skipDepth = 0;
   let result = '';
   let buffer = '';
+  let currentCondition: boolean | null = null;
+  let skipContent = false;
 
   // Split the template into parts: tags and text
   const parts = processedTemplate.split(/(<[^>]+>)/);
@@ -80,31 +80,25 @@ export function parseTemplate(template: string, state: Record<string, any>): str
       if (match) {
         const [_, tagName, condition, rest, closingTag, normalTag] = match;
 
-        // Handle nested conditional blocks
-        if (skipDepth > 0) {
-          if (closingTag) {
-            skipDepth--;
-          } else if (normalTag && !normalTag.startsWith('/')) {
-            skipDepth++;
-          }
-          continue;
-        }
-
         if (closingTag) {
-          if (buffer) {
-            result += buffer;
-            buffer = '';
+          if (!skipContent) {
+            if (buffer) {
+              result += buffer;
+              buffer = '';
+            }
+            result += part;
           }
-          result += part;
           continue;
         }
 
         if (normalTag) {
-          if (buffer) {
-            result += buffer;
-            buffer = '';
+          if (!skipContent) {
+            if (buffer) {
+              result += buffer;
+              buffer = '';
+            }
+            result += part;
           }
-          result += part;
           continue;
         }
 
@@ -112,11 +106,14 @@ export function parseTemplate(template: string, state: Record<string, any>): str
         if (condition) {
           // This is a blitz-if
           const trimmedCondition = condition.trim();
-          const value = trimmedCondition.split('.').reduce((obj: any, prop: string) => obj?.[prop], state);
-          lastIfCondition = Boolean(value);
-          if (!lastIfCondition) {
-            skipDepth = 1;
-          } else {
+          console.log('Processing blitz-if condition:', trimmedCondition, 'with state:', state);
+          const value = state[trimmedCondition];
+          console.log('Resolved condition value:', value);
+          currentCondition = Boolean(value);
+          console.log('Boolean condition result:', currentCondition);
+          skipContent = !currentCondition;
+          
+          if (!skipContent) {
             if (buffer) {
               result += buffer;
               buffer = '';
@@ -125,7 +122,7 @@ export function parseTemplate(template: string, state: Record<string, any>): str
           }
         } else {
           // This is a blitz-else
-          if (lastIfCondition === null) {
+          if (currentCondition === null) {
             console.warn('blitz-else used without a preceding blitz-if');
             if (buffer) {
               result += buffer;
@@ -133,34 +130,34 @@ export function parseTemplate(template: string, state: Record<string, any>): str
             }
             result += part;
           } else {
-            const shouldShow = !lastIfCondition;
-            lastIfCondition = null; // Reset for next if-else chain
-            if (!shouldShow) {
-              skipDepth = 1;
-            } else {
+            skipContent = currentCondition;
+            if (!skipContent) {
               if (buffer) {
                 result += buffer;
                 buffer = '';
               }
               result += part;
             }
+            currentCondition = null; // Reset for next if-else chain
           }
         }
       } else {
-        if (buffer) {
-          result += buffer;
-          buffer = '';
+        if (!skipContent) {
+          if (buffer) {
+            result += buffer;
+            buffer = '';
+          }
+          result += part;
         }
-        result += part;
       }
-    } else if (skipDepth === 0) {
+    } else if (!skipContent) {
       // This is text content, only add if we're not skipping
       buffer += part;
     }
   }
 
   // Add any remaining buffer content
-  if (buffer) {
+  if (buffer && !skipContent) {
     result += buffer;
   }
 

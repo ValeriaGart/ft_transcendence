@@ -1,5 +1,5 @@
-import { registerComponent } from './componentRegistry';
 import { Component } from './Component';
+import { registerComponent } from './componentRegistry';
 
 /**
  * Type definition for component modules
@@ -39,7 +39,7 @@ interface ComponentModule {
  */
 export async function autoRegisterComponents() {
   // Get all component directories using Vite's glob import
-  const componentModules = import.meta.glob('../components/*/index.ts', { eager: true });
+  const componentModules = import.meta.glob('/src/components/*/index.ts', { eager: true });
   
   for (const [path, module] of Object.entries(componentModules)) {
     const componentModule = module as ComponentModule;

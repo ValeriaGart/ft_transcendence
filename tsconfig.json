@@ -25,6 +25,13 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+
+    /* Path Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@blitz-ts/*": ["src/lib/blitz-ts/*"],
+      "@blitz-ts": ["src/lib/blitz-ts"]
+    }
   },
   "include": ["src"]
 }

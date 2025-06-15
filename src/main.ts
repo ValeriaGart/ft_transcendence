@@ -1,7 +1,5 @@
 import "./global.css";
-import { Router } from "./lib/blitz-ts/router";
-
-import { autoRegisterComponents } from "./lib/blitz-ts/autoRegister";
+import { Router, autoRegisterComponents } from "@blitz-ts";
 import { IndexPage } from "./components/IndexPage";
 
 // Register all components automatically

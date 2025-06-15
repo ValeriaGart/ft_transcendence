@@ -1,12 +1,16 @@
 // our-first-route.js
 
-/**
- * Encapsulates the routes
- * @param {FastifyInstance} fastify  Encapsulated Fastify Instance
- * @param {Object} options plugin options, refer to https://fastify.dev/docs/latest/Reference/Plugins/#plugin-options
- */
+// /**
+//  * Encapsulates the routes
+//  * @param {FastifyInstance} fastify  Encapsulated Fastify Instance
+//  * @param {Object} options plugin options, refer to https://fastify.dev/docs/latest/Reference/Plugins/#plugin-options
+//  */
 
-const { db } = require('./db-connector');
+
+
+import { db, initialize } from './db-connector.js';
+
+// const { db } = require('./db-connector');
 
 async function routes (fastify, options) {
 
@@ -61,5 +65,4 @@ async function routes (fastify, options) {
   
 }
 
-
-module.exports = routes;
+export default routes;

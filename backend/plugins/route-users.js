@@ -7,6 +7,7 @@
 //  */
 
 import { db, initialize } from './db-connector.js';
+import { hashPassword, verifyPassword } from './password-utils.js';
 
 // const { db } = require('./db-connector');
 
@@ -58,45 +59,54 @@ async function routes (fastify, options) {
   }, async (request, reply) => {
     const { email, passwordString } = request.body;
 
+	try {
+	  // Hash the password before storing it
+	  const hashedPassword = await hashPassword(passwordString);
+	  return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
+		db.serialize(() => {
+		  db.run('BEGIN TRANSACTION');
 
-      db.serialize(() => {
-        db.run('BEGIN TRANSACTION');
+		  db.run(
+		    `INSERT INTO users (email, passwordHash)
+		    VALUES (?, ?)`,
+			[email, hashedPassword],
+			function (err) {
+			  if (err) {
+				db.run('ROLLBACK')
+				console.error('User insert failed:', err.message);
+				if (err.code === 'SQLITE_CONSTRAINT' && err.message.includes('UNIQUE')) {
+					reply.code(409);
+					return reject({ error: 'Email already exists' });
+				}
+				reply.code(500);
+				return reject({ error: 'Database error', details: err.message });
+			  }
 
-        db.run(
-          `INSERT INTO users (email, passwordHash)
-          VALUES (?, ?)`,
-          [email, passwordString],
-          function (err) {
-            if (err) {
-              db.run('ROLLBACK')
-              console.error('User insert failed:', err.message);
-              reply.code(500);
-              return reject({ error: 'Database error', details: err.message });
-            }
+			  db.run(
+			    `INSERT INTO profiles (nickname, bio, profilePictureUrl)
+				VALUES (NULL, NULL, NULL)`,
+				[],
+				function (err) {
+				  if (err) {
+				    reply.code(500);
+				    console.error('Profile insert failed:', err.message);
+					return reject({ error: 'Database error', details: err.message });
+				  }
 
-            db.run(
-              `INSERT INTO profiles (nickname, bio, profilePictureUrl)
-              VALUES (NULL, NULL, NULL)`,
-              [],
-              function (err) {
-                if (err) {
-                  reply.code(500);
-                  console.error('Profile insert failed:', err.message);
-                  return reject({ error: 'Database error', details: err.message });
+				  db.run('COMMIT');
+				  console.log('Both inserts succeeded!');
 
-                }
-
-                db.run('COMMIT');
-                console.log('Both inserts succeeded!');
-
-                resolve({ success: true, userId: this.lastID});
-              });
-            });
-          });
-        });
-      });
+				  resolve({ success: true, userId: this.lastID});
+				});
+			});
+		});
+		});
+	} catch (error) {
+	  reply.code(500);
+	  return { error: 'Password hashing failed', details: error.message };
+	}
+  });
   
 // update user information
   fastify.put('/users/:id', {
@@ -121,30 +131,37 @@ async function routes (fastify, options) {
     const { email, passwordString } = request.body;
     const { id } = request.params;
 
+	try {
+	  // Hash the password before updating it
+	  const hashedPassword = await hashPassword(passwordString);
 
-    return new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
 
-      db.serialize(() => {
-        db.run('BEGIN TRANSACTION');
+        db.serialize(() => {
+          db.run('BEGIN TRANSACTION');
 
-        db.run(
-          `UPDATE users 
-          SET email = ? , passwordHash = ?, updatedAt = CURRENT_TIMESTAMP
-          WHERE id = ?`,
-          [email, passwordString, id],
-          function (err) {
-            if (err) {
-              db.run('ROLLBACK')
-              console.error('User information update failed:', err.message);
-              reply.code(500);
-              return reject({ error: 'Database error', details: err.message });
-            }
-            db.run('COMMIT');
-            resolve({ success: true, userId: this.lastID});
+          db.run(
+            `UPDATE users 
+            SET email = ? , passwordHash = ?, updatedAt = CURRENT_TIMESTAMP
+            WHERE id = ?`,
+            [email, hashedPassword, id],
+            function (err) {
+              if (err) {
+                db.run('ROLLBACK')
+                console.error('User information update failed:', err.message);
+                reply.code(500);
+                return reject({ error: 'Database error', details: err.message });
+              }
+              db.run('COMMIT');
+              resolve({ success: true, userId: this.lastID});
+              });
             });
-          });
         });
-      });
+	} catch (error) {
+	  reply.code(500);
+	  return { error: 'Password hashing failed', details: error.message };
+	}
+  });
   
   // login user
   fastify.post('/users/login', {
@@ -167,7 +184,7 @@ async function routes (fastify, options) {
         `SELECT * FROM users
         WHERE email = ?`,
         [email],
-        function (err, row)  {
+        async function (err, row)  {
           if (err) {
             reply.code(500);
             return reject({ error: 'Database error', details: err.message });
@@ -175,26 +192,29 @@ async function routes (fastify, options) {
           if (!row){
             return reply.code(409).send({ error: 'Login Failure: Email not in Database' });
           }
-          db.get(
-            `SELECT * FROM users
-            WHERE email = ? and passwordHash = ?`,
-            [email, passwordString],
-            function (err, row)  {
-              if (err) {
-                reply.code(500);
-                return reject({ error: 'Database error', details: err.message });
-              }
-              if (!row){
-                return reply.code(401).send({ error: 'Login Failure: Password doesn\'t match up' });
-              }
-              
-              resolve({ success: true, message: "Login Authentication successful"});
-            }
-          );
-          
-        }
-      );
-    });
+
+		  try {
+			// Verify the password against the stored hash
+			const isPasswordValid = await verifyPassword(row.passwordHash, passwordString);
+
+			if (!isPasswordValid) {
+				reply.code(401);
+				return reject({ error: 'Login Failure: Password doesn\'t match up' });
+			}
+
+			const {passwordHash, ...userData} = row; // Exclude passwordHash from the response
+			resolve({
+				success: true,
+				message: "Login Authentication successful",
+				user: userData
+			});
+		  } catch (error) {
+			reply.code(500);
+			return reject({ error: 'Password verification failed', details: error.message });
+		  }
+          }
+        );
+      });
   });
   
   

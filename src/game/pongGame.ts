@@ -1,6 +1,6 @@
 import GameEngine from './gameEngine.js';
 import { GameMode, GameState, GameStats, OpponentMode, PaddleSide } from '../types.js';
-import { BALL_SPEED, PADDLE_HEIGHT } from '../constants.js';
+import { BALL_SPEED, PADDLE_HEIGHT, PADDLE_SPEED } from '../constants.js';
 import { CollisionHandler } from './collisionDetection.js';
 import { RenderEngine } from './renderEngine.js';
 import { getRandomAngle, getRandomDirection } from './utils.js';
@@ -33,6 +33,7 @@ export class PongGame {
 		this._mode = mode || this._mode
 		this._oppMode = opponent || this._oppMode;
 		this._p1 = p1 || new Player();
+		this._p1.setSide('left');
 		this._p2 = p2 || new Player();
 		this._round = round || this._round;
 
@@ -44,8 +45,11 @@ export class PongGame {
 		const speed = BALL_SPEED;
 		this._gameStats = {
 			ballPosition: { x: this._engine._canvas.width / 2, y: this._engine._canvas.height / 2},
-			ballVelocity: { x: randomDirection * Math.cos(randomAngle) * speed, y: Math.sin(randomAngle) * speed},
+			// ballVelocity: { x: randomDirection * Math.cos(randomAngle) * speed, y: Math.sin(randomAngle) * speed},
+			ballVelocity: { x: -1 * speed, y: 0 * speed},
 			paddlePositions: { left: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2), right: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2)},
+			paddleDirection: {left: 0, right: 0},
+			paddleVelocity: { left :0, right: 0},
 			scores: { left: 0, right: 0}
 		};
 		this._collisionHandler = new CollisionHandler(this);
@@ -55,10 +59,24 @@ export class PongGame {
 	}
 
 	public drawGameScreen(): void {
+		this._gameStats.paddleVelocity.left = this._gameStats.paddleDirection.left * PADDLE_SPEED;
+		if (this._gameStats.paddlePositions.left + this._gameStats.paddleVelocity.left > 0
+		&& this._gameStats.paddlePositions.left + this._gameStats.paddleVelocity.left < this._engine._canvas.height - PADDLE_HEIGHT) {
+			this._gameStats.paddlePositions.left += this._gameStats.paddleVelocity.left;
+		}
+		this._gameStats.paddleVelocity.right = this._gameStats.paddleDirection.right * PADDLE_SPEED;
+		if (this._gameStats.paddlePositions.right + this._gameStats.paddleVelocity.right > 0
+		&& this._gameStats.paddlePositions.right + this._gameStats.paddleVelocity.right < this._engine._canvas.height - PADDLE_HEIGHT) {
+			this._gameStats.paddlePositions.right += this._gameStats.paddleVelocity.right;
+		}
+
 		this._gameStats.ballPosition.x += this._gameStats.ballVelocity.x;
 		this._gameStats.ballPosition.y += this._gameStats.ballVelocity.y;
 
-		if (this._oppMode == OpponentMode.SINGLE) {
+		if (this._p1.getBot() == true) {
+			this._p1._AI.update(this);
+		}
+		if (this._p2.getBot() == true) {
 			this._p2._AI.update(this);
 		}
 

@@ -5,6 +5,7 @@ node_modules
 dist
 .cache
 .parcel-cache
+.parcel-cache/*
 
 #npm
 package-lock.json

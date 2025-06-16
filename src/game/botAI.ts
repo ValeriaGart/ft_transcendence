@@ -2,33 +2,55 @@ import { PADDLE_HEIGHT, PADDLE_SPEED } from "../constants.js";
 import { PongGame } from "./pongGame.js";
 
 export class BotAI{
-	constructor() {}
+	private _side: string;
+
+	constructor(side: string) {
+		this._side = side;
+	}
+
+	private generateKeyPress(evenType: string): void {
+		const event = new KeyboardEvent('keydown', { key: evenType, cancelable: true, bubbles: true });
+
+		document.dispatchEvent(event);
+	}
 
 	public update(pongGame: PongGame): void {
-		const _ballPosition = pongGame._gameStats.ballPosition;
-		const _paddlePosition = pongGame._gameStats.paddlePositions.right;
-		var newPos: number;
+		const ballPosition = pongGame._gameStats.ballPosition;
 
-		if (_ballPosition.x < pongGame._engine._canvas.width / 2) {
-			return;
-		}
-
-		if (_ballPosition.y > _paddlePosition + PADDLE_HEIGHT / 2) {
-			newPos = _paddlePosition + (2);
-		}
-		else if (_ballPosition.y < _paddlePosition - PADDLE_HEIGHT / 2) {
-			newPos = _paddlePosition - (2)
-		}
-		else return;
-
-		if (newPos < 0) {
-			pongGame._gameStats.paddlePositions.right = 0;
-		}
-		else if (newPos > pongGame._engine._canvas.height - PADDLE_HEIGHT) {
-			pongGame._gameStats.paddlePositions.right = pongGame._engine._canvas.height - PADDLE_HEIGHT;
+		var paddlePosition: number  = 0;
+		if (this._side == 'left') {
+			paddlePosition = pongGame._gameStats.paddlePositions.left;
 		}
 		else {
-			pongGame._gameStats.paddlePositions.right = newPos;
+			paddlePosition = pongGame._gameStats.paddlePositions.right;
 		}
+
+		if ((this._side == 'left' && pongGame._gameStats.ballVelocity.x > 0)
+			|| (this._side == 'right' && pongGame._gameStats.ballVelocity.x < 0)) {
+				return;
+		}
+
+		if (ballPosition.y > paddlePosition + PADDLE_HEIGHT){// - PADDLE_HEIGHT / 3) {
+			if (this._side == 'left') {
+				this.generateKeyPress('s');
+			}
+			else {
+				this.generateKeyPress('ArrowDown');
+			}
+		}
+		else if (ballPosition.y < paddlePosition){// + PADDLE_HEIGHT / 3) {
+			if (this._side == 'left') {
+				this.generateKeyPress('w');
+			}
+			else {
+				this.generateKeyPress('ArrowUp');
+			}
+		}
+		else return;
+	}
+
+	public setSide(side: string): void {
+		this._side = side;
+		console.log('ai side set to:', this._side);
 	}
 }

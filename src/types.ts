@@ -25,6 +25,8 @@ export interface GameStats {
 	ballPosition: { x: number; y: number};
 	ballVelocity: { x: number; y: number};
 	paddlePositions: { left: number; right: number};
+	paddleVelocity: { left: number; right: number};
+	paddleDirection: { left: number; right: number};
 	scores: { left: number; right: number};
 }
 

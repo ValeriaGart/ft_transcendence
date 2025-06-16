@@ -17,9 +17,14 @@ export class CollisionHandler {
 
 		//paddle collisions
 		this._pongGame._paddleSides.forEach(side => {
-			const paddleY = this._pongGame._gameStats.paddlePositions[side];
 			if (this.isBallHittingPaddle(side)) {
 				this._pongGame._gameStats.ballVelocity.x *= -1;
+				if (side == 'left') {
+					this._pongGame._gameStats.ballVelocity.y += this._pongGame._gameStats.paddleVelocity.left / 4;
+				}
+				if (side == 'right') {
+					this._pongGame._gameStats.ballVelocity.y += this._pongGame._gameStats.paddleVelocity.right / 4;
+				}
 			}
 		});
 
@@ -39,8 +44,8 @@ export class CollisionHandler {
 
 		const isWithinVerticalRange = this._pongGame._gameStats.ballPosition.y >= paddleY - ballRadius && this._pongGame._gameStats.ballPosition.y <= paddleY + paddleHeight + ballRadius;
 		const isTouchingPaddle = side === 'left'
-			? this._pongGame._gameStats.ballPosition.x <= ballRadius + PADDLE_DISTANCE_FROM_BORDER + PADDLE_WIDTH - 2
-			: this._pongGame._gameStats.ballPosition.x >= this._pongGame._engine._canvas.width - ballRadius - PADDLE_DISTANCE_FROM_BORDER - PADDLE_WIDTH + 2;
+			? (this._pongGame._gameStats.ballPosition.x <= ballRadius + PADDLE_DISTANCE_FROM_BORDER + PADDLE_WIDTH - 2) && (this._pongGame._gameStats.ballPosition.x >= PADDLE_DISTANCE_FROM_BORDER)
+			: (this._pongGame._gameStats.ballPosition.x >= this._pongGame._engine._canvas.width - ballRadius - PADDLE_DISTANCE_FROM_BORDER - PADDLE_WIDTH + 2) && (this._pongGame._gameStats.ballPosition.x <= this._pongGame._engine._canvas.width - PADDLE_DISTANCE_FROM_BORDER);
 		
 		return isWithinVerticalRange && isTouchingPaddle;
 	}

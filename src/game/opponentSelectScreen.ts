@@ -63,13 +63,13 @@ export class OpponentScreen {
 				break;
 		}
 		this._engine._ctx.fillText(
-			'==>',
-			this._engine._canvas.width / 2 - 375,
+			'>',
+			this._engine._canvas.width / 2 - 330,
 			this._arrowHeight
 		);
 		this._engine._ctx.fillText(
-			'<==',
-			this._engine._canvas.width / 2 + 375,
+			'<',
+			this._engine._canvas.width / 2 + 330,
 			this._arrowHeight
 		);
 	}

@@ -1,6 +1,5 @@
 import GameEngine from './gameEngine.js';
 import { GameState, OpponentMode } from '../types.js';
-import { PADDLE_HEIGHT, PADDLE_SPEED } from '../constants.js';
 
 export class InputHandler {
 	private _engine: GameEngine;
@@ -12,6 +11,7 @@ export class InputHandler {
 
 	public setupEventListeners(): void {
 		window.addEventListener('keydown', this.handleKeyDown.bind(this));
+		window.addEventListener('keyup', this.handleKeyUp.bind(this));
 	}
 
 	private handleKeyDown(event: KeyboardEvent): void {
@@ -39,6 +39,14 @@ export class InputHandler {
 				break;
 			case GameState.TOURNAMENT_MIDDLE:
 				this.handleTournamentMiddle(event);
+		}
+	}
+
+	private handleKeyUp(event:KeyboardEvent): void {
+		switch(this._engine._gameStateMachine.getCurrentState()) {
+			case GameState.GAME:
+				this.handleGameScreenDown(event);
+				break;
 		}
 	}
 
@@ -101,43 +109,37 @@ export class InputHandler {
 	private handleGameScreen(event: KeyboardEvent): void {
 		switch(event.key) {
 			case 'w':
-				if (this._engine._pongGame._p1.getBot() == false) {
-					this.movePaddle('left', -PADDLE_SPEED);
-				}
+				this._engine._pongGame._gameStats.paddleDirection.left = -1;
 				break;
 			case 's':
-				if (this._engine._pongGame._p1.getBot() == false) {
-					this.movePaddle('left', PADDLE_SPEED);
-				}
+				this._engine._pongGame._gameStats.paddleDirection.left = 1;
 				break;
 			case 'ArrowUp':
-				if (this._engine._pongGame._p2.getBot() == false) {
-					this.movePaddle('right', -PADDLE_SPEED);
-				}
+				this._engine._pongGame._gameStats.paddleDirection.right = -1;
 				break;
 			case 'ArrowDown':
-				if (this._engine._pongGame._p2.getBot() == false) {
-					this.movePaddle('right', PADDLE_SPEED);
-				}
+				this._engine._pongGame._gameStats.paddleDirection.right = 1;
 				break;
 			case 'Escape':
 				this._engine._gameStateMachine.transition(GameState.PAUSED);
 				break;
-			}
 		}
+	}
 
-	private movePaddle(side: 'left' | 'right', direction: number): void {
-		const currentPosition = this._engine._pongGame._gameStats.paddlePositions[side];
-		const newPosition = currentPosition + (direction);
-		
-		if (newPosition < 0) {
-			this._engine._pongGame._gameStats.paddlePositions[side] = 0;
-		}
-		else if(newPosition > this._engine._pongGame._engine._canvas.height - PADDLE_HEIGHT) {
-			this._engine._pongGame._gameStats.paddlePositions[side] = this._engine._pongGame._engine._canvas.height - PADDLE_HEIGHT;
-		}
-		else {
-			this._engine._pongGame._gameStats.paddlePositions[side] = newPosition;
+	private handleGameScreenDown(event: KeyboardEvent): void {
+		switch(event.key) {
+			case 'w':
+				this._engine._pongGame._gameStats.paddleDirection.left = 0;
+				break;
+			case 's':
+				this._engine._pongGame._gameStats.paddleDirection.left = 0;
+				break;
+			case 'ArrowUp':
+				this._engine._pongGame._gameStats.paddleDirection.right = 0;
+				break;
+			case 'ArrowDown':
+				this._engine._pongGame._gameStats.paddleDirection.right = 0;
+				break;
 		}
 	}
 	

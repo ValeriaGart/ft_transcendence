@@ -1,4 +1,4 @@
-type ComponentConstructor = new (props?: any) => any;
+type ComponentConstructor = new (props?: any, children?: HTMLElement[]) => any;
 
 class ComponentRegistry {
   private static components: Map<string, ComponentConstructor> = new Map();
@@ -32,11 +32,39 @@ function createCustomElementClass(ComponentClass: ComponentConstructor) {
         const value = this.parseAttributeValue(attr.value);
         props[attr.name] = value;
       });
-      this.component = new ComponentClass(props);
+
+      // Create child components from child elements
+      const children: HTMLElement[] = [];
+      Array.from(this.children).forEach(child => {
+        if (child instanceof HTMLElement) {
+          children.push(child);
+        }
+      });
+
+      this.component = new ComponentClass(props, children);
     }
 
     connectedCallback() {
+      // Store the original children
+      const originalChildren = Array.from(this.children);
+      
+      // Clear the element
+      while (this.firstChild) {
+        this.removeChild(this.firstChild);
+      }
+
+      // Mount the component
       this.component.mount(this);
+
+      // Wait for the next frame to ensure the component is rendered
+      requestAnimationFrame(() => {
+        // Find the slot element
+        const slot = this.querySelector('blitz-slot');
+        if (slot) {
+          // Replace the slot with the original children
+          slot.replaceWith(...originalChildren);
+        }
+      });
     }
 
     disconnectedCallback() {

@@ -52,6 +52,9 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
   /** The component's props passed from parent */
   protected props: Props;
   
+  /** The component's children */
+  protected children: HTMLElement[] = [];
+  
   /** Map of bound elements for data binding */
   private boundElements: Map<string, HTMLElement> = new Map();
   
@@ -70,13 +73,66 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
   /**
    * Creates a new Component instance
    * @param props - Initial props for the component
+   * @param children - Child elements to be rendered inside this component
    */
-  constructor(props: Props = {} as Props) {
-    this.element = document.createElement('div');
+  constructor(props: Props = {} as Props, children: HTMLElement[] = []) {
+    // Create a temporary div to parse the template
+    const tempDiv = document.createElement('div');
     this.props = props;
+    this.children = children;
     // Initialize state from the static definition
     this.state = (this.constructor as typeof Component<Props, State>).state as State;
-    this._processTemplateAndRender();
+    
+    // Get the component name from the constructor
+    const componentName = this.constructor.name;
+    
+    // Find the template path that matches this component
+    const templatePath = `/src/components/${componentName}/template.html`;
+    console.log('Loading template from:', templatePath);
+    const template = templates[templatePath];
+    
+    if (!template) {
+      throw new Error(`Template not found for component: ${componentName}`);
+    }
+
+    console.log('Processing template with state:', this.state);
+    tempDiv.innerHTML = this.processTemplate(template);
+    console.log('Processed template result:', tempDiv.innerHTML);
+    
+    // Use the first element from the template as the root element
+    this.element = tempDiv.firstElementChild as HTMLElement || tempDiv;
+    
+    // Find the slot element and replace it with children
+    const slot = this.element.querySelector('blitz-slot');
+    if (slot && this.children.length > 0) {
+      slot.replaceWith(...this.children);
+    }
+    
+    // Re-bind all elements with their current values
+    this.boundElements.forEach((element, property) => {
+      const isProp = property in this.props;
+      const value = isProp ? this.props[property] : this.state[property];
+      DataBinding.bind(element, { getValue: () => value }, property);
+    });
+
+    // Re-attach all event listeners to the new DOM
+    this.eventListeners.forEach((eventMap, selector) => {
+      const element = this.element.querySelector(selector);
+      if (element) {
+        eventMap.forEach((bindings, eventType) => {
+          bindings.forEach(({ handler, options }) => {
+            const wrappedHandler = (event: Event) => {
+              if (options.preventDefault) event.preventDefault();
+              if (options.stopPropagation) event.stopPropagation();
+              handler(event);
+            };
+            element.addEventListener(eventType, wrappedHandler, options);
+          });
+        });
+      }
+    });
+
+    this.render();
   }
 
   /**
@@ -143,6 +199,23 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
   }
 
   /**
+   * Sets the children of this component
+   * @param children - Child elements to be rendered inside this component
+   */
+  public setChildren(children: HTMLElement[]): void {
+    this.children = children;
+    this._processTemplateAndRender();
+  }
+
+  /**
+   * Gets the current children of this component
+   * @returns The current children elements
+   */
+  protected getChildren(): HTMLElement[] {
+    return this.children;
+  }
+
+  /**
    * Internal method to process template and trigger render
    * This is called whenever the component needs to be re-rendered
    */
@@ -162,6 +235,12 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
     console.log('Processing template with state:', this.state);
     this.element.innerHTML = this.processTemplate(template);
     console.log('Processed template result:', this.element.innerHTML);
+    
+    // Find the slot element and replace it with children
+    const slot = this.element.querySelector('blitz-slot');
+    if (slot && this.children.length > 0) {
+      slot.replaceWith(...this.children);
+    }
     
     // Re-bind all elements with their current values
     this.boundElements.forEach((element, property) => {
@@ -350,7 +429,7 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
    * @param property - State property to bind
    * @param options - Binding options including two-way binding and event type
    */
-  protected bind(selector: string, property: keyof (Props | State), options: { twoWay?: boolean; event?: string } = {}) {
+  protected bind(selector: string, property: string, options: { twoWay?: boolean; event?: string } = {}) {
     const element = this.element.querySelector(selector) as HTMLElement;
     if (!element) {
       console.warn(`Element not found for selector: ${selector}`);

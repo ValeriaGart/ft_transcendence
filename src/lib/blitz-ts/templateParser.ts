@@ -5,6 +5,7 @@
  * - For loops using blitz-for directive
  * - Conditional rendering using blitz-if and blitz-else directives
  * - Nested property access using dot notation
+ * - Child content insertion using blitz-slot element
  * 
  * @param template - The template string to parse
  * @param state - The state object containing values to interpolate
@@ -162,9 +163,14 @@ export function parseTemplate(template: string, state: Record<string, any>): str
   }
 
   // Finally handle template variables
-  return result.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+  result = result.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
     const trimmedKey = key.trim();
     const value = trimmedKey.split('.').reduce((obj: any, prop: string) => obj?.[prop], state);
     return value !== undefined ? String(value) : '';
   });
+
+  // Ensure blitz-slot elements are preserved
+  result = result.replace(/<blitz-slot\s*\/?>/g, '<blitz-slot></blitz-slot>');
+
+  return result;
 } 

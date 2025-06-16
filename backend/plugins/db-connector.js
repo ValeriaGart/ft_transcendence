@@ -1,6 +1,5 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
-// import util from 'util';
 
 sqlite3.verbose();
 
@@ -41,6 +40,7 @@ function initialize() {
         else resolve();
       }
     );
+
   });
 }
 

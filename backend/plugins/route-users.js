@@ -65,13 +65,14 @@ async function routes (fastify, options) {
               reply.code(500);
               return reject({ error: 'Database error', details: err.message });
             }
-
+            
             db.run(
               `INSERT INTO profiles (nickname, bio, profilePictureUrl)
               VALUES (NULL, NULL, NULL)`,
               [],
               function (err) {
                 if (err) {
+                  db.run('ROLLBACK')
                   reply.code(500);
                   console.error('Profile insert failed:', err.message);
                   return reject({ error: 'Database error', details: err.message });

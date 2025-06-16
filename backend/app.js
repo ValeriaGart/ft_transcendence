@@ -1,11 +1,15 @@
 import fastify from 'fastify';
 import { db, initialize } from './plugins/db-connector.js';
-import routes from './plugins/route-users.js';
+import routesUser from './plugins/route-users.js';
+import routesProfiles from './plugins/route-profiles.js';
 
 //sugested by ai
 import cors from '@fastify/cors';
 
 const app = fastify({ logger: true });
+
+app.register(routesUser);
+app.register(routesProfiles);
 
 // Register CORS  sugested by ai
 app.register(cors, {
@@ -15,7 +19,6 @@ app.register(cors, {
 });
 
 
-app.register(routes);
 
 async function bootstrap() {
   try {

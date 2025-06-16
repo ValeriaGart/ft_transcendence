@@ -131,7 +131,7 @@ async function routes (fastify, options) {
               return reject({ error: 'Database error', details: err.message });
             }
             db.run('COMMIT');
-            resolve({ success: true, userId: this.lastID});
+            resolve({ success: true, userId: request.params.id,});
             });
           });
         });

@@ -103,7 +103,7 @@ async function routes (fastify, options) {
       params: {
         type: "object",
         properties: {
-          id: { type: "number" }
+          id: { type: "integer" }
         },
         required: [ "id" ]
       }

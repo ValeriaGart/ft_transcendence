@@ -11,14 +11,9 @@ to install dependencies run `npm install` which is accessing package-lock.json i
 
 when running in school it needs to run as root, so if something fails when opening the dev container, try going to devcontainer.json and uncomment `"remoteUser": "root"` (and add a comma to the previous statement).
 
-# setting up basic node.js server
-https://www.geeksforgeeks.org/how-to-build-a-simple-web-server-with-node-js/
-
-you can run `node index.js` to get the simplest webpage you've ever seen on your localhost.
-
-
 # fastify
-after setting up the dev container you can try running `node fastify2.js` (the other ones are work in progress). This will start the server on http://localhost:3000/ . from your terminal you can type some curl commands to call the API.
+after setting up the dev container you can try running `node backend/app.js`. This will start the server on http://localhost:3000/ . from your terminal you can type some curl commands to call the API.
+
 
 ## users routes
 ```

@@ -1,15 +1,5 @@
-// our-first-route.js
-
-// /**
-//  * Encapsulates the routes
-//  * @param {FastifyInstance} fastify  Encapsulated Fastify Instance
-//  * @param {Object} options plugin options, refer to https://fastify.dev/docs/latest/Reference/Plugins/#plugin-options
-//  */
-
 import { db, initialize } from './db-connector.js';
 import { hashPassword, verifyPassword } from './password-utils.js';
-
-// const { db } = require('./db-connector');
 
 async function routes (fastify, options) {
 
@@ -72,32 +62,30 @@ async function routes (fastify, options) {
 		db.serialize(() => {
 			db.run('BEGIN TRANSACTION');
 
-			db.run(
-			`INSERT INTO users (email, passwordHash)
-			VALUES (?, ?)`,
-			[email, hashedPassword],
-			function (err) {
-				if (err) {
-				db.run('ROLLBACK')
-				console.error('User insert failed:', err.message);
-				if (err.code === 'SQLITE_CONSTRAINT' && err.message.includes('UNIQUE')) {
-					reply.code(409);
-					return reject({ error: 'Email already exists' });
-				}
-				reply.code(500);
-				return reject({ error: 'Database error', details: err.message });
-				}
+        db.run(
+          `INSERT INTO users (email, passwordHash)
+          VALUES (?, ?)`,
+          [email, hashedPassword],
+          function (err) {
+            if (err) {
+              db.run('ROLLBACK')
+              console.error('User insert failed:', err.message);
+              reply.code(500);
+              return reject({ error: 'Database error', details: err.message });
+            }
 
-				db.run(
-				`INSERT INTO profiles (nickname, bio, profilePictureUrl)
-				VALUES (NULL, NULL, NULL)`,
-				[],
-				function (err) {
-					if (err) {
-					reply.code(500);
-					console.error('Profile insert failed:', err.message);
-					return reject({ error: 'Database error', details: err.message });
-					}
+            db.run(
+              `INSERT INTO profiles (nickname, bio, profilePictureUrl)
+              VALUES (NULL, NULL, NULL)`,
+              [],
+              function (err) {
+                if (err) {
+				  db.run('ROLLBACK');
+                  reply.code(500);
+                  console.error('Profile insert failed:', err.message);
+                  return reject({ error: 'Database error', details: err.message });
+
+                }
 
 					db.run('COMMIT');
 					console.log('Both inserts succeeded!');
@@ -123,7 +111,7 @@ async function routes (fastify, options) {
       params: {
         type: "object",
         properties: {
-          id: { type: "number" }
+          id: { type: "integer" }
         },
         required: [ "id" ]
       }
@@ -145,24 +133,24 @@ async function routes (fastify, options) {
 	db.serialize(() => {
 		db.run('BEGIN TRANSACTION');
 
-		db.run(
-		`UPDATE users 
-		SET email = ? , passwordHash = ?, updatedAt = CURRENT_TIMESTAMP
-		WHERE id = ?`,
-		[email, hashedPassword, id],
-		function (err) {
-			if (err) {
-			db.run('ROLLBACK')
-			console.error('User information update failed:', err.message);
-			reply.code(500);
-			return reject({ error: 'Database error', details: err.message });
-			}
-			db.run('COMMIT');
-			resolve({ success: true, userId: this.lastID});
-			});
-		});
-	});
-  });
+        db.run(
+          `UPDATE users 
+          SET email = ? , passwordHash = ?, updatedAt = CURRENT_TIMESTAMP
+          WHERE id = ?`,
+          [email, hashedPassword, id],
+          function (err) {
+            if (err) {
+              db.run('ROLLBACK')
+              console.error('User information update failed:', err.message);
+              reply.code(500);
+              return reject({ error: 'Database error', details: err.message });
+            }
+            db.run('COMMIT');
+            resolve({ success: true, userId: this.lastID});
+            });
+          });
+        });
+      });
   
   // login user
   fastify.post('/users/login', {

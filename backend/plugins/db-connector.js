@@ -1,6 +1,5 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
-// import util from 'util';
 
 sqlite3.verbose();
 
@@ -11,22 +10,15 @@ const db = new sqlite3.Database(
 
 function initialize() {
   return new Promise((resolve, reject) => {
-    db.run(
-      `CREATE TABLE IF NOT EXISTS users (
+    db.exec(
+      `
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE,
         passwordHash TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      `,
-      (err) => {
-        if (err) reject(err);
-        else resolve();
-      }
-    );
-    db.run(
-      `
+        );
       CREATE TABLE IF NOT EXISTS profiles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nickname TEXT UNIQUE,
@@ -34,7 +26,7 @@ function initialize() {
         profilePictureUrl TEXT,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (id) REFERENCES users (id)
-      );
+        );
       `,
       (err) => {
         if (err) reject(err);

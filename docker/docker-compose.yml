@@ -1,0 +1,47 @@
+
+services:
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Expose to host
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - transcendence_net
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"  # API
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://transcendence:password@db:5432/transcendence
+    depends_on:
+      - db
+    networks:
+      - transcendence_net
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: transcendence
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: transcendence
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - transcendence_net
+
+networks:
+  transcendence_net:
+    driver: bridge
+
+volumes:
+  pgdata:

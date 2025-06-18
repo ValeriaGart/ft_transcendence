@@ -1,5 +1,5 @@
-import GameEngine from "./gameEngine.js";
-import { OpponentMode } from "../types.js";
+import GameEngine from "./gameEngine.ts";
+import { OpponentMode } from "./types.ts";
 
 export class OpponentScreen {
 	private _engine: GameEngine

@@ -1,4 +1,4 @@
-import GameEngine from "./gameEngine.js";
+import GameEngine from "./gameEngine.ts";
 
 export class TournamentWinScreen {
 	private _engine: GameEngine

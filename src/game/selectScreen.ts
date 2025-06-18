@@ -1,5 +1,5 @@
-import GameEngine from "./gameEngine.js";
-import { GameMode } from "../types.js";
+import GameEngine from "./gameEngine.ts";
+import { GameMode } from "./types.ts";
 
 export class SelectScreen {
 	private _engine: GameEngine

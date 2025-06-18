@@ -1,5 +1,5 @@
-import GameEngine from './gameEngine.js';
-import { GameState, OpponentMode } from '../types.js';
+import GameEngine from './gameEngine.ts';
+import { GameState, OpponentMode } from './types.ts';
 
 export class InputHandler {
 	private _engine: GameEngine;

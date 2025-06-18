@@ -1,6 +1,6 @@
-import { BALL_RADIUS, BALL_SPEED, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH } from '../constants.js';
-import { PongGame } from './pongGame.js';
-import { getRandomAngle, getRandomDirection } from './utils.js';
+import { BALL_RADIUS, BALL_SPEED, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH } from './constants.ts';
+import { PongGame } from './pongGame.ts';
+import { getRandomAngle, getRandomDirection } from './utils.ts';
 
 export class CollisionHandler {
 	private _pongGame: PongGame

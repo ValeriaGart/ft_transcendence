@@ -1,5 +1,5 @@
-import { GameEngine } from "./gameEngine.js";
-import { GameState } from "../types.js";
+import { GameEngine } from "./gameEngine.ts";
+import { GameState } from "./types.ts";
 
 export class GameStateMachine {
 	private _currentState: GameState = GameState.START;

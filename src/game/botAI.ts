@@ -1,5 +1,5 @@
-import { PADDLE_HEIGHT, PADDLE_SPEED } from "../constants.js";
-import { PongGame } from "./pongGame.js";
+import { PADDLE_HEIGHT } from "./constants.ts";
+import { PongGame } from "./pongGame.ts";
 
 export class BotAI{
 	private _side: string;

@@ -1,9 +1,9 @@
-import GameEngine from "./gameEngine.js";
-import { GameMode, GameState, OpponentMode } from "../types.js";
-import { Player } from "./player.js";
-import { PongGame } from "./pongGame.js";
-import { PreBattleScreen } from "./preBattleScreen.js";
-import { TournamentWinScreen } from "./tournamentWinScreen.js";
+import GameEngine from "./gameEngine.ts";
+import { GameMode, GameState, OpponentMode } from "./types.ts";
+import { Player } from "./player.ts";
+import { PongGame } from "./pongGame.ts";
+import { PreBattleScreen } from "./preBattleScreen.ts";
+import { TournamentWinScreen } from "./tournamentWinScreen.ts";
 
 export class Tournament {
 	private _engine: GameEngine

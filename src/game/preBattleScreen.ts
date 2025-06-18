@@ -1,5 +1,5 @@
-import GameEngine from "./gameEngine";
-import { Player } from "./player";
+import GameEngine from "./gameEngine.ts";
+import { Player } from "./player.ts";
 
 export class PreBattleScreen {
 	private _engine: GameEngine

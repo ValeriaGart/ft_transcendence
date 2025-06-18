@@ -1,5 +1,5 @@
-import { BALL_RADIUS, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH } from '../constants.js';
-import { PongGame } from './pongGame.js';
+import { BALL_RADIUS, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH } from './constants.ts';
+import { PongGame } from './pongGame.ts';
 
 export class RenderEngine {
 	private _pongGame: PongGame

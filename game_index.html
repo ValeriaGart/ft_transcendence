@@ -3,18 +3,17 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="./out.css" rel="stylesheet">
+	<link href="./styles.css" rel="stylesheet">
 	<title>pong game</title>
 </head>
 <body>
 	<div class="flex items-center  justify-center min-h-screen bg-black">
 		<canvas id="gameCanvas"></canvas>
-		<button id="start.button" style="display: none;">Start Game</button>
 	</div>
 
 	<script type = "module">
 		console.log('loading game');
-		import { GameEngine } from "../dist/src/game/gameEngine.js"
+		import { GameEngine } from "./src/game/gameEngine.ts"
 		console.log('PongGame: ', GameEngine);
 		
 		const game = new GameEngine('gameCanvas');

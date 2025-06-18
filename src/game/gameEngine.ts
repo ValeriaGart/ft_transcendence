@@ -1,12 +1,12 @@
-import { GameMode, OpponentMode } from '../types.js';
-import { GameStateMachine } from './gameStateMachine.js';
-import { SelectScreen } from './selectScreen.js';
-import { StartScreen } from './startScreen.js';
-import { InputHandler } from './inputHandler.js';
-import { PongGame } from './pongGame.js';
-import { Player } from './player.js';
-import { Tournament } from './tournament.js';
-import { OpponentScreen } from './opponentSelectScreen.js';
+import { GameMode, OpponentMode } from './types.ts';
+import { GameStateMachine } from './gameStateMachine.ts';
+import { SelectScreen } from './selectScreen.ts';
+import { StartScreen } from './startScreen.ts';
+import { InputHandler } from './inputHandler.ts';
+import { PongGame } from './pongGame.ts';
+import { Player } from './player.ts';
+import { Tournament } from './tournament.ts';
+import { OpponentScreen } from './opponentSelectScreen.ts';
 
 export class GameEngine {
 	//standard classes

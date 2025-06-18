@@ -1,12 +1,12 @@
-import GameEngine from './gameEngine.js';
-import { GameMode, GameState, GameStats, OpponentMode, PaddleSide } from '../types.js';
-import { BALL_SPEED, PADDLE_HEIGHT, PADDLE_SPEED } from '../constants.js';
-import { CollisionHandler } from './collisionDetection.js';
-import { RenderEngine } from './renderEngine.js';
-import { getRandomAngle, getRandomDirection } from './utils.js';
-import { PauseScreen } from './pauseScreen.js';
-import { Player } from './player.js';
-import { WinScreen } from './winScreen.js';
+import GameEngine from './gameEngine.ts';
+import { GameMode, GameState, type GameStats, OpponentMode, type PaddleSide } from './types.ts';
+import { BALL_SPEED, PADDLE_HEIGHT, PADDLE_SPEED } from './constants.ts';
+import { CollisionHandler } from './collisionDetection.ts';
+import { RenderEngine } from './renderEngine.ts';
+// import { getRandomAngle, getRandomDirection } from './utils.ts';
+import { PauseScreen } from './pauseScreen.ts';
+import { Player } from './player.ts';
+import { WinScreen } from './winScreen.ts';
 
 
 export class PongGame {
@@ -40,8 +40,8 @@ export class PongGame {
 		console.log('game running in mode: ', this._mode);
 		console.log(this._oppMode);
 
-		const randomDirection = getRandomDirection();
-		const randomAngle = getRandomAngle()
+		// const randomDirection = getRandomDirection();
+		// const randomAngle = getRandomAngle()
 		const speed = BALL_SPEED;
 		this._gameStats = {
 			ballPosition: { x: this._engine._canvas.width / 2, y: this._engine._canvas.height / 2},

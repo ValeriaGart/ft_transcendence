@@ -1,4 +1,4 @@
-import { PongGame } from "./pongGame.js";
+import { PongGame } from "./pongGame.ts";
 
 export class WinScreen {
 	private _pongGame: PongGame

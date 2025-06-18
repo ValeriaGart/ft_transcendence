@@ -1,4 +1,3 @@
-import { PaddleSide } from "../types.js";
 import { BotAI } from "./botAI.js";
 
 export class Player {

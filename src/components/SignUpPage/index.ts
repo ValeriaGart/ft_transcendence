@@ -21,6 +21,7 @@ export class SignUpPage extends Component<SignUpPageState> {
     public handleSignUp(e: Event) {
         e.preventDefault();
         console.log(this.state.email);
+        console.log('hihi');
     }
 
 
@@ -32,6 +33,6 @@ export class SignUpPage extends Component<SignUpPageState> {
     }
 
     render() {
-     console.log(this.state);
+        console.log(this.state);
     }
 }

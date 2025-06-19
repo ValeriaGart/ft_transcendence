@@ -99,9 +99,51 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
     tempDiv.innerHTML = this.processTemplate(template);
     console.log('Processed template result:', tempDiv.innerHTML);
     
-    // Use the first element from the template as the root element
-    this.element = tempDiv.firstElementChild as HTMLElement || tempDiv;
+    // Check if the template starts with a component tag (blitz-*) ai start with blitz-
+    const firstChild = tempDiv.firstElementChild;
+    console.log('First child of template:', firstChild);
+    console.log('First child tagName:', firstChild?.tagName);
     
+    if (firstChild && firstChild.tagName.toLowerCase().startsWith('blitz-')) {
+      // This is a component template, extract the content and create the component structure
+      const componentTagName = firstChild.tagName.toLowerCase();
+      const componentContent = firstChild.innerHTML;
+      
+      // Create the component structure
+      const componentName = componentTagName.replace('blitz-', '');
+      // Convert kebab-case to PascalCase for component names
+      const pascalCaseName = componentName.split('-').map(part => 
+        part.charAt(0).toUpperCase() + part.slice(1)
+      ).join('');
+      
+      const componentTemplatePath = `/src/components/${pascalCaseName}/template.html`;
+      const componentTemplate = templates[componentTemplatePath];
+      
+      if (componentTemplate) {
+        // Create a temporary div for the component template
+        const componentTempDiv = document.createElement('div');
+        componentTempDiv.innerHTML = componentTemplate;
+        
+        // Find the slot and replace it with the component content
+        const slot = componentTempDiv.querySelector('blitz-slot');
+        if (slot) {
+          console.log('Found slot, inserting content');
+          slot.innerHTML = componentContent;
+        } else {
+          console.log('No slot found in component template');
+        }
+        
+        // Use the component template as the root element
+        this.element = componentTempDiv.firstElementChild as HTMLElement || componentTempDiv;;
+      } else {
+        // Fallback: use the original template
+        this.element = tempDiv.firstElementChild as HTMLElement || tempDiv;
+      }
+    } else {
+      // not a component template, Use the first element from the template as the root element
+      this.element = tempDiv.firstElementChild as HTMLElement || tempDiv;
+    }
+    //ai
     // Find the slot element and replace it with children
     const slot = this.element.querySelector('blitz-slot');
     if (slot && this.children.length > 0) {
@@ -430,7 +472,64 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
    * @param options - Binding options including two-way binding and event type
    */
   protected bind(selector: string, property: string, options: { twoWay?: boolean; event?: string } = {}) {
-    const element = this.element.querySelector(selector) as HTMLElement;
+    //TODO changed (added)
+    console.log(`Trying to bind ${property} with selector: ${selector}`);
+    console.log(`Component root element:`, this.element);
+    console.log(`Component root element HTML:`, this.element.innerHTML);
+    
+    // Check children of the root element
+    console.log(`Children of root element:`, this.element.children);
+    console.log(`Number of children:`, this.element.children.length);
+    
+    // Log each child
+    for (let i = 0; i < this.element.children.length; i++) {
+      const child = this.element.children[i];
+      console.log(`Child ${i}:`, child);
+      console.log(`Child ${i} tagName:`, child.tagName);
+      console.log(`Child ${i} id:`, child.id);
+      console.log(`Child ${i} innerHTML:`, child.innerHTML);
+    }
+    
+    // First try to find the element within the component's root element
+    let element = this.element.querySelector(selector) as HTMLElement;
+    console.log(`Found with querySelector:`, element);
+    
+    // If not found, try searching within the entire component tree (including slot content)
+    if (!element) {
+      console.log(`Not found with querySelector, trying recursive search...`);
+      // Search recursively through all child elements
+      const searchInElement = (el: Element): HTMLElement | null => {
+        // Check if this element matches the selector
+        if (el.matches && el.matches(selector)) {
+          return el as HTMLElement;
+        }
+        
+        // Search in children
+        for (const child of Array.from(el.children)) {
+          const found = searchInElement(child);
+          if (found) return found;
+        }
+        
+        return null;
+      };
+      
+      const foundElement = searchInElement(this.element);
+      console.log(`Found with recursive search:`, foundElement);
+      if (foundElement) {
+        element = foundElement;
+      }
+    }
+    
+    // If still not found, try searching in the entire document (fallback)
+    if (!element) {
+      console.log(`Not found with recursive search, trying document.querySelector...`);
+      const docElement = document.querySelector(selector) as HTMLElement;
+      console.log(`Found with document.querySelector:`, docElement);
+      if (docElement) {
+        element = docElement;
+      }
+    }
+    
     if (!element) {
       console.warn(`Element not found for selector: ${selector}`);
       return;

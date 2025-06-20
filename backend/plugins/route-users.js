@@ -1,5 +1,5 @@
 import { db, initialize } from './db-connector.js';
-import { hashPassword, verifyPassword } from './password-utils.js';
+import { hashPassword, verifyPassword } from '../utils/password-utils.js';
 
 async function routes (fastify, options) {
 

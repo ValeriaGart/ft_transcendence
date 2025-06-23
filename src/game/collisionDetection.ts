@@ -51,11 +51,11 @@ export class CollisionHandler {
 
 	private	isPaddleHittingWall(side: 'left' | 'right'): boolean {
 		if (side == 'left' && (this._pongGame._gameStats.paddlePositions.left - PADDLE_SPEED < 0
-			|| this._pongGame._gameStats.paddlePositions.left - PADDLE_SPEED > this._pongGame._engine._canvas.height)) {
+			|| this._pongGame._gameStats.paddlePositions.left + PADDLE_HEIGHT + PADDLE_SPEED > this._pongGame._engine._canvas.height)) {
 				return true;
 		}
 		if (side == 'right' && (this._pongGame._gameStats.paddlePositions.right - PADDLE_SPEED < 0
-			|| this._pongGame._gameStats.paddlePositions.right - PADDLE_SPEED > this._pongGame._engine._canvas.height)) {
+			|| this._pongGame._gameStats.paddlePositions.right + PADDLE_HEIGHT + PADDLE_SPEED > this._pongGame._engine._canvas.height)) {
 				return true;
 		}
 		return false;

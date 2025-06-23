@@ -48,6 +48,38 @@ class ProfileController {
       return { error: 'Failed to update profile', details: error.message };
     }
   }
+
+  static async patchProfile(request, reply) {
+    try {
+      const { id } = request.params;
+      const { nickname, profilePictureUrl, bio } = request.body;
+
+      const updateFields = {};
+      if (nickname) updateFields.nickname = nickname;
+      if (profilePictureUrl) updateFields.profilePictureUrl = profilePictureUrl;
+      if (bio) updateFields.bio = bio;
+
+      if (Object.keys(updateFields).length === 0){
+        reply.code(400);
+        return { error: 'At least one field (nickname, profilePictureUrl, or bio) is required' };
+
+      }
+
+      const profile = await ProfileService.updateProfile(id, updateFields);
+      return {
+        success: true,
+        message: 'Profile updated successfully',
+        profile
+      };
+    } catch (error) {
+      if (error.message === 'Profile not found') {
+        reply.code(404);
+        return { error: 'Profile not found' };
+      }
+      reply.code(500);
+      return { error: 'Failed to update profile', details: error.message };
+    }
+  }
 }
 
 export default ProfileController;

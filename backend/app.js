@@ -7,15 +7,15 @@ import cors from '@fastify/cors';
 const app = fastify({ logger: true });
 
 // Register CORS
-app.register(cors, {
+await app.register(cors, {
   origin: true,
   methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true
 });
 
 // Register routes
-app.register(userRoutes);
-app.register(profileRoutes);
+await app.register(userRoutes);
+await app.register(profileRoutes);
 
 async function bootstrap() {
   try {

@@ -10,7 +10,21 @@ const db = new sqlite3.Database(
 );
 
 // Promisify database methods
-const dbRun = promisify(db.run.bind(db));
+const dbRun = (sql, params = []) => {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({
+          lastID: this.lastID,
+          changes: this.changes
+        });
+      }
+    });
+  });
+};
+
 const dbGet = promisify(db.get.bind(db));
 const dbAll = promisify(db.all.bind(db));
 
@@ -24,15 +38,17 @@ function initialize() {
         passwordHash TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+      );
       CREATE TABLE IF NOT EXISTS profiles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER UNIQUE,
         nickname TEXT UNIQUE,
         bio TEXT,
         profilePictureUrl TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (id) REFERENCES users (id)
-        );
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
+      );
       `,
       (err) => {
         if (err) reject(err);

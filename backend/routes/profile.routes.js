@@ -1,23 +1,9 @@
-
 import ProfileController from '../controllers/profile.controller.js';
-
-const profileBodySchema = {
-  type: "object",
-  properties: {
-    nickname: { type: 'string', minLength: 2 },
-    profilePictureUrl: { type: 'string', format: "uri" },
-    bio: { type: 'string', maxLength: 500 }
-  },
-  required: ["nickname", "profilePictureUrl", "bio"]
-};
-
-const profileParamsSchema = {
-  type: "object",
-  properties: {
-    id: { type: "integer" }
-  },
-  required: ["id"]
-};
+import {
+  profileBodySchema,
+  profileParamsSchema,
+  profilePatchSchema
+} from '../schemas/profile.schemas.js';
 
 async function routes(fastify, options) {
   fastify.get('/profiles', ProfileController.getAllProfiles);
@@ -32,6 +18,13 @@ async function routes(fastify, options) {
       params: profileParamsSchema
     }
   }, ProfileController.updateProfile);
+
+  fastify.patch('/profiles/:id', {
+    schema: {
+      body: profilePatchSchema,
+      params: profileParamsSchema
+    }
+  }, ProfileController.patchProfile);
 }
 
 export default routes;

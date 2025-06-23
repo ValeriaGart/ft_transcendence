@@ -11,11 +11,11 @@ export class RenderEngine {
 	public renderFrame(): void {
 		this._pongGame._engine._ctx.clearRect(0, 0, this._pongGame._engine._canvas.width, this._pongGame._engine._canvas.height);
 
+		this.drawCenterLine();
 		this.drawBall();
 		this.drawPaddles();
 		this.drawScore();
 		this.drawNames();
-		this.drawCenterLine();
 	}
 
 	private drawBall(): void {

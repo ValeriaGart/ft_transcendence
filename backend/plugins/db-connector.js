@@ -4,7 +4,7 @@ import path from 'path';
 sqlite3.verbose();
 
 const db = new sqlite3.Database(
-  path.resolve('./db.sqlite'),
+  path.resolve(process.cwd(), '..', 'db.sqlite'),
   sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE
 );
 
@@ -16,16 +16,20 @@ function initialize() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE,
         passwordHash TEXT,
+        googleId TEXT UNIQUE,
+        name TEXT,
+        profilePictureUrl TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       CREATE TABLE IF NOT EXISTS profiles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER,
         nickname TEXT UNIQUE,
         bio TEXT,
         profilePictureUrl TEXT,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (id) REFERENCES users (id)
+        FOREIGN KEY (userId) REFERENCES users (id)
         );
       `,
       (err) => {

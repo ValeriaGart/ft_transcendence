@@ -22,11 +22,11 @@ export async function hashPassword(password) {
 
 /**
  * Verify a password against its hash
- * @param {string} hash - Stored password hash
  * @param {string} password - Plain text password to verify
+ * @param {string} hash - Stored password hash
  * @returns {Promise<boolean>} - True if password matches
  */
-export async function verifyPassword(hash, password) {
+export async function verifyPassword(password, hash) {
   try {
     return await argon2.verify(hash, password);
   } catch (error) {

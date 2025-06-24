@@ -43,6 +43,16 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
         setApiError(''); // Clear any previous API errors
     };
 
+    const handleGoogleSuccess = (user: any) => {
+        console.log('Google Sign-in successful during signup:', user);
+        onEnterClick(); // Navigate to the game
+    };
+
+    const handleGoogleError = (error: string) => {
+        console.error('Google Sign-in error during signup:', error);
+        setApiError(error);
+    };
+
     const handleClick = async () => {
         console.log('Form validation:', { isEmailValid, isPasswordValid, isConfirmPasswordValid }); // Debug log
         
@@ -96,21 +106,10 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
         }
     };
 
-    const handleGoogleSuccess = (user: any) => {
-        console.log('Google Sign-in successful during signup:', user);
-        onEnterClick(); // Navigate to the game
-    };
-
-    const handleGoogleError = (error: string) => {
-        console.error('Google Sign-in error during signup:', error);
-        setApiError(error);
-    };
-
     return (
-        <div id="signup_page" class="absolute top-[49%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[37%] bg-gray-100 rounded-lg p-8">
-            {/* <img src="/art/signin_up/back4.svg" alt="Back4" class="h-full w-full object-fill" /> */}
+        <div id="signup_page" class="absolute top-[49%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[37%]">
+            <img src="/art/signin_up/Backsignup.svg" alt="Back4" class="h-full w-full object-fill" />
             <SoundButton position={{ bottom: '4', right: '4' }} />
-            
             <div class="absolute flex flex-col top-[39%] left-[30%] text-[90%] xl:text-[110%] 2xl:text-[120%] gap-y-3 xl:gap-y-[1.1vw] 2xl:gap-y-[1.4vw]">
                 <EmailInput
                     value={email}

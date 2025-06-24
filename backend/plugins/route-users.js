@@ -50,6 +50,49 @@ async function routes (fastify, options) {
 	const { email, passwordString } = request.body;
 	
 	try {
+		// Check if user already exists
+		const existingUser = await new Promise((resolve, reject) => {
+			db.get(
+				'SELECT * FROM users WHERE email = ?',
+				[email],
+				(err, row) => {
+					if (err) reject(err);
+					else resolve(row);
+				}
+			);
+		});
+		
+		if (existingUser) {
+			// If user exists and has a Google account but no password, allow password addition
+			if (existingUser.googleId && !existingUser.passwordHash) {
+				const hashedPassword = await hashPassword(passwordString);
+				
+				await new Promise((resolve, reject) => {
+					db.run(
+						'UPDATE users SET passwordHash = ? WHERE id = ?',
+						[hashedPassword, existingUser.id],
+						function(err) {
+							if (err) reject(err);
+							else resolve(this.changes);
+						}
+					);
+				});
+				
+				return { 
+					success: true, 
+					userId: existingUser.id,
+					message: 'Password added to existing Google account',
+					linked: true
+				};
+			} else {
+				reply.code(409);
+				return { 
+					error: 'User already exists',
+					details: 'This email is already registered. Please use a different email or try logging in.'
+				};
+			}
+		}
+		
 		// Hash the password before storing it
 		const hashedPassword = await hashPassword(passwordString);
     return new Promise((resolve, reject) => {
@@ -70,9 +113,9 @@ async function routes (fastify, options) {
             }
             
             db.run(
-              `INSERT INTO profiles (nickname, bio, profilePictureUrl)
-              VALUES (NULL, NULL, NULL)`,
-              [],
+              `INSERT INTO profiles (userId, nickname, bio, profilePictureUrl)
+              VALUES (?, NULL, NULL, NULL)`,
+              [this.lastID],
               function (err) {
                 if (err) {
                   db.run('ROLLBACK');

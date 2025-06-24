@@ -1,25 +1,47 @@
 import { Component } from "@blitz-ts/Component";
 
-interface SoundButtonState {
-    isSoundEnabled: boolean;
+interface SoundButtonProps {
+    bottom?: string;
+    right?: string;
 }
 
+interface SoundButtonState {
+    isSoundEnabled: boolean;
+    positionClasses: string;
+}
 
-
-export class SoundButton extends Component<{}, SoundButtonState> {
+export class SoundButton extends Component<SoundButtonProps, SoundButtonState> {
     protected static state: SoundButtonState = {
         isSoundEnabled: false,
+        positionClasses: "bottom-4 right-4", // Default position
     }
 
-    constructor() {
-        super();
+    constructor(props: SoundButtonProps = {}) {
+        super(props);
         this.toggleSound = this.toggleSound.bind(this);
         this.markStructural('isSoundEnabled');
+        
+        // Set position classes based on props
+        const bottom = props.bottom || "bottom-4";
+        const right = props.right || "right-4";
+        this.setState({ positionClasses: `${bottom} ${right}` });
     }
 
     protected onMount(): void {
         this.setState({ isSoundEnabled: localStorage.getItem('soundEnabled') === 'true' });
         this.addEventListener("button", "click", this.toggleSound);
+        
+        // Apply position classes after mount
+        this.applyPositionClasses();
+    }
+
+    private applyPositionClasses(): void {
+        setTimeout(() => {
+            const button = this.element.querySelector('button');
+            if (button) {
+                button.className = `absolute ${this.state.positionClasses} hover:opacity-80`;
+            }
+        }, 0);
     }
 
     protected onUnmount(): void {
@@ -49,7 +71,13 @@ export class SoundButton extends Component<{}, SoundButtonState> {
             this.setState({ isSoundEnabled: true });
             localStorage.setItem('soundEnabled', 'true');
         }
+        
+        // Re-apply position classes after state change
+        this.applyPositionClasses();
     }
 
-    render() {}
+    render() {
+        // Re-apply position classes after render
+        this.applyPositionClasses();
+    }
 }

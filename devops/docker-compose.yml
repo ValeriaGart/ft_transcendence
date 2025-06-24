@@ -121,6 +121,11 @@ services:
       timeout: 10s
       retries: 120
 
+  # logstash:
+  #   image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+
+
+
 volumes:
   certs:
     driver: local

@@ -27,9 +27,10 @@ class UserService {
     const { email, passwordString } = userData;
     const hashedPassword = await hashPassword(passwordString);
     
-    await dbRun('BEGIN TRANSACTION');
     
     try {
+	 		await dbRun('BEGIN TRANSACTION');
+
       const userResult = await dbRun(
         'INSERT INTO users (email, passwordHash) VALUES (?, ?)',
         [email, hashedPassword]
@@ -46,7 +47,11 @@ class UserService {
       
       return { id: userId, email };
     } catch (error) {
-      await dbRun('ROLLBACK');
+			try {
+				await dbRun('ROLLBACK');
+			} catch (rollbackError) {
+				console.error('Rollback failed:', rollbackError);
+			}
       throw error;
     }
   }

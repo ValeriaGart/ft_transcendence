@@ -15,11 +15,12 @@ when running in school it needs to run as root, so if something fails when openi
 after setting up the dev container you can try running `node backend/app.js`. This will start the server on http://localhost:3000/ . from your terminal you can type some curl commands to call the API.
 
 
+## users routes
 ```
 # Get all users
 curl http://localhost:3000/users
 
-# Get single user (NOT IN USE ATM)
+# Get single user by ID
 curl http://localhost:3000/users/1
 
 # Create new user
@@ -27,13 +28,34 @@ curl -X POST http://localhost:3000/users \
   -H "Content-Type: application/json" \
   -d '{"email":"alice@example.com", "passwordString":"abcdef124"}'
 
-# Update user (NOT IN USE ATM)
+# Update user 
 curl -X PUT http://localhost:3000/users/1 \
   -H "Content-Type: application/json" \
-  -d '{"name":"John Smith","email":"john.smith@example.com"}'
+  -d '{"email":"alice@newmail.com", "passwordString":"newpw123432"}'
 
 # Delete user (NOT IN USE ATM)
 curl -X DELETE http://localhost:3000/users/1
+
+# Login as user
+curl -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com", "passwordString":"abcdef124"}'
+```
+
+## profiles routes
+```
+# Get all profiles
+curl http://localhost:3000/profiles
+
+# Get profile by ID
+curl http://localhost:3000/profiles/1
+
+# Update entire profile per id (all fields required)
+curl -X PUT http://localhost:3000/profiles/1 \
+  -H "Content-Type: application/json" \
+  -d '{"nickname":"John Smith", "bio":"something about my life", "profilePictureUrl":"https://www.mypage.com/picture.jpeg"}'
+
+
 ```
 
 # sqlite

@@ -61,7 +61,7 @@ export class PongGame {
 	public drawGameScreen(): void {
 		this._gameStats.paddleVelocity.left = this._gameStats.paddleDirection.left * PADDLE_SPEED;
 		if (this._gameStats.paddlePositions.left + this._gameStats.paddleVelocity.left > 0
-		&& this._gameStats.paddlePositions.left + this._gameStats.paddleVelocity.left < this._engine._canvas.height - PADDLE_HEIGHT) {
+			&& this._gameStats.paddlePositions.left + this._gameStats.paddleVelocity.left < this._engine._canvas.height - PADDLE_HEIGHT) {
 			this._gameStats.paddlePositions.left += this._gameStats.paddleVelocity.left;
 		}
 		this._gameStats.paddleVelocity.right = this._gameStats.paddleDirection.right * PADDLE_SPEED;

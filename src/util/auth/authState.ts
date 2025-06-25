@@ -113,10 +113,8 @@ export async function handleGoogleSignIn(credential: string) {
       error: null
     });
     
-    // Store token in localStorage as backup
-    if (data.token) {
-      localStorage.setItem('auth_token', data.token);
-    }
+    // Token is stored securely in httpOnly cookies by the server
+    // No need to store it in localStorage
     
     return data.user;
   } catch (error) {

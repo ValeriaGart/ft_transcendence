@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
-import { AUTH_CONFIG } from '../../config/auth.ts';
+import { AUTH_CONFIG } from '../../../config/auth.ts';
 
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(AUTH_CONFIG.GOOGLE_CLIENT_ID);

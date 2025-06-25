@@ -6,6 +6,12 @@ import {
 } from '../schemas/profile.schemas.js';
 
 async function routes(fastify, options) {
+  // Apply rate limiting to all routes
+  await fastify.register(import('@fastify/rate-limit'), {
+	max: 100,
+	timeWindow: '1 minute'
+  });
+
   fastify.get('/profiles', ProfileController.getAllProfiles);
   
   fastify.get('/profiles/:id', {
@@ -16,14 +22,16 @@ async function routes(fastify, options) {
     schema: {
       body: profileBodySchema,
       params: profileParamsSchema
-    }
+    },
+	preHandler: [fastify.requireProfileOwnership]
   }, ProfileController.updateProfile);
 
   fastify.patch('/profiles/:id', {
     schema: {
       body: profilePatchSchema,
       params: profileParamsSchema
-    }
+    },
+	preHandler: [fastify.requireProfileOwnership]
   }, ProfileController.patchProfile);
 }
 

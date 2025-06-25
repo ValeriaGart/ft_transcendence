@@ -117,6 +117,19 @@ class UserService {
     return userData;
   }
 
+  static async generateAuthToken(user, fastify) {
+    const token = fastify.jwt.sign({
+      userId: user.id,
+      email: user.email
+    });
+
+    return {
+      user,
+      token,
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h'
+    };
+  }
+
   static async deleteUser(id) {
     const result = await dbRun('DELETE FROM users WHERE id = ?', [id]);
     

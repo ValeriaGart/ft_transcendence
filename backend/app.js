@@ -2,7 +2,9 @@ import fastify from 'fastify';
 import { initialize } from './config/database.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
+import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
+import 'dotenv/config';
 
 const app = fastify({ logger: true });
 
@@ -13,9 +15,19 @@ await app.register(cors, {
   credentials: true
 });
 
+// Register auth plugin
+await app.register(authPlugin);
+
+// Global rate limiting
+await app.register(import('@fastify/rate-limit'), {
+  max: 1000,
+  timeWindow: '15 minutes'
+});
+
 // Register routes
 await app.register(userRoutes);
 await app.register(profileRoutes);
+
 
 async function bootstrap() {
   try {

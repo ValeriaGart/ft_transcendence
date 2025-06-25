@@ -28,6 +28,23 @@ class UserController {
     }
   }
 
+  static async getCurrentUser(request, reply) {
+    try {
+      const userId = request.user.userId;
+      const user = await UserService.getUserById(userId);
+      
+      if (!user) {
+        reply.code(404);
+        return { error: 'User not found' };
+      }
+      
+      return user;
+    } catch (error) {
+      reply.code(500);
+      return { error: 'Failed to retrieve user' };
+    }
+  }
+
   static async createUser(request, reply) {
     try {
       const user = await UserService.createUser(request.body);
@@ -122,16 +139,42 @@ class UserController {
         reply.code(401);
         return { error: 'Invalid credentials' };
       }
+
+	  const  authResult = await UserService.generateAuthToken(user, request.server);
+
+	  // Set secure HTTP-only cookie
+	  reply.setCookie('authToken', authResult.token, {
+		httpOnly: true,
+		secure: process.env.NODE_ENV === 'production',
+		sameSite: 'strict',
+		maxAge: 60 * 60 * 1000 // 1 hour
+	  });
       
       return {
         success: true,
         message: 'Login successful',
-        user
+        user: authResult.user,
+		token: authResult.token,
+		expiresIn: authResult.expiresIn
       };
     } catch (error) {
       reply.code(500);
       return { error: 'Authentication failed', details: error.message };
     }
+  }
+
+  static async logoutUser(request, reply) {
+	try {
+		reply.clearCookie('authToken');
+
+		return {
+			success: true,
+			message: 'Logout successful'
+		};
+	} catch (error) {
+		reply.code(500);
+		return { error: 'Logout failed', details: error.message };
+	}
   }
 
   static async deleteUser(request, reply) {

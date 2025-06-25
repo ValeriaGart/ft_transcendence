@@ -255,26 +255,25 @@ export async function logout() {
  */
 export function useAuth() {
   const [state, setState] = useState(authState);
-  
-  // Subscribe to auth state changes on component mount
-  let unsubscribe: (() => void) | null = null;
-  
-  // Initialize subscription if not already set up
-  if (!unsubscribe) {
-    unsubscribe = subscribeToAuth(setState);
-  }
-  
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+
+  // Manage subscription lifecycle with useEffect
+  useEffect(() => {
+    unsubscribeRef.current = subscribeToAuth(setState);
+
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+    };
+  }, []);
+
   return {
     ...state,
     signInWithGoogle: handleGoogleSignIn,
     loginWithEmailPassword,
     logout,
     verifyAuth: verifyAuthToken,
-    cleanup: () => {
-      if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-      }
-    }
   };
 }

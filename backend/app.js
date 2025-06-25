@@ -1,12 +1,24 @@
 import fastify from 'fastify';
+import { db, initialize } from './plugins/db-connector.js';
+import routesUser from './plugins/route-users.js';
+import routesProfiles from './plugins/route-profiles.js';
+import authRoutes from './plugins/route-auth.js';
+
+//sugested by ai
 import { initialize } from './config/database.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import cors from '@fastify/cors';
+import cookie from '@fastify/cookie';
 
 const app = fastify({ logger: true });
 
-// Register CORS
+app.register(routesUser);
+app.register(routesProfiles);
+app.register(authRoutes);
+app.register(cookie);
+
+// Register CORS  sugested by ai
 await app.register(cors, {
   origin: true,
   methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],

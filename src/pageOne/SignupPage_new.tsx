@@ -5,6 +5,7 @@ import { useState } from '../util/state/state';
 import { EmailInput } from '../global/EmailInput';
 import { PasswordInput } from '../global/PasswordInput';
 import { Error } from '../global/Error';
+import { AUTH_CONFIG } from '../config/auth';
 
 interface SignupPageProps {
     onEnterClick: () => void;
@@ -35,12 +36,22 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
         setApiError(''); // Clear any previous API errors
     };
 
-    const handleConfirmPasswordChange = (e: Event) => {
-        const newConfirmPassword = (e.target as HTMLInputElement).value;
+    const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const newConfirmPassword = e.target.value;
         console.log('SignupPage: Confirm password changed', { newConfirmPassword }); // Debug log
         setConfirmPassword(newConfirmPassword);
         setIsConfirmPasswordValid(newConfirmPassword === password);
         setApiError(''); // Clear any previous API errors
+    };
+
+    const handleGoogleSuccess = (user: any) => {
+        console.log('Google Sign-in successful during signup:', user);
+        onEnterClick(); // Navigate to the game
+    };
+
+    const handleGoogleError = (error: string) => {
+        console.error('Google Sign-in error during signup:', error);
+        setApiError(error);
     };
 
     const handleClick = async () => {
@@ -53,7 +64,7 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
 
         try {
             console.log('Attempting registration with:', { email, password });
-            const response = await fetch('http://localhost:3000/users', {
+            const response = await fetch(`${AUTH_CONFIG.BACKEND_URL}/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -96,22 +107,10 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
         }
     };
 
-    const handleGoogleSuccess = (user: any) => {
-        console.log('Google Sign-in successful during signup:', user);
-        onEnterClick(); // Navigate to the game
-    };
-
-    const handleGoogleError = (error: string) => {
-        console.error('Google Sign-in error during signup:', error);
-        setApiError(error);
-    };
-
     return (
-        <div id="signup_page" class="absolute top-[49%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[37%] bg-gray-100 rounded-lg p-8">
-            {/* <img src="/art/signin_up/back4.svg" alt="Back4" class="h-full w-full object-fill" /> */}
-            {/* TODO: Retained for potential future use as a background image for the signup page */}
+        <div id="signup_page" class="absolute top-[49%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[37%]">
+            <img src="/art/signin_up/Backsignup.svg" alt="Back4" class="h-full w-full object-fill" />
             <SoundButton position={{ bottom: '4', right: '4' }} />
-            
             <div class="absolute flex flex-col top-[39%] left-[30%] text-[90%] xl:text-[110%] 2xl:text-[120%] gap-y-3 xl:gap-y-[1.1vw] 2xl:gap-y-[1.4vw]">
                 <EmailInput
                     value={email}

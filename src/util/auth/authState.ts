@@ -4,10 +4,9 @@
  */
 
 import { useState } from '../state/state';
+import { atom, useAtom } from 'jotai';
+import { AUTH_CONFIG } from '../../config/auth';
 
-/**
- * User interface for frontend
- */
 export interface User {
   id: number;
   email: string;
@@ -15,9 +14,7 @@ export interface User {
   profilePictureUrl?: string;
 }
 
-/**
- * Authentication state interface
- */
+
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -36,9 +33,6 @@ let authState: AuthState = {
 // Subscribers to auth state changes
 const authSubscribers: ((state: AuthState) => void)[] = [];
 
-/**
- * Subscribe to authentication state changes
- */
 export function subscribeToAuth(callback: (state: AuthState) => void) {
   authSubscribers.push(callback);
   return () => {
@@ -64,9 +58,6 @@ export function getAuthState(): AuthState {
   return authState;
 }
 
-/**
- * Initialize Google Sign-in
- */
 export function initializeGoogleAuth(): Promise<void> {
   return new Promise((resolve, reject) => {
     // Load Google Identity Services script
@@ -89,16 +80,16 @@ export function initializeGoogleAuth(): Promise<void> {
  */
 export async function handleGoogleSignIn(credential: string) {
   updateAuthState({ isLoading: true, error: null });
-  
+
   try {
-    const response = await fetch('http://localhost:3000/auth/google', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ idToken: credential }),
-    });
+      const response = await fetch(`${AUTH_CONFIG.BACKEND_URL}${AUTH_CONFIG.ENDPOINTS.GOOGLE_AUTH}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ idToken: credential }),
+      });
     
     const data = await response.json();
     

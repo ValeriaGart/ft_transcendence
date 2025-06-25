@@ -1,13 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
-
-// Authentication configuration
-const AUTH_CONFIG = {
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id.apps.googleusercontent.com',
-  JWT_SECRET: process.env.JWT_SECRET || 'your-super-secure-jwt-secret-key',
-  JWT_EXPIRES_IN: '7d',
-  BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3000'
-};
+import { AUTH_CONFIG } from '../../config/auth.ts';
 
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(AUTH_CONFIG.GOOGLE_CLIENT_ID);
@@ -105,7 +98,6 @@ export function createAuthMiddleware() {
       throw new Error('Invalid or expired token');
     }
     
-    // Add user information to request
     request.user = payload;
   };
 }

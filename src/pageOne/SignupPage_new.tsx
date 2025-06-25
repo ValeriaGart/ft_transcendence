@@ -5,6 +5,7 @@ import { useState } from '../util/state/state';
 import { EmailInput } from '../global/EmailInput';
 import { PasswordInput } from '../global/PasswordInput';
 import { Error } from '../global/Error';
+import { AUTH_CONFIG } from '../config/auth';
 
 interface SignupPageProps {
     onEnterClick: () => void;
@@ -63,7 +64,7 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
 
         try {
             console.log('Attempting registration with:', { email, password });
-            const response = await fetch('http://localhost:3000/users', {
+            const response = await fetch(`${AUTH_CONFIG.BACKEND_URL}/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

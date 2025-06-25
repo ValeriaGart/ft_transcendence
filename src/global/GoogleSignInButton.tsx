@@ -19,13 +19,13 @@ declare global {
 }
 
 export function GoogleSignInButton({ onSuccess, onError, className = '' }: GoogleSignInButtonProps) {
-  let isInitialized = false;
+  const isInitialized = useRef(false);
   
   // Set to true for demo mode, false for real Google OAuth
   const USE_DEMO_MODE = false; // REAL Google authentication
 
   const initializeButton = async () => {
-    if (isInitialized) return;
+    if (isInitialized.current) return;
     
     try {
       await initializeGoogleAuth();

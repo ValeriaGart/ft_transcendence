@@ -1,32 +1,31 @@
 import fastify from 'fastify';
-import { db, initialize } from './plugins/db-connector.js';
-import routesUser from './plugins/route-users.js';
-import routesProfiles from './plugins/route-profiles.js';
-
-//sugested by ai
+import { initialize } from './config/database.js';
+import userRoutes from './routes/user.routes.js';
+import profileRoutes from './routes/profile.routes.js';
 import cors from '@fastify/cors';
 
 const app = fastify({ logger: true });
 
-app.register(routesUser);
-app.register(routesProfiles);
-
-// Register CORS  sugested by ai
-app.register(cors, {
-  origin: true, // Allow all origins in development
-  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+// Register CORS
+await app.register(cors, {
+  origin: true,
+  methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true
 });
 
-
+// Register routes
+await app.register(userRoutes);
+await app.register(profileRoutes);
 
 async function bootstrap() {
   try {
     await initialize();
-    await app.listen({ port: 3000 });
+    await app.listen({ port: 3000, host: '0.0.0.0' });
+    app.log.info('Server running on http://localhost:3000');
   } catch (err) {
     app.log.error(err);
     process.exit(1);
   }
 }
+
 bootstrap();

@@ -35,8 +35,8 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
         setApiError(''); // Clear any previous API errors
     };
 
-    const handleConfirmPasswordChange = (e: Event) => {
-        const newConfirmPassword = (e.target as HTMLInputElement).value;
+    const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const newConfirmPassword = e.target.value;
         console.log('SignupPage: Confirm password changed', { newConfirmPassword }); // Debug log
         setConfirmPassword(newConfirmPassword);
         setIsConfirmPasswordValid(newConfirmPassword === password);

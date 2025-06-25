@@ -114,7 +114,7 @@ async function routes (fastify, options) {
             
             db.run(
               `INSERT INTO profiles (userId, nickname, bio, profilePictureUrl)
-              VALUES (?, NULL, NULL, NULL)`,
+              VALUES (NULL, NULL, NULL, NULL)`,
               [this.lastID],
               function (err) {
                 if (err) {

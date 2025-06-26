@@ -147,7 +147,8 @@ class UserController {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === 'production',
 		sameSite: 'strict',
-		maxAge: 60 * 60 * 1000 // 1 hour
+		maxAge: 60 * 60 * 1000, // 1 hour
+		path: '/' 
 	  });
       
       return {
@@ -165,7 +166,9 @@ class UserController {
 
   static async logoutUser(request, reply) {
 	try {
-		reply.clearCookie('authToken');
+		reply.clearCookie('authToken', {
+			path: '/'
+		});
 
 		return {
 			success: true,

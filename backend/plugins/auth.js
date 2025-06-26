@@ -2,17 +2,23 @@ import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
 
 async function authPlugin(fastify, options) {
-  // Register JWT plugin
+  // Register JWT plugin with fallback secret
   await fastify.register(jwt, {
-    secret: process.env.JWT_SECRET,
+    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-here-let-us-make-it-long-and-random',
     sign: {
       expiresIn: process.env.JWT_EXPIRES_IN || '1h'
     }
   });
 
-  // Authentication decorator - validates JWT token
+  // Authentication decorator - validates JWT token from header or cookie
   fastify.decorate('authenticate', async function(request, reply) {
     try {
+      // Check if token is in cookie, if so, add it to authorization header
+      if (!request.headers.authorization && request.cookies && request.cookies.authToken) {
+        request.headers.authorization = `Bearer ${request.cookies.authToken}`;
+      }
+      
+      // Use standard Fastify JWT verification
       await request.jwtVerify();
     } catch (err) {
       reply.code(401).send({ 

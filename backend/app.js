@@ -1,12 +1,23 @@
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load environment variables FIRST, before other imports
+config({ path: path.resolve('../.env') });
+
 import fastify from 'fastify';
 import { initialize } from './config/database.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
-import 'dotenv/config';
+import cookie from '@fastify/cookie';
 
 const app = fastify({ logger: true });
+
+// Register cookie plugin
+await app.register(cookie, {
+  secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-here-let-us-make-it-long-and-random'
+});
 
 // Register CORS
 await app.register(cors, {

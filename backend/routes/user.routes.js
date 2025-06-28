@@ -7,23 +7,17 @@ import {
 } from '../schemas/user.schemas.js';
 
 async function routes(fastify, options) {
-  // Apply rate limiting to all routes
-  await fastify.register(import('@fastify/rate-limit'), {
-    max: 100,
-    timeWindow: '1 minute'
-  });
-
   // Public route
   fastify.get('/', async (request, reply) => {
     return { hello: 'world' };
   });
   
-  // Public registration
+  // Public registration with strict rate limiting
   fastify.post('/users', {
 	config: {
 	  rateLimit: {
-		max: 10,
-		timeWindow: '1 minute'
+		max: 5, // Only 5 registrations per 15 minutes
+		timeWindow: '15 minutes'
 	  }
 	},
     schema: { body: userBodySchema }

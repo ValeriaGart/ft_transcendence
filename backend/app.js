@@ -29,10 +29,14 @@ await app.register(cors, {
 // Register auth plugin
 await app.register(authPlugin);
 
-// Global rate limiting
+// Global rate limiting with sensible defaults
 await app.register(import('@fastify/rate-limit'), {
+  global: true,
   max: 1000,
-  timeWindow: '15 minutes'
+  timeWindow: '15 minutes',
+  // Allow route-specific overrides
+  allowList: ['127.0.0.1'], // Optional: whitelist localhost for development
+  skipOnError: false
 });
 
 // Register routes

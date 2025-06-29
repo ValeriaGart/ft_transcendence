@@ -49,6 +49,23 @@ class ProfileController {
     }
   }
 
+  static async getCurrentUserProfile(request, reply) {
+    try {
+      const userId = request.user.userId;
+      const profile = await ProfileService.getProfileByUserId(userId);
+      
+      if (!profile) {
+        reply.code(404);
+        return { error: 'Profile not found' };
+      }
+      
+      return profile;
+    } catch (error) {
+      reply.code(500);
+      return { error: 'Failed to retrieve profile', details: error.message };
+    }
+  }
+
   static async patchProfile(request, reply) {
     try {
       const { id } = request.params;

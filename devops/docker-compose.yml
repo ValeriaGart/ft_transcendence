@@ -125,12 +125,22 @@ services:
     image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
     ports:
       - 5044:5044
+    volumes:
+      - ./logstash_pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    depends_on:
+      kibana:
+        condition: service_healthy
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
     volumes:
       - ./mylogs/logstash-tutorial-dataset:/usr/share/filebeat/mylogs/logstash-tutorial-dataset.log
       - ./filebeat.example.yml:/usr/share/filebeat/filebeat.yml
+    depends_on:
+      kibana:
+        condition: service_healthy
     # ports:
     #   - 5044:5044
 

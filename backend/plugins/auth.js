@@ -1,5 +1,6 @@
 import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
+import { dbGet } from '../config/database.js';
 
 async function authPlugin(fastify, options) {
   // Register JWT plugin with fallback secret
@@ -68,7 +69,6 @@ async function authPlugin(fastify, options) {
       const userId = request.user.userId;
       
       // Get profile to check ownership
-      const { dbGet } = await import('../config/database.js');
       const profile = await dbGet('SELECT userId FROM profiles WHERE id = ?', [profileId]);
       
       if (!profile || profile.userId !== userId) {

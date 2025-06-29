@@ -46,14 +46,11 @@ async function routes(fastify, options) {
     preHandler: [fastify.authenticate]
   }, UserController.logoutUser);
 
-  // User routes but protected
-  fastify.get('/users', {
-	preHandler: [fastify.authenticate]
-  }, UserController.getAllUsers);
 
+  // User can only access their own data or use /users/me
   fastify.get('/users/:id', {
 	schema: { params: userParamsSchema },
-	preHandler: [fastify.authenticate]
+	preHandler: [fastify.requireOwnership]
   }, UserController.getUserById);
 
 

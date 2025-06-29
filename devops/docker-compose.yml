@@ -121,9 +121,10 @@ services:
       timeout: 10s
       retries: 120
 
-  # logstash:
-  #   image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
-
+  logstash:
+    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    ports:
+      - 5044:5044
 
 
 volumes:

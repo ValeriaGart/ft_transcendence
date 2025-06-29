@@ -129,10 +129,10 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
     volumes:
-      - ./logstash-tutorial-dataset:/usr/share/filebeat/logstash-tutorial-dataset.log
+      - ./mylogs/logstash-tutorial-dataset:/usr/share/filebeat/mylogs/logstash-tutorial-dataset.log
       - ./filebeat.example.yml:/usr/share/filebeat/filebeat.yml
-    ports:
-      - 5044:5044
+    # ports:
+    #   - 5044:5044
 
 volumes:
   certs:

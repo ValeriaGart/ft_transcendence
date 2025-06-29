@@ -9,6 +9,9 @@ const db = new sqlite3.Database(
   sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE
 );
 
+// Enable foreign key constraints
+db.run('PRAGMA foreign_keys = ON');
+
 // Promisify database methods
 const dbRun = (sql, params = []) => {
   return new Promise((resolve, reject) => {

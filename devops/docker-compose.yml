@@ -122,7 +122,12 @@ services:
       retries: 120
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    # image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    build:
+      context: ./logstash/
+      dockerfile: ./Dockerfile
+      args:
+        STACK_VERSION: ${STACK_VERSION}
     ports:
       - 5044:5044
     volumes:
@@ -130,9 +135,11 @@ services:
       - certs:/usr/share/logstash/config/certs
     environment:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - STACK_VERSION=${STACK_VERSION}
     depends_on:
       kibana:
         condition: service_healthy
+
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}

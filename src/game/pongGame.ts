@@ -27,6 +27,7 @@ export class PongGame {
 	public _p1: Player;
 	public _p2: Player;
 	private _round: number = 0;
+	private _lastAIUpdate: number = 0;
 
 	constructor(engine: GameEngine, mode?: GameMode, opponent?: OpponentMode, p1?: Player, p2?: Player, round?: number) {
 		this._engine = engine;
@@ -73,11 +74,14 @@ export class PongGame {
 		this._gameStats.ballPosition.x += this._gameStats.ballVelocity.x;
 		this._gameStats.ballPosition.y += this._gameStats.ballVelocity.y;
 
-		if (this._p1.getBot() == true) {
-			this._p1._AI.update(this);
-		}
-		if (this._p2.getBot() == true) {
-			this._p2._AI.update(this);
+		if (this._lastAIUpdate == 0 || Date.now() - this._lastAIUpdate > 1000) {
+			if (this._p1.getBot() == true) {
+				this._p1._AI.update(this);
+			}
+			if (this._p2.getBot() == true) {
+				this._p2._AI.update(this);
+			}
+			this._lastAIUpdate = Date.now();
 		}
 
 		this._renderEngine.renderFrame();

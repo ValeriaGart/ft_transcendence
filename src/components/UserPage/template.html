@@ -1,4 +1,4 @@
-<div class="flex flex-col items-center justify-center h-auto xl:h-screen min-h-screen w-screen bg-[#F0F7F7] ">
+<div class="flex flex-col items-center justify-center h-auto min-h-screen w-screen bg-[#F0F7F7] ">
     <img src="/art/dark_star.svg" alt="Star" class="absolute top-[10%] left-[1%] h-[20%] w-auto animate-pulse-slow z-0" />
     <img src="/art/dark_star.svg" alt="Star" class="absolute top-[50%] left-[0%] h-[10%] w-auto animate-pulse-slow z-0" />
     <img src="/art/dark_star.svg" alt="Star" class="absolute top-[15%] right-[0%] h-[13%] w-auto animate-pulse-slow z-0" />
@@ -9,15 +9,21 @@
         <div class="flex flex-col items-center h-auto min-h-[900px] w-[95%] bg-[#F0F7F7] rounded-3xl -mt-10 p-1 relative">
             <blitz-sound-button></blitz-sound-button>
             <div class="flex flex-wrap justify-center items-center gap-x-8 2xl:gap-x-24">
-                <div class="flex flex-col items-center justify-between h-auto w-[360px] md:w-[500px] mt-[10%] md:mt-[5%] mb-[10%] gap-3">
+                <div class="flex flex-col items-center justify-between h-auto w-[360px] md:w-[500px] mt-[10%] md:mt-[5%] mb-[10%] gap-3 md:gap-10">
                     <div class="flex flex-col items-center justify-center h-[250px] w-[360px] md:w-[500px] md:h-[300px]">
                         <blitz-profile-component></blitz-profile-component>
                     </div>
-                    <div class="flex flex-row items-center justify-center h-[360px] w-[360px] md:w-[400px] md:h-[400px] border-[#B0D5D5] border-5 "></div>
+                    <div id="dashboard" class="flex flex-row items-center justify-center h-[360px] w-[360px] md:w-[450px] md:h-[400px]">
+                        <blitz-dashboard-component></blitz-dashboard-component>
+                    </div>
                 </div>
-                <div class="flex flex-col mt-[50px] h-[450px] w-[220px] md:w-[300px] md:h-[610px] lg:h-[710px] lg:w-[350px] mb-[10%]">
-                    <div class="flex flex-col items-center justify-center h-[220px] w-[220px] md:w-[300px] md:h-[300px] lg:w-[350px] lg:h-[350px] border-[#B0D5D5] border-5 mb-[10px] "></div>
-                    <div class="flex flex-row items-center justify-center h-[220px] w-[220px] md:w-[300px] md:h-[300px] lg:w-[350px] lg:h-[350px] border-[#B0D5D5] border-5 "></div>
+                <div class="flex flex-col mt-[50px] w-[300px] h-[610px] lg:h-[710px] lg:w-[350px] mb-[10%]">
+                    <div class="flex flex-col items-center justify-center w-[300px] h-[300px] lg:w-[350px] lg:h-[350px] mb-[10px] ">
+                        <blitz-tournament-component></blitz-tournament-component>
+                    </div>
+                    <div class="flex flex-row items-center justify-center w-[300px] h-[300px] lg:w-[350px] lg:h-[350px]">
+                        <blitz-one-on-one-component></blitz-one-on-one-component>
+                    </div>
                 </div>
             </div>
         </div>

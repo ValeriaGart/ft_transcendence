@@ -6,6 +6,8 @@ import { SignUpPage } from "./components/SignUpPage";
 import { SignInPage } from "./components/SignInPage";
 import { GreatSuccessPage } from "./components/GreatSuccessPage";
 import { UserPage } from "./components/UserPage";
+import { SettingsPage } from "./components/SettingsPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
 
@@ -61,7 +63,17 @@ if (app) {
 	})
 	.addRoute({
 		path: "/user",
-		component: UserPage,
+		component: UserPage, //ProtectedRoute,
+		children: [
+			{
+				path: "",
+				component: UserPage,
+			},
+			{
+				path: "/settings",
+				component: SettingsPage,
+			},
+		]
 	})
 
 	// Initialize the router after all routes are added

@@ -1,6 +1,7 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { Error } from "../Error";
+import { authService } from "../../lib/auth";
 
 interface SignInPageState {
     email: string;
@@ -68,7 +69,7 @@ export class SignInPage extends Component<SignInPageState> {
 
     private removeErrorComponent() {
         if (this.currentErrorComponent) {
-            this.currentErrorComponent.element.remove();
+            this.currentErrorComponent.unmount();
             this.currentErrorComponent = null;
         }
     }
@@ -82,33 +83,18 @@ export class SignInPage extends Component<SignInPageState> {
         }
 
         try {
-            console.log('Sending signin request to backend...');
+            console.log('Attempting login...');
             
-            const response = await fetch('/api/users/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: this.state.email,
-                    passwordString: this.state.password
-                })
-            });
+            const result = await authService.login(this.state.email, this.state.password);
             
-            console.log('Response status:', response.status);
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Backend error:', errorData);
-                this.showError(` ${errorData.error || 'Invalid email or password'}`);
-                return;
+            if (result.success) {
+                console.log('Login successful, redirecting to user page');
+                // Login successful, navigate to user page
+                Router.getInstance().navigate("/user");
+            } else {
+                console.error('Login failed:', result.error);
+                this.showError(result.error || 'Login failed');
             }
-            
-            const data = await response.json();
-            console.log('Login successful:', data);
-            
-            // Login successful, navigate to success page
-            Router.getInstance().navigate("/auth/greatsuccess");
             
         } catch (error) {
             console.error('Network error:', error);

@@ -4,7 +4,14 @@ export class UserPage extends Component {
 
     constructor() {
         super();
+        console.log('UserPage constructor called');
     }
 
-    render() {}
+    protected onMount(): void {
+        console.log('UserPage onMount called');
+    }
+
+    render() {
+        console.log('UserPage render called');
+    }
 }

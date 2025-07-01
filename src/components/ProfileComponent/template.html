@@ -1,7 +1,14 @@
-<div class="flex flex-row items-center justify-center relative h-[250px] w-[360px] md:w-[500px] md:h-[300px] border-[#B0D5D5] border-8 rounded-4xl">
-    <div class="flex flex-col items-center justify-center h-full w-full">
-        <p class="text-2xl font-bold text-gray-800">Hey</p>
-        <p class="text-2xl font-bold text-gray-800">Hey</p>
+<div class="flex flex-row items-center justify-center relative h-[250px] w-[360px] md:w-[500px] md:h-[300px] border-[#81C3C3] border-8 rounded-4xl">
+    <div class="flex flex-col items-center justify-center h-full w-auto gap-7 border-0">
+        <p class="text-xl md:text-2xl font-bold text-[#81C3C3] underline underline-offset-6 decoration-3 pl-2">{{nickname}}</p>
+        <p class="text-xl md:text-2xl font-bold text-[#81C3C3] underline underline-offset-6 decoration-3 pl-2">{{email}}</p>
+        <div id="bio" class="flex items-center justify-center w-full h-[100px] max-w-[90%] min-h-[40px] rounded-md p-2 text-center text-[#81C3C3] border-[#81C3C3] border-2">{{bio}}</div>
+        <div class="flex flex-row items-end justify-center w-[20%] md:w-[50%] gap-x-1 -mt-7 mr-3">
+            <button class="flex items-center gap-x-1 text-[#81C3C3] text-[200%] font-['Irish_Grover'] px-4 py-2 rounded-md hover:opacity-80 transition-opacity duration-300 cursor-pointer">
+                <img src="/art/profile/settings_icon.svg" alt="Settings" class="h-6 w-auto"/>
+                Settings
+            </button>
+        </div>
     </div>
-    <img src="/art/profile/profile_no.svg" alt="Profile" class="h-[90%] m-2"/>
+    <img src="/art/profile/profile_no.svg" alt="Profile" class="h-[90%] p-2"/>
 </div>

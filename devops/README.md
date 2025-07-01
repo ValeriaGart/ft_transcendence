@@ -26,3 +26,22 @@ echoing changes into the file on the host machine will therefore update the file
 ```
 echo "new logs 1234" >> ./mylogs/logstash-tutorial-dataset
 ```
+
+## indexing
+in logstash conf, set the index name to the name you want.
+start up the stack and enter kibana. there in Elasticsearch->Index Management create the index with the name of the index in the logstash conf. 
+
+## how it works
+### start stack and navigate kibana
+`docker compose up`
+then open `localhost:5601` (kibana).
+click the three lines on top left.
+click Analytics->Discover.
+select "my first data view".
+make sure that the timeframe is set correctly on top right. (could be last 15 minutes for example).
+see the logs!
+
+### send a new log message
+```
+echo "new logs 1234" >> ./mylogs/logstash-tutorial-dataset
+```

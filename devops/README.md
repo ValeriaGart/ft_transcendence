@@ -17,7 +17,7 @@ then run this (which will reset if the machine is restarted)
 ## logstash and filebeat
 run `docker compose up logstash filebeat`, the two services will start.
 
-filebeat will complain about filebeat.example.yml permissions if not set correctly, use `sudo chown root:root filebeat/config/filebeat.example.yml` and `sudo chmod go-w filebeat/config/filebeat.example.yml`
+filebeat will complain about filebeat.example.yml permissions if not set correctly, use `sudo chown root:root filebeat/config/filebeat.example.yml && sudo chmod go-w filebeat/config/filebeat.example.yml`
 
 filebeat will read all `*.log` files in the mylogs directory, as directed in `devops/filebeat.example.yml`, but each log file needs to be mounted in docker compose service `filebeat` like the logstash-tutorial-dataset
 

@@ -34,9 +34,9 @@ services:
           unzip config/certs/certs.zip -d config/certs;
         fi;
         echo "Setting file permissions"
-        chown -R root:root config/certs;
-        find . -type d -exec chmod 750 \{\} \;;
-        find . -type f -exec chmod 640 \{\} \;;
+        chown -R 1000:1000 config/certs;
+        find . -type d -exec chmod 754 \{\} \;;
+        find . -type f -exec chmod 644 \{\} \;;
         echo "Waiting for Elasticsearch availability";
         until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
         echo "Setting kibana_system password";
@@ -122,17 +122,23 @@ services:
       retries: 120
 
   logstash:
-    # image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
-    build:
-      context: ./logstash/
-      dockerfile: ./Dockerfile
-      args:
-        STACK_VERSION: ${STACK_VERSION}
+    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    # build:
+    #   context: ./logstash/
+    #   dockerfile: ./Dockerfile
+    #   args:
+    #     STACK_VERSION: ${STACK_VERSION}
     ports:
       - 5044:5044
     volumes:
       - ./logstash/config/logstash_pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
       - certs:/usr/share/logstash/config/certs
+    command: >
+      bash -c '
+        echo "Changing ownership of certs folder";
+        chown -R logstash:logstash /usr/share/logstash/config/certs;
+        exec /usr/local/bin/docker-entrypoint
+      '
     environment:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - STACK_VERSION=${STACK_VERSION}

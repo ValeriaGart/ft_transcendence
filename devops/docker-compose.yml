@@ -134,12 +134,6 @@ services:
     volumes:
       - ./logstash/config/logstash_pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
       - certs:/usr/share/logstash/config/certs
-    command: >
-      bash -c '
-        echo "Changing ownership of certs folder";
-        chown -R logstash:logstash /usr/share/logstash/config/certs;
-        exec /usr/local/bin/docker-entrypoint
-      '
     environment:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - STACK_VERSION=${STACK_VERSION}

@@ -2,6 +2,8 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
 import type { AuthState } from "../../lib/auth";
+import { UserPage } from "../UserPage";
+import { SettingsPage } from "../SettingsPage";
 
 interface ProtectedRouteProps {
   children?: HTMLElement[];
@@ -19,20 +21,23 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
   };
 
   private unsubscribe: (() => void) | null = null;
+  private userPageComponent: UserPage | null = null;
+  private settingsPageComponent: SettingsPage | null = null;
 
   constructor(props?: ProtectedRouteProps) {
     super(props || { children: [] });
     console.log('ProtectedRoute constructor called with props:', props);
   }
 
-  protected onMount(): void {
-    console.log('ProtectedRoute onMount called');
-    console.log('Current auth state:', authService.getAuthState());
-    
-    // Subscribe to auth state changes
+  protected async onMount(): Promise<void> {
+  
+    const currentAuthState = authService.getAuthState(); 
+    this.setState({
+      isAuthenticated: currentAuthState.isAuthenticated,
+      isLoading: false,
+    });
+
     this.unsubscribe = authService.subscribe((authState: AuthState) => {
-      console.log('ProtectedRoute received auth state update:', authState);
-      
       this.setState({
         isAuthenticated: authState.isAuthenticated,
         isLoading: false,
@@ -40,28 +45,85 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
 
       // If not authenticated, redirect to login
       if (!authState.isAuthenticated && !this.state.isLoading) {
-        console.log('User not authenticated, redirecting to login');
-        Router.getInstance().navigate('/auth/signin');
+        Router.getInstance().navigate('/signin');
       } else if (authState.isAuthenticated) {
-        console.log('User is authenticated, should render children');
+        this.renderCurrentPage();
       }
     });
   }
 
+  private renderCurrentPage(): void {
+    const currentPath = window.location.pathname;
+    
+    if (currentPath === '/user/settings') {
+      this.renderSettingsPage();
+    } else {
+      this.renderUserPage();
+    }
+  }
+
+  private renderUserPage(): void {
+    const slot = this.element.querySelector('blitz-slot');
+    if (slot) {
+      slot.innerHTML = '';
+    }
+
+    // Create and mount UserPage component
+    if (!this.userPageComponent) {
+      this.userPageComponent = new UserPage();
+    }
+
+    // Mount the UserPage component to the slot
+    if (slot) {
+      this.userPageComponent.mount(slot as HTMLElement);
+    } else {
+      console.error('ProtectedRoute: No slot found for UserPage');
+    }
+  }
+
+  private renderSettingsPage(): void {
+    const slot = this.element.querySelector('blitz-slot');
+    if (slot) {
+      slot.innerHTML = '';
+    }
+
+    // Create and mount SettingsPage component
+    if (!this.settingsPageComponent) {
+      this.settingsPageComponent = new SettingsPage();
+    }
+
+    // Mount the SettingsPage component to the slot
+    if (slot) {
+      this.settingsPageComponent.mount(slot as HTMLElement);
+    } else {
+      console.error('ProtectedRoute: No slot found for SettingsPage');
+    }
+  }
+
   protected onUnmount(): void {
-    console.log('ProtectedRoute onUnmount called');
     if (this.unsubscribe) {
       this.unsubscribe();
+    }
+    if (this.userPageComponent) {
+      this.userPageComponent.unmount();
+    }
+    if (this.settingsPageComponent) {
+      this.settingsPageComponent.unmount();
+    }
+  }
+
+  protected setState(newState: Partial<ProtectedRouteState>): void {
+    super.setState(newState);
+    
+    if (newState.isAuthenticated !== undefined || newState.isLoading !== undefined) {
+      setTimeout(() => {
+        this.render();
+      }, 0);
     }
   }
 
   render() {
-    console.log('ProtectedRoute render called, state:', this.state);
-    console.log('ProtectedRoute children:', this.children);
-    
     if (this.state.isLoading) {
-      console.log('Showing loading state');
-      // Show loading state
       this.element.innerHTML = `
         <div class="flex items-center justify-center h-screen">
           <div class="text-2xl text-[#B0D5D5] font-['Irish_Grover']">Loading...</div>
@@ -71,8 +133,6 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
     }
 
     if (!this.state.isAuthenticated) {
-      console.log('Showing unauthorized state');
-      // Show unauthorized message (will redirect in onMount)
       this.element.innerHTML = `
         <div class="flex items-center justify-center h-screen">
           <div class="text-2xl text-[#B0D5D5] font-['Irish_Grover']">Redirecting to login...</div>
@@ -81,17 +141,8 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
       return;
     }
 
-    console.log('User is authenticated, rendering children');
-    // User is authenticated, render children
-    this.element.innerHTML = '';
-    if (this.children && this.children.length > 0) {
-      console.log('Rendering', this.children.length, 'children');
-      this.children.forEach((child, index) => {
-        console.log('Rendering child', index, child);
-        this.element.appendChild(child);
-      });
-    } else {
-      console.log('No children to render');
-    }
+    this.element.innerHTML = '<blitz-slot></blitz-slot>';
+    
+    this.renderCurrentPage();
   }
 } 

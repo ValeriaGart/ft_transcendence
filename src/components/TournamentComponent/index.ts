@@ -13,7 +13,5 @@ export class TournamentComponent extends Component<TournamentComponentState> {
     super();
   }
     
-  render() {
-    // The template system will automatically handle the rendering
-  }
+  render() {}
 }

@@ -13,7 +13,5 @@ export class OneOnOneComponent extends Component<OneOnOneComponentState> {
     super();
   }
     
-  render() {
-    // The template system will automatically handle the rendering
-  }
+  render() {}
 }

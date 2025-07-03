@@ -5,6 +5,7 @@ import { authService } from "../../lib/auth";
 interface ProfileComponentState {
   nickname: string;
   email: string;
+  bio: string;
   isLoading: boolean;
   error: string | null;
 }
@@ -13,6 +14,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
   protected static state: ProfileComponentState = {
     nickname: 'Unknown',
     email: 'Unknown',
+    bio: 'No bio available',
     isLoading: true,
     error: null,
   }
@@ -37,32 +39,24 @@ export class ProfileComponent extends Component<ProfileComponentState> {
 
   private async loadProfileData(): Promise<void> {
     try {
-      // TEMPORARY: Mock profile data for frontend development
-      // Remove this when backend is ready
-      console.log('ProfileComponent: Using mock profile data (backend not ready yet)');
+      // Get email from auth service
+      const currentUser = authService.getCurrentUser();
+      const email = currentUser?.email || 'Unknown';
       
-      // Mock profile data
-      const mockProfileData = {
-        nickname: 'TestUser',
-        email: 'test@example.com'
-      };
-      
-      this.setState({
-        nickname: mockProfileData.nickname,
-        email: mockProfileData.email,
-        isLoading: false,
-        error: null
-      });
+      console.log('ProfileComponent: Current user:', currentUser);
+      console.log('ProfileComponent: Auth token exists:', !!authService.getToken());
 
-      // TODO: Uncomment this when backend is ready
-      /*
-      const response = await authService.authenticatedFetch('/api/profiles/1');
+      // Get profile data from API
+      const response = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
+      
+      console.log('ProfileComponent: Response status:', response.status);
       
       if (!response.ok) {
-        // If the request fails, just show "Unknown" instead of error
+        console.error('ProfileComponent: Profile fetch failed with status:', response.status);
         this.setState({
           nickname: 'Unknown',
-          email: 'Unknown',
+          email: email,
+          bio: 'No bio available',
           isLoading: false,
           error: null
         });
@@ -73,26 +67,26 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       
       this.setState({
         nickname: profileData.nickname && profileData.nickname.trim() !== '' ? profileData.nickname : 'Unknown',
-        email: profileData.email && profileData.email.trim() !== '' ? profileData.email : 'Unknown',
+        email: email,
+        bio: profileData.bio && profileData.bio.trim() !== '' ? profileData.bio : 'No bio available',
         isLoading: false,
         error: null
       });
-      */
 
     } catch (error) {
       console.error('Error loading profile data:', error);
-      // On error, just show "Unknown" instead of error state
+      const currentUser = authService.getCurrentUser();
+      const email = currentUser?.email || 'Unknown';
+      
       this.setState({
         nickname: 'Unknown',
-        email: 'Unknown',
+        email: email,
+        bio: 'No bio available',
         isLoading: false,
         error: null
       });
     }
   }
     
-  render() {
-    // The template system will automatically handle the rendering
-    // based on the state values (nickname and email)
-  }
+  render() {}
 }

@@ -9,6 +9,5 @@ export class ControllerView extends Component<ControllerViewProps> {
         super(props);
     }
 
-    render() {
-    }
+    render() {}
 }

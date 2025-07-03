@@ -90,7 +90,7 @@ export class SignInPage extends Component<SignInPageState> {
             if (result.success) {
                 console.log('Login successful, redirecting to user page');
                 // Login successful, navigate to user page
-                Router.getInstance().navigate("/user");
+                Router.getInstance().navigate("/greatsuccess");
             } else {
                 console.error('Login failed:', result.error);
                 this.showError(result.error || 'Login failed');

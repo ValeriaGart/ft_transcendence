@@ -143,11 +143,21 @@ export class Router {
           
           // If there's no remaining path and this is a parent route, return it
           if (!remainingPath && route.path !== '/') {
+            console.log('Router: No remaining path, checking for empty child route');
+            // Check if there's a child route with empty path
+            const emptyChildRoute = route.children?.find(child => child.path === '');
+            if (emptyChildRoute) {
+              console.log('Router: Found empty child route, returning it');
+              return { route: emptyChildRoute, params: {} };
+            }
+            console.log('Router: No empty child route found, returning parent route');
             return { route, params: {} };
           }
           
           // Check child routes
           for (const childRoute of route.children) {
+            console.log('Router: Checking child route:', childRoute.path, 'against remaining path:', remainingPath);
+            
             // For child routes, we need to match the full remaining path
             const childParamNames: string[] = [];
             const childPattern = childRoute.path.replace(/:\w+/g, (match) => {
@@ -157,6 +167,8 @@ export class Router {
             
             const childRegex = new RegExp(`^${childPattern}$`);
             const childMatch = remainingPath.match(childRegex);
+            
+            console.log('Router: Child route pattern:', childPattern, 'match:', childMatch);
             
             if (childMatch) {
               // Extract parameters from both parent and child routes
@@ -172,7 +184,9 @@ export class Router {
                 params[name] = childMatch[index + 1];
               });
               
-              return { route: childRoute, params };
+              console.log('Router: Found matching child route:', childRoute.path);
+              console.log('Router: But returning parent route for nested rendering');
+              return { route: route, params }; // Return parent route, not child route
             }
           }
         }
@@ -187,7 +201,12 @@ export class Router {
    * @param path - The path to handle
    */
   private handleRoute(path: string): void {
+    console.log('Router: Handling route for path:', path);
     const { route, params } = this.findRoute(path, this.routes);
+
+    console.log('Router: Found route:', route ? route.path : 'none');
+    console.log('Router: Route component:', route ? route.component.name : 'none');
+    console.log('Router: Route params:', params);
 
     if (route) {
       this.currentRoute = route;
@@ -205,13 +224,48 @@ export class Router {
    */
   private render(): void {
     if (this.currentRoute) {
+      console.log('Router: Rendering component:', this.currentRoute.component.name);
+      console.log('Router: Root element:', this.rootElement);
+      
       // Clear the root element
       this.rootElement.innerHTML = '';
       
-      // Create and mount the component with parameters
-      const component = new this.currentRoute.component(this.currentParams);
-      component.mount(this.rootElement);
+      // Check if this is a child route that needs to be rendered through its parent
+      const parentRoute = this.findParentRoute(this.currentRoute);
+      if (parentRoute && parentRoute.children) {
+        console.log('Router: This is a child route, rendering parent route');
+        
+        // Just render the parent route - it will handle rendering its children
+        const parentComponent = new parentRoute.component(this.currentParams);
+        console.log('Router: Created parent component:', parentComponent);
+        
+        // Mount the parent component
+        parentComponent.mount(this.rootElement);
+        console.log('Router: Parent component mounted');
+      } else {
+        // Create and mount the component with parameters
+        const component = new this.currentRoute.component(this.currentParams);
+        console.log('Router: Created component instance:', component);
+        component.mount(this.rootElement);
+        console.log('Router: Component mounted successfully');
+      }
     }
+  }
+
+  /**
+   * Finds the parent route for a given child route
+   */
+  private findParentRoute(childRoute: Route): Route | null {
+    for (const route of this.routes) {
+      if (route.children) {
+        for (const child of route.children) {
+          if (child === childRoute) {
+            return route;
+          }
+        }
+      }
+    }
+    return null;
   }
 }
 

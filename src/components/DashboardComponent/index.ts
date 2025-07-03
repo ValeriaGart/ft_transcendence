@@ -1,5 +1,4 @@
 import { Component } from "@blitz-ts/Component";
-import { Router } from "@blitz-ts/router";
 
 interface DashboardComponentState {
   error: string | null;
@@ -14,7 +13,5 @@ export class DashboardComponent extends Component<DashboardComponentState> {
     super();
   }
     
-  render() {
-    // The template system will automatically handle the rendering
-  }
+  render() {}
 }

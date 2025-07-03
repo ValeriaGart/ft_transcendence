@@ -174,7 +174,7 @@ export class SignUpPage extends Component<SignUpPageState> {
         try {
             console.log('Sending signup request to backend...');
             
-            const response = await fetch('/api/users', {
+            const response = await fetch('http://localhost:3000/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ export class SignUpPage extends Component<SignUpPageState> {
             console.log('Registration successful:', data);
             
             // Registration successful, navigate to success page
-            Router.getInstance().navigate("/auth/greatsuccess");
+            Router.getInstance().navigate("/greatsuccess");
             
         } catch (error) {
             console.error('Network error:', error);

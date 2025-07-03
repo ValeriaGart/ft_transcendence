@@ -9,10 +9,19 @@ import { UserPage } from "./components/UserPage";
 import { SettingsPage } from "./components/SettingsPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { authService } from "./lib/auth";
 
 
 // Register all components automatically
 autoRegisterComponents();
+
+console.log('=== APP STARTUP DEBUG ===');
+console.log('Current URL:', window.location.href);
+console.log('Current pathname:', window.location.pathname);
+console.log('Stored token:', localStorage.getItem('auth_token') ? 'exists' : 'none');
+console.log('Stored user:', localStorage.getItem('auth_user') ? 'exists' : 'none');
+console.log('AuthService state:', authService.getAuthState());
+console.log('=== END DEBUG ===');
 
 console.log('Setting up global ErrorBoundary...');
 
@@ -46,24 +55,22 @@ if (app) {
 	.addRoute({
 		path: "/auth",
 		component: AuthPage,
-		children: [
-			{
-				path: "/signup",
-				component: SignUpPage,
-			},
-			{
-				path: "/signin",
-				component: SignInPage,
-			},
-			{
-				path: "/greatsuccess",
-				component: GreatSuccessPage,
-			},
-		]
+	})
+	.addRoute({
+		path: "/signup",
+		component: SignUpPage,
+	})
+	.addRoute({
+		path: "/signin",
+		component: SignInPage,
+	})
+	.addRoute({
+		path: "/greatsuccess",
+		component: GreatSuccessPage,
 	})
 	.addRoute({
 		path: "/user",
-		component: UserPage, //ProtectedRoute,
+		component: ProtectedRoute,
 		children: [
 			{
 				path: "",

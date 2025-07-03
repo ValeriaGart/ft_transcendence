@@ -8,10 +8,10 @@ export class AuthPage extends Component {
 
     render() {
         this.addEventListener("#signup_button", "click", () => {
-            Router.getInstance().navigate("/auth/signup");
+            Router.getInstance().navigate("/signup");
         });
         this.addEventListener("#signin_button", "click", () => {
-            Router.getInstance().navigate("/auth/signin");
+            Router.getInstance().navigate("/signin");
         });
     }
 }

@@ -46,9 +46,6 @@ export class SignInPage extends Component<SignInPageState> {
     }
 
     private displayErrorComponent(message: string) {
-        console.log('Creating error component with message:', message);
-        
-        // Remove any existing error component first
         this.removeErrorComponent();
 
         const errorComponent = new Error({
@@ -56,14 +53,8 @@ export class SignInPage extends Component<SignInPageState> {
             onClose: () => this.hideError()
         });
         
-        console.log('Error component created:', errorComponent);
-        
-        // Mount error component to the page
         errorComponent.mount(this.element);
         
-        console.log('Error component mounted to:', this.element);
-        
-        // Store reference to remove later
         this.currentErrorComponent = errorComponent;
     }
 
@@ -102,10 +93,16 @@ export class SignInPage extends Component<SignInPageState> {
         }
     }
 
+    public handleSignUp(e: Event) {
+        e.preventDefault();
+        Router.getInstance().navigate("/signup");
+    }
+
     protected onMount(): void {
         this.bind("#email", "email", { twoWay: true });
         this.bind("#password", "password", { twoWay: true });
         this.addEventListener("#signin_form", "submit", this.handleSignIn);
+        this.addEventListener("#signup_button", "click", this.handleSignUp);
     }
 
     render() {}

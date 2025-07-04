@@ -206,11 +206,17 @@ export class SignUpPage extends Component<SignUpPageState> {
         }
     }
 
+    public handleSignIn(e: Event) {
+        e.preventDefault();
+        Router.getInstance().navigate("/signin");
+    }
+
     protected onMount(): void {
         this.bind("#email", "email", { twoWay: true });
         this.bind("#password", "password", { twoWay: true });
         this.bind("#confirm_password", "confirmPassword", { twoWay: true }); 
         this.addEventListener("#signup_form", "submit", this.handleSignUp);
+        this.addEventListener("#signin_button", "click", this.handleSignIn);
         
         // Add input event listener for email validation
         const emailElement = this.element.querySelector("#email") as HTMLInputElement;

@@ -1,11 +1,17 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
-import { Error as ErrorComponent } from "../Error";
+import { ErrorManager } from "../Error";
+import { ConfirmDialogManager } from "../ConfirmDialog";
 
 interface SettingsPageState {
-  currentPage: 'page1' | 'page2' | 'confirm';
+  currentPage: 'page1' | 'page2' | 'confirm' | 'password_change';
   pendingChanges: {
+    username?: string;
+    email?: string;
+    bio?: string;
+  };
+  originalValues: {
     username?: string;
     email?: string;
     bio?: string;
@@ -17,11 +23,10 @@ interface SettingsPageState {
 
 export class SettingsPage extends Component<SettingsPageState> {
 
-  private currentErrorComponent: ErrorComponent | null = null;
-
   protected static state: SettingsPageState = {
     currentPage: 'page1',
     pendingChanges: {},
+    originalValues: {},
     isLoading: false,
     showError: false,
     errorMessage: null,
@@ -37,47 +42,13 @@ export class SettingsPage extends Component<SettingsPageState> {
         errorMessage: message
     });
 
-    this.displayErrorComponent(message);
-  }
-
-  private hideError() {
-      this.setState({
-          showError: false,
-          errorMessage: null
-      });
-
-      // Remove the error component
-      this.removeErrorComponent();
-  }
-
-  private displayErrorComponent(message: string) {
-        console.log('Creating error component with message:', message);
-        
-        // Remove any existing error component first
-        this.removeErrorComponent();
-
-        const errorComponent = new ErrorComponent({
-            message: message,
-            onClose: () => this.hideError()
+    ErrorManager.showError(message, this.element, () => {
+        this.setState({
+            showError: false,
+            errorMessage: null
         });
-        
-        console.log('Error component created:', errorComponent);
-        
-        // Mount error component to the page
-        errorComponent.mount(this.element);
-        
-        console.log('Error component mounted to:', this.element);
-        
-        // Store reference to remove later
-        this.currentErrorComponent = errorComponent;
-    }
-
-    private removeErrorComponent() {
-        if (this.currentErrorComponent) {
-            this.currentErrorComponent.unmount();
-            this.currentErrorComponent = null;
-        }
-    }
+    });
+  }
 
   protected onMount(): void {
     this.setupEventListeners();
@@ -86,7 +57,6 @@ export class SettingsPage extends Component<SettingsPageState> {
   }
 
   private setupEventListeners(): void {
-    // Next page button (shows page 2)
     this.addEventListener('#next_page', 'click', (e) => {
       e.preventDefault();
       console.log('Next page clicked');
@@ -94,7 +64,6 @@ export class SettingsPage extends Component<SettingsPageState> {
       this.updatePageVisibility();
     });
 
-    // Previous page button (shows page 1)
     this.addEventListener('#previous_page', 'click', (e) => {
       e.preventDefault();
       console.log('Previous page clicked');
@@ -102,25 +71,22 @@ export class SettingsPage extends Component<SettingsPageState> {
       this.updatePageVisibility();
     });
 
-    // Confirm button from page 1 (shows confirm page)
     this.addEventListener('#confirm_button_page1', 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       console.log('Confirm button clicked from page 1, switching to confirm page');
       
-      // Capture form data from page 1
       const usernameInput = this.element.querySelector('#username') as HTMLInputElement;
       const emailInput = this.element.querySelector('#email') as HTMLInputElement;
       
       const pendingChanges: any = {};
-      if (usernameInput && usernameInput.value.trim()) {
+      if (usernameInput && usernameInput.value.trim() !== this.state.originalValues.username) {
         pendingChanges.username = usernameInput.value.trim();
       }
-      if (emailInput && emailInput.value.trim()) {
+      if (emailInput && emailInput.value.trim() !== this.state.originalValues.email) {
         pendingChanges.email = emailInput.value.trim();
       }
       
-      // Check if any changes were made
       if (Object.keys(pendingChanges).length === 0) {
         Router.getInstance().navigate('/user');
       }
@@ -134,21 +100,26 @@ export class SettingsPage extends Component<SettingsPageState> {
       }, 10);
     });
 
-    // Confirm button from page 2 (shows confirm page)
     this.addEventListener('#confirm_button_page2', 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       console.log('Confirm button clicked from page 2, switching to confirm page');
       
-      // Capture form data from page 2
       const bioInput = this.element.querySelector('#bio') as HTMLTextAreaElement;
+      const usernameInput = this.element.querySelector('#username') as HTMLInputElement;
+      const emailInput = this.element.querySelector('#email') as HTMLInputElement;
       
       const pendingChanges: any = {};
-      if (bioInput && bioInput.value.trim()) {
+      if (usernameInput && usernameInput.value.trim() !== this.state.originalValues.username) {
+        pendingChanges.username = usernameInput.value.trim();
+      }
+      if (emailInput && emailInput.value.trim() !== this.state.originalValues.email) {
+        pendingChanges.email = emailInput.value.trim();
+      }
+      if (bioInput && bioInput.value.trim() !== this.state.originalValues.bio) {
         pendingChanges.bio = bioInput.value.trim();
       }
       
-      // Check if any changes were made
       if (Object.keys(pendingChanges).length === 0) {
         Router.getInstance().navigate('/user');
       }
@@ -162,42 +133,32 @@ export class SettingsPage extends Component<SettingsPageState> {
       }, 10);
     });
 
-    // Quit button (goes back to user page)
     this.addEventListener('#quit_button', 'click', (e) => {
       e.preventDefault();
       console.log('Quit button clicked, navigating back to user page');
       Router.getInstance().navigate('/user');
     });
 
-    // Confirm button on confirm page (validates password and updates backend)
     this.addEventListener('#confirm_button', 'click', async (e) => {
       e.preventDefault();
-      console.log('Password confirmed! Processing updates...');
-      
+    
       const passwordInput = this.element.querySelector('#password') as HTMLInputElement;
       if (!passwordInput || !passwordInput.value.trim()) {
-        alert('Please enter your password');
+        this.showError('Please enter your password');
         return;
       }
       
       const password = passwordInput.value.trim();
       
-      // Check if there are any pending changes
-      if (Object.keys(this.state.pendingChanges).length === 0) {
-        console.log('No changes to save, navigating back to user page');
-        Router.getInstance().navigate('/user');
-        return;
-      }
-      
       this.setState({ isLoading: true, error: null });
-      
+
       try {
-        // First verify the password by trying to authenticate with current user's email
         const currentUser = authService.getCurrentUser();
         if (!currentUser) {
           throw new Error('No user logged in');
         }
         
+        //TODO add the check
         const verifyResponse = await fetch('http://localhost:3000/users/login', {
           method: 'POST',
           headers: {
@@ -211,13 +172,13 @@ export class SettingsPage extends Component<SettingsPageState> {
         });
         
         if (!verifyResponse.ok) {
-          throw new Error('Invalid password');
+          this.showError('Invalid password');
+          return;
         }
         
         // Password is valid, now update the user data
         await this.updateUserData();
         
-        console.log('Updates successful! Navigating back to user page');
         Router.getInstance().navigate('/user');
         
       } catch (error) {
@@ -227,10 +188,11 @@ export class SettingsPage extends Component<SettingsPageState> {
           isLoading: false 
         });
         
-        if (error instanceof Error && error.message === 'Invalid password') {
-          alert('Invalid password. Please try again.');
+        if (error instanceof Error && error.message.includes('Unauthorized')) {
+          this.showError('Your session has expired. Please log in again.');
+          Router.getInstance().navigate('/');
         } else {
-          alert('Failed to update settings. Please try again.');
+          this.showError('Failed to update settings. Please try again.');
         }
       }
     });
@@ -238,44 +200,162 @@ export class SettingsPage extends Component<SettingsPageState> {
     // Sign out button (goes to entry screen) - works on both pages
     this.addEventListener('#signout_button', 'click', async (e) => {
       e.preventDefault();
-      console.log('Sign out button clicked, logging out and navigating to entry screen');
+      console.log('Sign out button clicked, showing logout confirmation');
       
-      try {
-        // Call backend logout and clear local auth state
-        await authService.logout();
-        console.log('Logout successful');
-      } catch (error) {
-        console.error('Logout error:', error);
-        // Even if backend logout fails, the logout method should still clear local auth state
-      }
-      
-      // Navigate to entry screen
-      Router.getInstance().navigate('/');
+      // Show custom confirmation dialog
+      ConfirmDialogManager.showConfirm(
+        'Are you sure you want to sign out?',
+        this.element,
+        async () => {
+          // User clicked "Yes" - proceed with logout
+          try {
+            // Call backend logout and clear local auth state
+            await authService.logout();
+            console.log('Logout successful');
+          } catch (error) {
+            console.error('Logout error:', error);
+            // Even if backend logout fails, the logout method should still clear local auth state
+          }
+          
+          Router.getInstance().navigate('/');
+        },
+        () => {
+          // User clicked "No" - do nothing
+          console.log('User cancelled logout');
+        }
+      );
     }, { capture: true });
 
-    // Delete user button on page 2 specifically (since page might be hidden)
     this.addEventListener('#settings_page2 #delete_button', 'click', async (e) => {
       e.preventDefault();
       console.log('Delete user button clicked from page 2, deleting user account');
       
-      // Show confirmation dialog
-      const confirmed = confirm('Are you sure you want to delete your account? This action cannot be undone.');
-      
-      if (confirmed) {
-        try {
-          // Call backend delete user and clear local auth state
-          const result = await authService.deleteUser();
-          if (result.success) {
-            console.log('User deleted successfully');
-            // Navigate to entry screen
-            Router.getInstance().navigate('/');
-          } else {
-            console.error('Delete user failed:', result.error);
-            alert('Failed to delete user: ' + result.error);
+      // Show custom confirmation dialog
+      ConfirmDialogManager.showConfirm(
+        'Are you sure you want to delete your account?',
+        this.element,
+        async () => {
+          // User clicked "Yes" - proceed with deletion
+          try {
+            const result = await authService.deleteUser();
+            if (result.success) {
+              console.log('User deleted successfully');
+              Router.getInstance().navigate('/');
+            } else {
+              console.error('Delete user failed:', result.error);
+              this.showError('Failed to delete user: ' + result.error);
+            }
+          } catch (error) {
+            console.error('Delete user error:', error);
+            this.showError('An error occurred while deleting your account');
           }
-        } catch (error) {
-          console.error('Delete user error:', error);
-          alert('An error occurred while deleting your account');
+        },
+        () => {
+          // User clicked "No" - do nothing
+          console.log('User cancelled account deletion');
+        }
+      );
+    });
+
+    // Change password button (shows password change page)
+    this.addEventListener('#change_password', 'click', (e) => {
+      e.preventDefault();
+      console.log('Change password button clicked');
+      this.setState({ currentPage: 'password_change' });
+      this.updatePageVisibility();
+    });
+
+    // Quit password change button (goes back to page 2)
+    this.addEventListener('#quit_password_change', 'click', (e) => {
+      e.preventDefault();
+      Router.getInstance().navigate('/user');
+    });
+
+    // Confirm password change button
+    this.addEventListener('#confirm_password_change', 'click', async (e) => {
+      e.preventDefault();
+      console.log('Confirm password change clicked');
+      
+      const currentPasswordInput = this.element.querySelector('#current_password') as HTMLInputElement;
+      const newPasswordInput = this.element.querySelector('#new_password') as HTMLInputElement;
+      
+      if (!currentPasswordInput || !currentPasswordInput.value.trim()) {
+        this.showError('Please enter your current password');
+        return;
+      }
+      
+      if (!newPasswordInput || !newPasswordInput.value.trim()) {
+        this.showError('Please enter your new password');
+        return;
+      }
+      
+      const currentPassword = currentPasswordInput.value.trim();
+      const newPassword = newPasswordInput.value.trim();
+      
+      this.setState({ isLoading: true });
+      
+      try {
+        // First verify the current password by trying to authenticate
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser) {
+          throw new Error('No user logged in');
+        }
+        
+        const verifyResponse = await fetch('http://localhost:3000/users/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ 
+            email: currentUser.email, 
+            passwordString: currentPassword 
+          }),
+        });
+        
+        if (!verifyResponse.ok) {
+          throw new Error('Invalid current password');
+        }
+        
+        // Current password is valid, now change the password TODO
+        const changePasswordResponse = await authService.authenticatedFetch(`http://localhost:3000/users/${currentUser.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ passwordString: newPassword }),
+        });
+        
+        if (!changePasswordResponse.ok) {
+          const errorData = await changePasswordResponse.json();
+          if (changePasswordResponse.status === 401) {
+            throw new Error('Unauthorized: Session expired');
+          }
+          throw new Error(errorData.error || 'Failed to change password');
+        }
+        
+        console.log('Password changed successfully!');
+        this.showError('Password changed successfully!');
+        
+        // Clear the password fields
+        if (currentPasswordInput) currentPasswordInput.value = '';
+        if (newPasswordInput) newPasswordInput.value = '';
+        
+        // Go back to page 2
+        this.setState({ currentPage: 'page2' });
+        this.updatePageVisibility();
+        
+      } catch (error) {
+        console.error('Error changing password:', error);
+        this.setState({ isLoading: false });
+        
+        if (error instanceof Error && error.message === 'Invalid current password') {
+          this.showError('Invalid current password. Please try again.');
+        } else if (error instanceof Error && error.message.includes('Unauthorized')) {
+          this.showError('Your session has expired. Please log in again.');
+          Router.getInstance().navigate('/');
+        } else {
+          this.showError('Failed to change password. Please try again.');
         }
       }
     });
@@ -285,15 +365,20 @@ export class SettingsPage extends Component<SettingsPageState> {
     console.log('Updating page visibility, current page:', this.state.currentPage);
     
     const confirmPage = this.element.querySelector('#settings_confirm') as HTMLElement;
+    const passwordChangePage = this.element.querySelector('#change_password_confirm') as HTMLElement;
     const page1 = this.element.querySelector('#settings_page1') as HTMLElement;
     const page2 = this.element.querySelector('#settings_page2') as HTMLElement;
 
-    console.log('Found elements:', { confirmPage: !!confirmPage, page1: !!page1, page2: !!page2 });
+    console.log('Found elements:', { confirmPage: !!confirmPage, passwordChangePage: !!passwordChangePage, page1: !!page1, page2: !!page2 });
 
     // Hide all pages first
     if (confirmPage) {
       confirmPage.style.display = 'none';
       console.log('Hidden confirm page');
+    }
+    if (passwordChangePage) {
+      passwordChangePage.style.display = 'none';
+      console.log('Hidden password change page');
     }
     if (page1) {
       page1.style.display = 'none';
@@ -312,6 +397,12 @@ export class SettingsPage extends Component<SettingsPageState> {
           console.log('Showing confirm page');
         }
         break;
+      case 'password_change':
+        if (passwordChangePage) {
+          passwordChangePage.style.display = 'block';
+          console.log('Showing password change page');
+        }
+        break;
       case 'page1':
         if (page1) {
           page1.style.display = 'block';
@@ -328,13 +419,20 @@ export class SettingsPage extends Component<SettingsPageState> {
   }
 
   private loadCurrentUserData(): void {
-    // Pre-fill form fields with current user data
+
     const currentUser = authService.getCurrentUser();
     if (currentUser) {
       const emailInput = this.element.querySelector('#email') as HTMLInputElement;
       if (emailInput) {
         emailInput.value = currentUser.email;
       }
+      
+      this.setState({ 
+        originalValues: { 
+          ...this.state.originalValues, 
+          email: currentUser.email 
+        } 
+      });
     }
     
     // Load profile data for username and bio
@@ -350,28 +448,47 @@ export class SettingsPage extends Component<SettingsPageState> {
         const usernameInput = this.element.querySelector('#username') as HTMLInputElement;
         const bioInput = this.element.querySelector('#bio') as HTMLTextAreaElement;
         
+        const originalValues: any = {};
+        
         if (usernameInput && profileData.nickname) {
           usernameInput.value = profileData.nickname;
+          originalValues.username = profileData.nickname;
         }
         if (bioInput && profileData.bio) {
           bioInput.value = profileData.bio;
+          originalValues.bio = profileData.bio;
         }
+        
+        this.setState({ 
+          originalValues: { 
+            ...this.state.originalValues, 
+            ...originalValues 
+          } 
+        });
+        console.log('Set original values:', { ...this.state.originalValues, ...originalValues });
+      } else if (response.status === 401) {
+        // Token expired, redirect to login
+        this.showError('Your session has expired. Please log in again.');
+        Router.getInstance().navigate('/');
       }
     } catch (error) {
       console.error('Error loading profile data:', error);
+      if (error instanceof Error && error.message.includes('Unauthorized')) {
+        this.showError('Your session has expired. Please log in again.');
+        Router.getInstance().navigate('/');
+      }
     }
   }
 
   private async updateUserData(): Promise<void> {
     const { pendingChanges } = this.state;
-    
-    // Update user email if provided
+
     if (pendingChanges.email) {
       const currentUser = authService.getCurrentUser();
       if (!currentUser) {
         throw new Error('No user logged in');
       }
-      
+
       const userResponse = await authService.authenticatedFetch(`http://localhost:3000/users/${currentUser.id}`, {
         method: 'PATCH',
         headers: {
@@ -382,6 +499,9 @@ export class SettingsPage extends Component<SettingsPageState> {
       
       if (!userResponse.ok) {
         const errorData = await userResponse.json();
+        if (userResponse.status === 401) {
+          throw new Error('Unauthorized: Session expired');
+        }
         throw new Error(errorData.error || 'Failed to update email');
       }
       
@@ -428,6 +548,9 @@ export class SettingsPage extends Component<SettingsPageState> {
       
       if (!updateResponse.ok) {
         const errorData = await updateResponse.json();
+        if (updateResponse.status === 401) {
+          throw new Error('Unauthorized: Session expired');
+        }
         throw new Error(errorData.error || 'Failed to update profile');
       }
     }
@@ -435,7 +558,5 @@ export class SettingsPage extends Component<SettingsPageState> {
     this.setState({ isLoading: false, pendingChanges: {} });
   }
     
-  render() {
-    // The template system will handle the rendering
-  }
+  render() {}
 } 

@@ -6,17 +6,19 @@
             class="min-w-2xl max-h-[900px] object-contain "
         />
         <div class=" absolute flex flex-col items-center justify-center top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 gap-y-2">
-            <label for="password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Enter your password</label>
-            <input type="password" id="password" placeholder="Password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px] bg-[#DFD1EF] rounded-2xl p-2 border-2 border-[#B784F2]">
-            <button id="confirm_button" class="cursor-pointer hover:opacity-80 transition-opacity duration-300 bg-[#B784F2] rounded-2xl p-2 w-[200px] mt-[20%]">
-                <span class="text-[#FFFFFF] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Confirm</span>
-            </button>
-            <button id="quit_button" class="cursor-pointer hover:opacity-80 transition-opacity duration-300 text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">
-                <span class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Quit</span>
-            </button>
-            <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[98%] left-[5%] transform -translate-x-1/2 -translate-y-1/2 w-[35%] object-contain">
-            <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[101%] right-[-32%] transform -translate-x-1/2 -translate-y-1/2 w-[30%] object-contain">
-            <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[130%] left-[45%] transform -translate-x-1/2 -translate-y-1/2 w-[20%] object-contain">
+            <form id="confirm_form" class="absolute flex flex-col items-center justify-center top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 gap-y-2">
+                <label for="password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Enter your password</label>
+                <input type="password" id="password" placeholder="Password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px] bg-[#DFD1EF] rounded-2xl p-2 border-2 border-[#B784F2]">
+                <button type="submit" id="confirm_button" class="cursor-pointer hover:opacity-80 transition-opacity duration-300 bg-[#B784F2] rounded-2xl p-2 w-[200px] mt-[20%]">
+                    <span class="text-[#FFFFFF] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Confirm</span>
+                </button>
+                <button type="button" id="quit_button" class="cursor-pointer hover:opacity-80 transition-opacity duration-300 text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">
+                    <span class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Quit</span>
+                </button>
+                <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[98%] left-[5%] transform -translate-x-1/2 -translate-y-1/2 w-[35%] object-contain">
+                <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[101%] right-[-32%] transform -translate-x-1/2 -translate-y-1/2 w-[30%] object-contain">
+                <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[130%] left-[45%] transform -translate-x-1/2 -translate-y-1/2 w-[20%] object-contain">
+            </form>
         </div>
     </div>
     <div class="relative" id="settings_page1">
@@ -27,7 +29,7 @@
         />
         <img src="/art/settings_page/clouds.svg" alt="clouds" class="absolute top-[42%] left-[49%] transform -translate-x-1/2 -translate-y-1/2 w-[68%] object-contain">
         <form id="settings_form" class="absolute flex flex-col top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[70%] h-[50%] p-4">
-            <input type="text" id="username" placeholder="Username" class="ml-[56%] mt-[8%] md:mt-[8.5%] lg:mt-[9%] text-[15px] md:text-[18px] focus:outline-none text-[#687274]" />
+            <input type="text" id="username" placeholder="Username" class="ml-[56%] mt-[8%] md:mt-[8.5%] lg:mt-[9%] text-[15px] md:text-[18px] focus:outline-none text-[#687274]" maxlength="15" />
             <input type="text" id="email" placeholder="Email" class="ml-[3%] mt-[18%] md:mt-[18.5%] lg:mt-[19%] text-[15px] md:text-[18px] focus:outline-none text-[#687274]" />
             <button id="confirm_button_page1"
             class="absolute top-[50%] right-[5%]  cursor-pointer hover:opacity-80 transition-opacity duration-300"
@@ -63,6 +65,7 @@
                 placeholder="Write your bio here..." 
                 class="ml-[47%] mt-[11%] w-[40%] h-[20%] text-[15px] md:text-[18px] focus:outline-none text-[#687274] resize-none "
                 rows="4"
+                maxlength="50"
             ></textarea>
             <button id="confirm_button_page2"
             class="absolute top-[50%] right-[5%]  cursor-pointer hover:opacity-80 transition-opacity duration-300"
@@ -75,7 +78,7 @@
             </button>
         </form>
         <button id="delete_button"
-            class="absolute top-[79%] left-[40%]  cursor-pointer hover:opacity-80 transition-opacity duration-300"
+            class="absolute top-[79%] left-[43%]  cursor-pointer hover:opacity-80 transition-opacity duration-300"
             > 
             <span class="text-[#F0F7F7] font-['Irish_Grover'] text-[35px] md:text-[4vw] lg:text-[56px]">Delete</span>
         </button>
@@ -84,11 +87,33 @@
             > 
             <span class="text-[#7BC0CE] font-['Irish_Grover'] text-[30px] md:text-[4vw] lg:text-[40px] xl:text-[40px] underline">Previous Page</span>
         </button>
-        <button id="forgot_password"
-            class="absolute top-[56%] right-[50%] cursor-pointer hover:opacity-80 transition-opacity duration-300"
+        <button id="change_password"
+            class="absolute top-[56%] right-[55%] cursor-pointer hover:opacity-80 transition-opacity duration-300"
             > 
-            <span class="text-[#687274] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px] underline">I forgot my Password!</span>
+            <span class="text-[#687274] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px] underline">Change Password</span>
         </button>
+    </div>
+    <div class="relative" id="change_password_confirm" style="display: none;">
+        <img
+            src="/art/settings_page/settings_confirm.svg"
+            alt="Settings"
+            class="min-w-2xl max-h-[900px] object-contain "
+        />
+        <div class=" absolute flex flex-col items-center justify-center top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 gap-y-2">
+            <label for="current_password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Enter your password</label>
+            <input type="password" id="current_password" placeholder="Current Password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px] bg-[#DFD1EF] rounded-2xl p-2 border-2 border-[#B784F2]">
+            <label for="new_password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Enter your new password</label>
+            <input type="password" id="new_password" placeholder="New Password" class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px] bg-[#DFD1EF] rounded-2xl p-2 border-2 border-[#B784F2]">
+            <button id="confirm_password_change" class="cursor-pointer hover:opacity-80 transition-opacity duration-300 bg-[#B784F2] rounded-2xl p-2 w-[200px] mt-[20%]">
+                <span class="text-[#FFFFFF] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Confirm</span>
+            </button>
+            <button id="quit_password_change" class="cursor-pointer hover:opacity-80 transition-opacity duration-300 text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">
+                <span class="text-[#B784F2] font-['Irish_Grover'] text-[20px] md:text-[3vw] lg:text-[30px]">Quit</span>
+            </button>
+            <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[98%] left-[5%] transform -translate-x-1/2 -translate-y-1/2 w-[35%] object-contain">
+            <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[101%] right-[-32%] transform -translate-x-1/2 -translate-y-1/2 w-[30%] object-contain">
+            <img src="/art/settings_page/flower.svg" alt="flower" class="absolute top-[130%] left-[45%] transform -translate-x-1/2 -translate-y-1/2 w-[20%] object-contain">
+        </div>
     </div>
     <blitz-slot></blitz-slot>
     <blitz-sound-button></blitz-sound-button>

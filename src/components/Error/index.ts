@@ -10,6 +10,49 @@ interface ErrorState {
     isVisible: boolean;
 }
 
+// Static utility class for managing error components across the application
+export class ErrorManager {
+    private static currentErrorComponent: Error | null = null;
+
+    /**
+     * Shows an error message by creating and mounting an Error component
+     * @param message - The error message to display
+     * @param parentElement - The parent element to mount the error component to
+     * @param onClose - Optional callback when the error is closed
+     */
+    static showError(message: string, parentElement: HTMLElement, onClose?: () => void): void {
+        // Remove any existing error component first
+        this.removeError();
+
+        const errorComponent = new Error({
+            message: message,
+            onClose: () => {
+                this.removeError();
+                if (onClose) {
+                    onClose();
+                }
+            }
+        });
+        
+        // Mount error component to the parent element
+        errorComponent.mount(parentElement);
+        
+        // Store reference to remove later
+        this.currentErrorComponent = errorComponent;
+    }
+
+    /**
+     * Removes the current error component if it exists
+     */
+    static removeError(): void {
+        if (this.currentErrorComponent) {
+            this.currentErrorComponent.unmount();
+            this.currentErrorComponent = null;
+        }
+    }
+
+}
+
 export class Error extends Component<ErrorProps, ErrorState> {
     protected static state: ErrorState = {
         message: "",

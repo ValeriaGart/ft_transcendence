@@ -67,11 +67,6 @@ class AuthService {
    * Verify stored authentication with backend
    */
   private async verifyStoredAuth(): Promise<void> {
-    // Temporarily disabled to fix loading issue
-    console.log('AuthService: Token verification temporarily disabled');
-    return;
-    
-    /*
     if (this.state.token) {
       const isValid = await this.verifyAuth();
       if (!isValid) {
@@ -79,7 +74,6 @@ class AuthService {
         this.clearAuth();
       }
     }
-    */
   }
 
   /**

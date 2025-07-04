@@ -73,7 +73,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                             <p class="text-gray-700 mb-4">An error occurred while rendering this component.</p>
                             <details class="text-sm text-gray-600">
                                 <summary class="cursor-pointer mb-2">Error Details</summary>
-                                <pre class="bg-gray-100 p-2 rounded text-xs overflow-auto">${this.state.error?.stack || this.state.error?.message || 'Unknown error'}</pre>
+                                <pre class="bg-gray-100 p-2 rounded text-xs overflow-auto">${this.state.error?.message || this.state.error?.stack || 'Unknown error'}</pre>
                             </details>
                             <button onclick="window.location.reload()" class="mt-4 bg-[#EF7D77] font-['Irish_Grover'] text-white px-4 py-2 rounded hover:bg-red-600">
                                 Reload Page

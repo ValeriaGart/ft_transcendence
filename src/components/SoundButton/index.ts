@@ -58,7 +58,6 @@ export class SoundButton extends Component<SoundButtonProps, SoundButtonState> {
             this.setState({ isSoundEnabled: false });
             localStorage.setItem('soundEnabled', 'false');
         } else {
-            // If sound is off, create and play a new audio element
             const audio = document.createElement('audio');
             audio.id = 'bgMusic';
             audio.loop = true;
@@ -72,12 +71,10 @@ export class SoundButton extends Component<SoundButtonProps, SoundButtonState> {
             localStorage.setItem('soundEnabled', 'true');
         }
         
-        // Re-apply position classes after state change
         this.applyPositionClasses();
     }
 
     render() {
-        // Re-apply position classes after render
         this.applyPositionClasses();
     }
 }

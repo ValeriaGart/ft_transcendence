@@ -5,7 +5,9 @@
 apm-server:
   # Defines the host and port the server is listening on. Use "unix:/path/to.sock" to listen on a unix domain socket.
   host: "0.0.0.0:8200"
-
+  # agent.config.elasticsearch.enabled: false
+  agent.config.elasticsearch:
+   timeout: 60s
   # Agent authorization configuration. If no methods are defined, all requests will be allowed.
   #auth:
     # Agent authorization using Elasticsearch API Keys.
@@ -95,16 +97,16 @@ apm-server:
   #---------------------------- APM Server - Secure Communication with Agents ----------------------------
 
   # Enable secure communication between APM agents and the server. By default ssl is disabled.
-  #ssl:
-    #enabled: false
+  ssl:
+    enabled: false
 
     # Path to file containing the certificate for server authentication.
     # Needs to be configured when ssl is enabled.
-    #certificate: ''
+    certificate: '/usr/share/apm/config/certs/ca/ca.crt'
 
     # Path to file containing server certificate key.
     # Needs to be configured when ssl is enabled.
-    #key: ''
+    key: '/usr/share/apm/config/certs/ca/ca.key'
 
     # Optional configuration options for ssl communication.
 
@@ -331,10 +333,10 @@ output.elasticsearch:
   # Scheme and port can be left out and will be set to the default (`http` and `9200`).
   # In case you specify and additional path, the scheme is required: `http://elasticsearch:9200/path`.
   # IPv6 addresses should always be defined as: `https://[2001:db8::1]:9200`.
-  hosts: ["elasticsearch:9200"]
+  # hosts: ["elasticsearch:9200"]
 
   # Boolean flag to enable or disable the output module.
-  #enabled: true
+  enabled: false
 
   # Set gzip compression level.
   #compression_level: 0
@@ -448,15 +450,15 @@ output.elasticsearch:
     #escape_html: false
 
 #---------------------------- Logstash output -----------------------------
-#output.logstash:
+output.logstash:
   # Boolean flag to enable or disable the output module.
-  #enabled: false
+  enabled: true
 
   # The Logstash hosts.
-  #hosts: ["localhost:5044"]
+  hosts: ["logstash:5044"]
 
   # Number of workers per Logstash host.
-  #worker: 1
+  # worker: 1
 
   # Set gzip compression level.
   #compression_level: 3
@@ -505,7 +507,7 @@ output.elasticsearch:
   #proxy_use_local_resolver: false
 
   # Enable SSL support. SSL is automatically enabled if any SSL setting is set.
-  #ssl.enabled: false
+  ssl.enabled: false
 
   # Optional SSL configuration options. SSL is off by default.
   #

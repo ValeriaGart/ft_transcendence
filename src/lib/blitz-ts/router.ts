@@ -209,12 +209,40 @@ export class Router {
     console.log('Router: Route params:', params);
 
     if (route) {
+      // Check authentication status
+      const isAuthenticated = this.checkAuthenticationStatus();
+      
+      // Define routes that should redirect authenticated users to /user
+      const authenticatedUserRedirectRoutes = ['/auth', '/signup', '/signin', '/greatsuccess'];
+      
+      // If user is authenticated and trying to access a redirect route, redirect to /user
+      if (isAuthenticated && authenticatedUserRedirectRoutes.includes(path)) {
+        console.log('Router: Authenticated user accessing restricted route, redirecting to /user');
+        this.navigate('/user');
+        return;
+      }
+      
       this.currentRoute = route;
       this.currentParams = params;
       this.render();
     } else {
       // Handle 404
       console.error(`No route found for path: ${path}`);
+    }
+  }
+
+  /**
+   * Checks if the user is currently authenticated
+   * @returns true if authenticated, false otherwise
+   */
+  private checkAuthenticationStatus(): boolean {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const user = localStorage.getItem('auth_user');
+      return !!(token && user);
+    } catch (error) {
+      console.error('Error checking authentication status:', error);
+      return false;
     }
   }
 

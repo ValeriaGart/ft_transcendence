@@ -75,7 +75,6 @@ export function GoogleSignInButton({ onSuccess, onError, className = '' }: Googl
         try {
           window.google.accounts.id.prompt((notification: any) => {
             if (notification.isNotDisplayed()) {
-              onError?.('Google Sign-in not available. This could be due to OAuth configuration. Please check that localhost:5173 is added to authorized origins in Google Cloud Console, or use email/password login.');
               renderGoogleButton();
             } else if (notification.isSkippedMoment()) {
               onError?.('Google Sign-in was cancelled. You can try again or use email/password login.');

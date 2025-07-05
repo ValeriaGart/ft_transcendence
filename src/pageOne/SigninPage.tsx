@@ -1,6 +1,7 @@
 import { myJSX } from '../util/mini-jsx';
 import { GoogleSignInButton } from '../global/GoogleSignInButton';
 import { SoundButton } from '../global/SoundButton';
+import { useState } from '../util/state/state';
 import { loginWithEmailPassword, subscribeToAuth } from '../util/auth/authState';
 
 interface SigninPageProps {
@@ -9,24 +10,23 @@ interface SigninPageProps {
 }
 
 export function SigninPage({ onEnterClick, onSignupClick }: SigninPageProps) {
-    let email = '';
-    let password = '';
-    let error = '';
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     // Subscribe to auth state changes
     subscribeToAuth((newState) => {
-        error = newState.error || '';
+        setError(newState.error || '');
         
         // Redirect if successfully authenticated
         if (newState.isAuthenticated && newState.user) {
-            console.log('User authenticated, redirecting...');
             onEnterClick();
         }
     });
 
     const handleEmailPassword = async () => {
         if (!email || !password) {
-            error = 'Please enter both email and password';
+            setError('Please enter both email and password');
             return;
         }
 
@@ -37,14 +37,12 @@ export function SigninPage({ onEnterClick, onSignupClick }: SigninPageProps) {
         }
     };
 
-    const handleGoogleSuccess = (user: any) => {
-        console.log('Google sign-in successful:', user);
+    const handleGoogleSuccess = () => {
         onEnterClick();
     };
 
     const handleGoogleError = (errorMessage: string) => {
-        error = errorMessage;
-        console.error('Google sign-in failed:', errorMessage);
+        setError(errorMessage);
     };
 
     return myJSX('div', {
@@ -83,8 +81,9 @@ export function SigninPage({ onEnterClick, onSignupClick }: SigninPageProps) {
                     myJSX('input', {
                         type: 'email',
                         placeholder: 'Email',
+                        value: email,
                         class: 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
-                        oninput: (e: any) => { email = e.target.value; }
+                        oninput: (e: any) => { setEmail(e.target.value); }
                     })
                 ),
                 
@@ -95,8 +94,9 @@ export function SigninPage({ onEnterClick, onSignupClick }: SigninPageProps) {
                     myJSX('input', {
                         type: 'password',
                         placeholder: 'Password',
+                        value: password,
                         class: 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
-                        oninput: (e: any) => { password = e.target.value; },
+                        oninput: (e: any) => { setPassword(e.target.value); },
                         onkeypress: (e: any) => {
                             if (e.key === 'Enter') {
                                 handleEmailPassword();

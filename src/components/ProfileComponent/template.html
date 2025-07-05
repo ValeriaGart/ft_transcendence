@@ -1,14 +1,47 @@
 <div class="flex flex-row items-center justify-center relative h-[250px] w-[360px] md:w-[500px] md:h-[300px] border-[#81C3C3] border-8 rounded-4xl">
-    <div class="flex flex-col items-center justify-center h-full w-auto gap-7 border-0 max-w-[50%]">
-        <p class="text-xl md:text-2xl font-bold text-[#81C3C3] underline underline-offset-6 decoration-3 pl-2">{{nickname}}</p>
-        <p id="email-display" class="text-xl md:text-2xl font-bold text-[#81C3C3] underline underline-offset-6 decoration-3 pl-2 cursor-help">{{truncatedEmail}}</p>
-        <div id="bio" class="w-full h-[100px] max-w-[90%] min-h-[40px] rounded-md p-2 pt-0 text-center text-[#81C3C3] border-[#81C3C3] border-2 overflow-hidden text-sm md:text-xl leading-tight break-words whitespace-normal">{{bio}}</div>
-        <div class="flex flex-row items-end justify-center w-[20%] md:w-[50%] gap-x-1 -mt-7 mr-3">
-            <button class="flex items-center gap-x-1 text-[#81C3C3] text-[200%] font-['Irish_Grover'] px-4 py-2 rounded-md hover:opacity-80 transition-opacity duration-300 cursor-pointer">
-                <img src="/art/profile/settings_icon.svg" alt="Settings" class="h-6 w-auto"/>
-                Settings
+    <div id="profile-component" class="flex flex-row items-center justify-center h-full w-full">
+        <div class="flex flex-col items-center justify-center h-full w-auto gap-7 border-0 max-w-[50%]">
+            <p class="text-xl md:text-2xl font-bold text-[#81C3C3] underline underline-offset-6 decoration-3 pl-2">{{nickname}}</p>
+            <p id="email-display" class="text-lg md:text-2xl font-bold text-[#81C3C3] underline underline-offset-6 decoration-3 pl-2 cursor-help">{{truncatedEmail}}</p>
+            <div id="bio" class="w-full h-[100px] max-w-[90%] min-h-[40px] rounded-md p-2 pt-0 text-center text-[#81C3C3] border-[#81C3C3] border-2 overflow-hidden text-sm md:text-xl leading-tight break-words whitespace-normal">{{bio}}</div>
+            <div class="flex flex-row items-end justify-center w-[20%] md:w-[50%] gap-x-1 -mt-7 mr-3">
+                <button class="flex items-center gap-x-1 text-[#81C3C3] text-[200%] font-['Irish_Grover'] px-4 py-2 rounded-md hover:opacity-80 transition-opacity duration-300 cursor-pointer">
+                    <img src="/art/profile/settings_icon.svg" alt="Settings" class="h-6 w-auto"/>
+                    Settings
+                </button>
+            </div>
+        </div>
+        <img id="profile-picture" src="/art/profile/{{profilePictureUrl}}" alt="Profile" class="h-[90%] p-2 cursor-pointer hover:opacity-80 transition-opacity duration-300"/>
+    </div>
+    <div id="profile-picture-selector" class="flex flex-col items-center justify-center h-full w-full" style="display: none;">
+        <div class="text-center">
+            <!-- Title -->
+            <h3 class="text-[#B784F2] font-['Irish_Grover'] text-2xl mb-6">
+              Choose Profile Picture
+            </h3>
+            
+            <!-- Profile Picture Options -->
+            <div class="grid grid-cols-3 gap-1 mb-6 h-[100px]">
+              <button id="profile-option-1" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300">
+                <img src="/art/profile/profile_1.svg" alt="Profile 1" class="w-16 h-16 mx-auto" />
+              </button>
+              <button id="profile-option-2" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300">
+                <img src="/art/profile/profile_2.svg" alt="Profile 2" class="w-16 h-16 mx-auto" />
+              </button>
+              <button id="profile-option-3" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300">
+                <img src="/art/profile/profile_3.svg" alt="Profile 3" class="w-16 h-16 mx-auto" />
+              </button>
+              <button id="profile-option-4" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300">
+                <img src="/art/profile/profile_4.svg" alt="Profile 4" class="w-16 h-16 mx-auto" />
+              </button>
+              <button id="profile-option-5" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300">
+                <img src="/art/profile/profile_no.svg" alt="Profile No" class="w-16 h-16 mx-auto" />
+              </button>
+            </div>
+            
+            <button id="profile-selector-close" class="px-6 py-1 md:py-3 ml-[70%] md:ml-[90%] bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300">
+              Close
             </button>
         </div>
     </div>
-    <img src="/art/profile/profile_no.svg" alt="Profile" class="h-[90%] p-2"/>
 </div>

@@ -7,6 +7,7 @@ interface ProfileComponentState {
   email: string;
   truncatedEmail: string;
   bio: string;
+  profilePictureUrl: string;
   isLoading: boolean;
   error: string | null;
 }
@@ -17,6 +18,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
     email: 'Unknown',
     truncatedEmail: 'Unknown',
     bio: 'No bio available',
+    profilePictureUrl: 'profile_no.svg',
     isLoading: true,
     error: null,
   }
@@ -53,6 +55,82 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         emailElement.title = fullEmail;
       }
     });
+
+    // Add click handler for profile picture
+    this.addEventListener("#profile-picture", "click", () => {
+      console.log('Profile picture clicked!');
+      this.showPictureSelector();
+    });
+
+    // Profile picture selection buttons
+    for (let i = 1; i <= 5; i++) {
+      this.addEventListener(`#profile-option-${i}`, "click", () => {
+        const pictureName = i === 5 ? 'profile_no.svg' : `profile_${i}.svg`;
+        this.selectProfilePicture(pictureName);
+      });
+    }
+
+    // Close button for picture selector
+    this.addEventListener("#profile-selector-close", "click", () => {
+      this.hidePictureSelector();
+    });
+  }
+
+  private showPictureSelector(): void {
+    const profileComponent = this.element.querySelector('#profile-component') as HTMLElement;
+    const pictureSelector = this.element.querySelector('#profile-picture-selector') as HTMLElement;
+    
+    if (profileComponent && pictureSelector) {
+      profileComponent.style.display = 'none';
+      pictureSelector.style.display = 'flex';
+    }
+  }
+
+  private hidePictureSelector(): void {
+    const profileComponent = this.element.querySelector('#profile-component') as HTMLElement;
+    const pictureSelector = this.element.querySelector('#profile-picture-selector') as HTMLElement;
+    
+    if (profileComponent && pictureSelector) {
+      profileComponent.style.display = 'flex';
+      pictureSelector.style.display = 'none';
+    }
+  }
+
+  private async selectProfilePicture(pictureName: string): Promise<void> {
+    try {
+      console.log('Selecting profile picture:', pictureName);
+      
+      // Get current profile data
+      const response = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
+      if (!response.ok) {
+        throw new Error('Failed to get profile data');
+      }
+      
+      const profileData = await response.json();
+      
+      // Create a proper URI for the profile picture
+      const pictureUrl = `http://localhost:3000/art/profile/${pictureName}`;
+      
+      // Update the profile picture
+      const updateResponse = await authService.authenticatedFetch(`http://localhost:3000/profiles/${profileData.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ profilePictureUrl: pictureUrl }),
+      });
+      
+      if (updateResponse.ok) {
+        console.log('Profile picture updated successfully');
+        this.setState({ profilePictureUrl: pictureName });
+        this.hidePictureSelector();
+      } else {
+        const errorData = await updateResponse.json();
+        console.error('Failed to update profile picture:', errorData);
+      }
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+    }
   }
 
   private async loadProfileData(): Promise<void> {
@@ -84,6 +162,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
           email: email,
           truncatedEmail: truncatedEmail,
           bio: 'No bio available',
+          profilePictureUrl: 'profile_no.svg',
           isLoading: false,
           error: null
         });
@@ -92,11 +171,19 @@ export class ProfileComponent extends Component<ProfileComponentState> {
 
       const profileData = await response.json();
       
+      // Extract just the filename from the full URL for display
+      let profilePictureUrl = 'profile_no.svg';
+      if (profileData.profilePictureUrl) {
+        const urlParts = profileData.profilePictureUrl.split('/');
+        profilePictureUrl = urlParts[urlParts.length - 1]; // Get the filename
+      }
+      
       this.setState({
         nickname: profileData.nickname && profileData.nickname.trim() !== '' ? profileData.nickname : 'Unknown',
         email: email,
         truncatedEmail: truncatedEmail,
         bio: profileData.bio && profileData.bio.trim() !== '' ? profileData.bio : 'No bio available',
+        profilePictureUrl: profilePictureUrl,
         isLoading: false,
         error: null
       });
@@ -118,6 +205,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         email: email,
         truncatedEmail: truncatedEmail,
         bio: 'No bio available',
+        profilePictureUrl: 'profile_no.svg',
         isLoading: false,
         error: null
       });

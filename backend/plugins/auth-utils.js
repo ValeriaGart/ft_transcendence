@@ -41,7 +41,6 @@ export async function verifyGoogleToken(idToken) {
  * @returns {string} - JWT token
  */
 export function generateJWT(user) {
-  console.log('🔑 JWT Secret (first 10 chars):', AUTH_CONFIG.JWT.SECRET.substring(0, 10));
   console.log('🔑 Generating JWT for user:', user.id);
   
   const payload = {

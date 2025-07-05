@@ -141,25 +141,25 @@ services:
       kibana:
         condition: service_healthy
 
-  apm:
-    image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
-    depends_on:
-      kibana:
-        condition: service_healthy
-    ports: 
-      - 8200:8200
-    volumes:
-      - ./apm/config/apm-server.docker.yml:/usr/share/apm-server/apm-server.yml:ro
-      - certs:/usr/share/apm/config/certs
-
-  # filebeat:
-  #   image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
-  #   volumes:
-  #     - ./mylogs/logstash-tutorial-dataset:/usr/share/filebeat/mylogs/logstash-tutorial-dataset.log
-  #     - ./filebeat/config/filebeat.example.yml:/usr/share/filebeat/filebeat.yml
+  # apm:
+  #   image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
   #   depends_on:
   #     kibana:
   #       condition: service_healthy
+  #   ports: 
+  #     - 8200:8200
+  #   volumes:
+  #     - ./apm/config/apm-server.docker.yml:/usr/share/apm-server/apm-server.yml:ro
+  #     - certs:/usr/share/apm/config/certs
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    volumes:
+      - ./mylogs/logstash-tutorial-dataset:/usr/share/filebeat/mylogs/logstash-tutorial-dataset.log
+      - ./filebeat/config/filebeat.example.yml:/usr/share/filebeat/filebeat.yml
+    depends_on:
+      kibana:
+        condition: service_healthy
     # ports:
     #   - 5044:5044
 

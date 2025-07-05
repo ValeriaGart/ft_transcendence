@@ -1,27 +1,36 @@
 import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
 import { dbGet } from '../config/database.js';
+import { AUTH_CONFIG } from '../config/auth.config.js';
 
 async function authPlugin(fastify, options) {
-  // Register JWT plugin with fallback secret
   await fastify.register(jwt, {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-here-let-us-make-it-long-and-random',
+    secret: AUTH_CONFIG.JWT.SECRET,
     sign: {
-      expiresIn: process.env.JWT_EXPIRES_IN || '1h'
+      expiresIn: AUTH_CONFIG.JWT.EXPIRES_IN
     }
   });
 
   // Authentication decorator - validates JWT token from header or cookie
   fastify.decorate('authenticate', async function(request, reply) {
     try {
-      // Check if token is in cookie, if so, add it to authorization header
-      if (!request.headers.authorization && request.cookies && request.cookies.authToken) {
-        request.headers.authorization = `Bearer ${request.cookies.authToken}`;
-      }
+      console.log('Authentication check for:', request.url);
+      console.log('Headers authorization:', request.headers.authorization ? 'present' : 'missing');
+      console.log('Cookies:', request.cookies ? Object.keys(request.cookies) : 'no cookies');
       
-      // Use standard Fastify JWT verification
+      // Check if token is in cookie, if so, add it to authorization header
+      if (!request.headers.authorization && request.cookies && request.cookies['auth-token']) {
+        console.log('Found auth-token in cookie, adding to authorization header');
+        console.log('Cookie token (first 20 chars):', request.cookies['auth-token'].substring(0, 20));
+        request.headers.authorization = `Bearer ${request.cookies['auth-token']}`;
+      }
+
+      console.log('Final authorization header:', request.headers.authorization ? 'present' : 'missing');
+      
       await request.jwtVerify();
+      console.log('JWT verification successful for user:', request.user?.userId);
     } catch (err) {
+      console.log('JWT verification failed:', err.message);
       reply.code(401).send({ 
         error: 'Unauthorized', 
         message: 'Invalid or missing token' 
@@ -68,7 +77,6 @@ async function authPlugin(fastify, options) {
       const profileId = parseInt(request.params.id);
       const userId = request.user.userId;
       
-      // Get profile to check ownership
       const profile = await dbGet('SELECT userId FROM profiles WHERE id = ?', [profileId]);
       
       if (!profile || profile.userId !== userId) {

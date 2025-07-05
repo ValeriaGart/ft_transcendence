@@ -37,8 +37,16 @@ function initialize() {
       `
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
+        email TEXT UNIQUE NOT NULL,
         passwordHash TEXT,
+        googleId TEXT UNIQUE,
+        name TEXT,
+        profilePicture TEXT,
+        emailVerified BOOLEAN DEFAULT FALSE,
+        isActive BOOLEAN DEFAULT TRUE,
+        lastLoginAt TIMESTAMP,
+        failedLoginAttempts INTEGER DEFAULT 0,
+        lockedUntil TIMESTAMP,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );

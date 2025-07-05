@@ -20,15 +20,20 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
     const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
     const [apiError, setApiError] = useState('');
 
-    subscribeToAuth((newState) => {
-        if (newState.isAuthenticated && newState.user) {
-            console.log('User registered via Google OAuth, navigating...');
-            onEnterClick();
-        }
-        if (newState.error) {
-            setApiError(newState.error);
-        }
-    });
+    useEffect(() => {
+        const unsubscribe = subscribeToAuth((newState) => {
+            if (newState.isAuthenticated && newState.user) {
+                console.log('User registered via Google OAuth, navigating...');
+                onEnterClick();
+            }
+            if (newState.error) {
+                setApiError(newState.error);
+            }
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     const handleEmailChange = (newEmail: string, isValid: boolean) => {
         setEmail(newEmail);

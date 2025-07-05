@@ -15,7 +15,7 @@ declare global {
 }
 
 export function GoogleSignInButton({ onSuccess, onError, className = '' }: GoogleSignInButtonProps) {
-  let isInitialized = false;
+  const isInitialized = React.useRef(false);
   
   window.handleGoogleCredentialResponse = async (response: any) => {
     try {

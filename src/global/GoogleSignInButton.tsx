@@ -1,4 +1,5 @@
 import { myJSX } from '../util/mini-jsx';
+import { useState } from '../util/state/state';
 import { initializeGoogleAuth, handleGoogleSignIn } from '../util/auth/authState';
 
 interface GoogleSignInButtonProps {
@@ -15,7 +16,7 @@ declare global {
 }
 
 export function GoogleSignInButton({ onSuccess, onError, className = '' }: GoogleSignInButtonProps) {
-  const isInitialized = React.useRef(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   window.handleGoogleCredentialResponse = async (response: any) => {
     try {
@@ -46,7 +47,6 @@ export function GoogleSignInButton({ onSuccess, onError, className = '' }: Googl
       await initializeGoogleAuth();
       
       if (window.google) {
-        
         window.google.accounts.id.initialize({
           client_id: '921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com',
           callback: window.handleGoogleCredentialResponse,
@@ -57,7 +57,7 @@ export function GoogleSignInButton({ onSuccess, onError, className = '' }: Googl
           use_fedcm_for_prompt: false
         });
         
-        isInitialized = true;
+        setIsInitialized(true);
       } else {
         onError?.('Google Sign-in service not available');
       }
@@ -71,7 +71,8 @@ export function GoogleSignInButton({ onSuccess, onError, className = '' }: Googl
     try {
       await initializeButton();
       
-      if (window.google && isInitialized) {
+      // Check if Google is actually available after initialization
+      if (window.google) {
         try {
           window.google.accounts.id.prompt((notification: any) => {
             if (notification.isNotDisplayed()) {

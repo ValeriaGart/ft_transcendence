@@ -1,3 +1,5 @@
+import { getApiUrl, API_CONFIG } from '../../config/api';
+
 export interface User {
   id: number;
   email: string;
@@ -51,16 +53,48 @@ export function getAuthState(): AuthState {
 
 export function initializeGoogleAuth(): Promise<void> {
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Google Identity Services failed to load (timeout)'));
+    }, 10000); // 10 second timeout
+
     if (!document.querySelector('script[src*="accounts.google.com"]')) {
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google Identity Services'));
+      script.onload = () => {
+        // Wait for Google to be available after script load
+        const checkGoogle = () => {
+          if (window.google) {
+            clearTimeout(timeout);
+            resolve();
+          } else {
+            setTimeout(checkGoogle, 50);
+          }
+        };
+        checkGoogle();
+      };
+      script.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error('Failed to load Google Identity Services'));
+      };
       document.head.appendChild(script);
     } else {
-      resolve();
+      if (window.google) {
+        clearTimeout(timeout);
+        resolve();
+      } else {
+        // Wait for Google to become available
+        const checkGoogle = () => {
+          if (window.google) {
+            clearTimeout(timeout);
+            resolve();
+          } else {
+            setTimeout(checkGoogle, 50);
+          }
+        };
+        checkGoogle();
+      }
     }
   });
 }
@@ -69,7 +103,7 @@ export async function handleGoogleSignIn(credential: string) {
   updateAuthState({ isLoading: true, error: null });
 
   try {
-    const response = await fetch('http://localhost:3000/auth/google', {
+    const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.GOOGLE_AUTH), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -107,7 +141,7 @@ export async function registerWithEmailPassword(email: string, password: string,
   updateAuthState({ isLoading: true, error: null });
   
   try {
-    const response = await fetch('http://localhost:3000/auth/register', {
+    const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.REGISTER), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -145,7 +179,7 @@ export async function loginWithEmailPassword(email: string, password: string) {
   updateAuthState({ isLoading: true, error: null });
   
   try {
-    const response = await fetch('http://localhost:3000/auth/login', {
+    const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGIN), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -188,7 +222,7 @@ export async function verifyAuthToken() {
   updateAuthState({ isLoading: true });
   
   try {
-    const response = await fetch('http://localhost:3000/auth/verify', {
+    const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.VERIFY), {
       method: 'GET',
       credentials: 'include',
     });
@@ -233,7 +267,7 @@ export async function logout() {
   console.log('🎮 Game in progress:', gameInProgress);
   
   try {
-    await fetch('http://localhost:3000/auth/logout', {
+    await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGOUT), {
       method: 'POST',
       credentials: 'include',
     });
@@ -253,7 +287,7 @@ export async function logout() {
 
 export async function getCurrentUser() {
   try {
-    const response = await fetch('http://localhost:3000/auth/me', {
+    const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.ME), {
       method: 'GET',
       credentials: 'include',
     });

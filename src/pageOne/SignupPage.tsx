@@ -5,7 +5,7 @@ import { useState } from '../util/state/state';
 import { EmailInput } from '../global/EmailInput';
 import { PasswordInput } from '../global/PasswordInput';
 import { Error } from '../global/Error';
-import { subscribeToAuth } from '../util/auth/authState';
+import { subscribeToAuth, registerWithEmailPassword } from '../util/auth/authState';
 
 interface SignupPageProps {
     onEnterClick: () => void;
@@ -20,20 +20,16 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
     const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
     const [apiError, setApiError] = useState('');
 
-    useEffect(() => {
-        const unsubscribe = subscribeToAuth((newState) => {
-            if (newState.isAuthenticated && newState.user) {
-                console.log('User registered via Google OAuth, navigating...');
-                onEnterClick();
-            }
-            if (newState.error) {
-                setApiError(newState.error);
-            }
-        });
-        return () => {
-            unsubscribe();
-        };
-    }, []);
+    // Subscribe to auth state changes
+    subscribeToAuth((newState) => {
+        if (newState.isAuthenticated && newState.user) {
+            console.log('User registered via Google OAuth, navigating...');
+            onEnterClick();
+        }
+        if (newState.error) {
+            setApiError(newState.error);
+        }
+    });
 
     const handleEmailChange = (newEmail: string, isValid: boolean) => {
         setEmail(newEmail);
@@ -61,39 +57,12 @@ export function SignupPage({ onEnterClick }: SignupPageProps) {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    email, 
-                    passwordString: password
-                }),
-            });
-
-            const responseText = await response.text();
-
-            if (!response.ok) {
-                let errorMessage = 'Registration failed';
-                try {
-                    const errorData = JSON.parse(responseText);
-                    if (errorData.details?.includes('UNIQUE constraint failed: users.email')) {
-                        errorMessage = 'This email is already registered. Please use a different email or try logging in.';
-                    } else {
-                        errorMessage = errorData.message || errorMessage;
-                    }
-                } catch (e) {
-                    console.error('Error parsing error response:', e);
-                }
-                setApiError(errorMessage);
-                return;
-            }
-
+            await registerWithEmailPassword(email, password);
             onEnterClick();
         } catch (error) {
             console.error('Registration error:', error);
-            setApiError('Failed to connect to the server. Please try again.');
+            const errorMessage = (error as any)?.message || 'Registration failed. Please try again.';
+            setApiError(errorMessage);
         }
     };
 

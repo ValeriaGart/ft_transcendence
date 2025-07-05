@@ -19,9 +19,38 @@ class ProfileService {
   static async updateProfile(id, profileData) {
     const { nickname, profilePictureUrl, bio } = profileData;
     
+    // Build dynamic update query based on provided fields (added by ai)
+    const updateFields = [];
+    const updateValues = [];
+    
+    if (nickname !== undefined) {
+      updateFields.push('nickname = ?');
+      updateValues.push(nickname);
+    }
+    if (profilePictureUrl !== undefined) {
+      updateFields.push('profilePictureUrl = ?');
+      updateValues.push(profilePictureUrl);
+    }
+    if (bio !== undefined) {
+      updateFields.push('bio = ?');
+      updateValues.push(bio);
+    }
+    
+    if (updateFields.length === 0) {
+      throw new Error('No fields to update');
+    }
+    
+    updateFields.push('updatedAt = CURRENT_TIMESTAMP');
+    updateValues.push(id);
+    //end of added by ai
+    
     const result = await dbRun(
-      'UPDATE profiles SET nickname = ?, profilePictureUrl = ?, bio = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-      [nickname, profilePictureUrl, bio, id]
+      /*'UPDATE profiles SET nickname = ?, profilePictureUrl = ?, bio = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
+      [nickname, profilePictureUrl, bio, id] */
+      //added by ai:
+      `UPDATE profiles SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateValues
+      //end of added by ai
     );
     
     if (result.changes === 0) {

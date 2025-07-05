@@ -1,0 +1,21 @@
+<div id="app1" class="flex flex-col h-screen">
+    <div id="mainpart" class="relative flex items-center flex-1 justify-center bg-[#C4DADA]  px-7 py-1 overflow-auto">
+        <div class="absolute bottom-4 right-4">
+            <SoundButton />
+        </div>
+        <div class="relative">
+            <img
+                src="/art/controller.svg"
+                alt="Controller"
+                class="min-w-6xl"
+            />
+           <blitz-slot></blitz-slot>
+        </div>
+    </div>
+    <div class="w-screen h-[10%] bg-[#B0D5D5] flex items-center justify-center">
+        <a href="https://github.com/ValeriaGart/ft_transcendence" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 hover:opacity-80">
+            <img src="/art/githubicon.svg" alt="githubicon" class="h-[40px] w-auto" />
+            <span class="text-[#81C3C3] font-['Irish_Grover'] text-[200%] md:text-[300%]">Our project on github</span>
+        </a>
+    </div>
+</div>

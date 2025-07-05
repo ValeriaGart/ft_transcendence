@@ -272,13 +272,13 @@ export function App() {
         cleanupGoogleElements();
       }, 100);
       
-      const cleanupInterval = setInterval(() => {
+      const handleAuthChange = () => {
         if (authState.isAuthenticated) {
           cleanupGoogleElements();
-        } else {
-          clearInterval(cleanupInterval);
         }
-      }, 1000);
+      };
+      
+      subscribeToAuth(handleAuthChange);
     } else {
       appContainer.innerHTML = '';
       const appOneElement = myJSX(AppOne, { onEnterClick: handleEnterClick });

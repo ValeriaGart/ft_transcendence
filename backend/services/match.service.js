@@ -12,7 +12,7 @@ class MatchService {
 	// }	
 	
 	static async getCurrentUserMatches(userId) {
-		const match = await dbGet('SELECT * FROM match WHERE player1_id = ? or player2_id = ?', [userId, userId]);
+		const match = await dbAll('SELECT * FROM match WHERE player1_id = ? or player2_id = ?', [userId, userId]);
 		return match;
 	}
 	

@@ -26,6 +26,13 @@ class MatchService {
 	}
 
 	static async finishMatch(player1_score, player2_score, match_id) {
+		const gameFinishedAlready = await dbGet('SELECT * FROM match WHERE id = ?', [match_id]);
+		if (!gameFinishedAlready){
+			throw new Error ('Match not found');
+		}
+		if (gameFinishedAlready.gameFinishedAt) {
+			throw new Error ('Match already finished');
+		}
 		const win = player1_score > player2_score ? "1" : player1_score === player2_score ? "0" : "2";
 		const matchResult = await dbRun(
 			'UPDATE match \

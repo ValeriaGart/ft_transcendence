@@ -1,6 +1,7 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
+import { ErrorManager } from "../Error";
 
 interface ProfileComponentState {
   nickname: string;
@@ -9,7 +10,8 @@ interface ProfileComponentState {
   bio: string;
   profilePictureUrl: string;
   isLoading: boolean;
-  error: string | null;
+  showError: boolean;
+  errorMessage: string | null;
 }
 
 export class ProfileComponent extends Component<ProfileComponentState> {
@@ -20,11 +22,26 @@ export class ProfileComponent extends Component<ProfileComponentState> {
     bio: 'No bio available',
     profilePictureUrl: 'profile_no.svg',
     isLoading: true,
-    error: null,
+    showError: false,
+    errorMessage: null,
   }
 
   constructor() {
     super();
+  }
+
+  private showError(message: string) {
+    this.setState({
+        showError: true,
+        errorMessage: message
+    });
+
+    ErrorManager.showError(message, this.element, () => {
+        this.setState({
+            showError: false,
+            errorMessage: null
+        });
+    });
   }
 
   protected onMount(): void {
@@ -152,7 +169,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         console.error('ProfileComponent: Profile fetch failed with status:', response.status);
         if (response.status === 401) {
           // Token expired, redirect to login
-          alert('Your session has expired. Please log in again.');
+          this.showError('Your session has expired. Please log in again.');
           const { Router } = await import('@blitz-ts/router');
           Router.getInstance().navigate('/');
           return;
@@ -191,7 +208,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
     } catch (error) {
       console.error('Error loading profile data:', error);
       if (error instanceof Error && error.message.includes('Unauthorized')) {
-        alert('Your session has expired. Please log in again.');
+        this.showError('Your session has expired. Please log in again.');
         const { Router } = await import('@blitz-ts/router');
         Router.getInstance().navigate('/');
         return;

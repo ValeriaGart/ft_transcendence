@@ -65,7 +65,18 @@ class MatchController {
 			return { error: 'Failed to finish match', details: error.message };
 		}
 	}
-
+	
+	static async deleteMatch(request, reply) {
+		try {
+			// console.log('Request Body:', request.body); // Log the request body
+			const { id } = request.params; // Correctly access the body
+			const match = await MatchService.deleteMatch(id);
+			return match;
+		} catch (error) {
+			reply.code(500);
+			return { error: 'Failed to delete match', details: error.message };
+		}
+	}
 	
 
 }

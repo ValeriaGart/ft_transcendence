@@ -49,7 +49,18 @@ class MatchService {
 		const matchID = matchResult.lastID;
 		return matchID;
 	}
+
 	
+	static async deleteMatch(match_id) {
+		const matchResult = await dbRun(
+			'DELETE FROM match WHERE id = ?',
+			[match_id]
+		);
+		if (matchResult.changes === 0){
+			throw new Error ('Match ID doesn\'t exist');
+		}
+		return matchResult.changes;
+	}
 }
 
 

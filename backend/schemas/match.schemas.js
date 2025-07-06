@@ -25,3 +25,11 @@ export const matchFinishSchema = {
 	},
 	required: [ "player1_score", "player2_score", "match_id"]
 };
+
+export const matchParamsSchema = {
+	type: "object",
+	properties: {
+		id: { type: "integer" }
+	},
+	required: ["id"]
+}

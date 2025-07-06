@@ -2,7 +2,8 @@ import MatchController from '../controllers/match.controller.js';
 import {
 	// matchParamsSchema
 	matchStartSchema,
-	matchFinishSchema
+	matchFinishSchema,
+	matchParamsSchema
 } from '../schemas/match.schemas.js';
 
 async function routes(fastify, options) {
@@ -23,6 +24,10 @@ async function routes(fastify, options) {
 			body: matchFinishSchema
 		}
 	}, MatchController.finishMatch );
+
+	fastify.delete('/match/:id', {
+		schema: { params: matchParamsSchema }
+	}, MatchController.deleteMatch);
 }
 
 export default routes;

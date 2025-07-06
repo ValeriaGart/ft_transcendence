@@ -46,8 +46,7 @@ class MatchService {
 			WHERE id = ?',
 			[player1_score, player2_score, win, win, match_id]
 		);
-		const matchID = matchResult.lastID;
-		return matchID;
+		return match_id;
 	}
 
 	

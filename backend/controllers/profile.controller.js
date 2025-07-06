@@ -72,14 +72,20 @@ class ProfileController {
       const { nickname, profilePictureUrl, bio } = request.body;
 
       const updateFields = {};
+      /*
       if (nickname) updateFields.nickname = nickname;
       if (profilePictureUrl) updateFields.profilePictureUrl = profilePictureUrl;
-      if (bio) updateFields.bio = bio;
+      if (bio) updateFields.bio = bio; 
+      */
+      //added by ai:
+      if (nickname !== undefined) updateFields.nickname = nickname;
+      if (profilePictureUrl !== undefined) updateFields.profilePictureUrl = profilePictureUrl;
+      if (bio !== undefined) updateFields.bio = bio;
+      //end of added by ai
 
       if (Object.keys(updateFields).length === 0){
         reply.code(400);
         return { error: 'At least one field (nickname, profilePictureUrl, or bio) is required' };
-
       }
 
       const profile = await ProfileService.updateProfile(id, updateFields);

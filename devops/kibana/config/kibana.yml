@@ -8,5 +8,6 @@ server.shutdownTimeout: "5s"
 elasticsearch.hosts: [ "http://elasticsearch:9200" ]
 monitoring.ui.container.elasticsearch.enabled: true
 
-xpack.encryptedSavedObjects.encryptionKey: 578ba541dfsf2f8eda884ce578ba541dfsf2f8eda884ce
-xpack.security.encryptionKey: 78541df8ba884ce5sf2f8edaba5sf2f8eda884ce41df57
+xpack.encryptedSavedObjects.encryptionKey: ${KIB_ENCKEY_SAVEDOBJ}
+xpack.security.encryptionKey: ${KIB_ENCKEY_SEC}
+xpack.reporting.encryptionKey: ${KIB_ENCKEY_REP}

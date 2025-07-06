@@ -111,6 +111,9 @@ services:
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - KIB_ENCKEY_SAVEDOBJ=${KIB_ENCKEY_SAVEDOBJ}
+      - KIB_ENCKEY_SEC=${KIB_ENCKEY_SEC}
+      - KIB_ENCKEY_REP=${KIB_ENCKEY_REP}
     mem_limit: ${MEM_LIMIT}
     healthcheck:
       test:

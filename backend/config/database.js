@@ -54,13 +54,14 @@ function initialize() {
       );
       CREATE TABLE IF NOT EXISTS match (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT,
         player1_id INTEGER,
         player2_id INTEGER,
         winner_id INTEGER,
         player1_score INTEGER,
         player2_score INTEGER,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        gameFinished TIMESTAMP,
         FOREIGN KEY (player1_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (player2_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (winner_id) REFERENCES users (id) ON DELETE CASCADE

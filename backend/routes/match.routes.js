@@ -1,6 +1,5 @@
 import MatchController from '../controllers/match.controller.js';
 import {
-	// matchParamsSchema
 	matchStartSchema,
 	matchFinishSchema,
 	matchParamsSchema

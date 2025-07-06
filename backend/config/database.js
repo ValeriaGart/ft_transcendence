@@ -52,6 +52,19 @@ function initialize() {
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       );
+      CREATE TABLE IF NOT EXISTS match (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        player1_id INTEGER,
+        player2_id INTEGER,
+        winner_id INTEGER,
+        player1_score INTEGER,
+        player2_score INTEGER,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (player1_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (player2_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (winner_id) REFERENCES users (id) ON DELETE CASCADE
+      );
       `,
       (err) => {
         if (err) reject(err);

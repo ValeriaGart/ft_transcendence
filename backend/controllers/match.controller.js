@@ -29,7 +29,8 @@ class MatchController {
 	
 	static async getCurrentUserMatches(request, reply) {
 		try {
-			const match = await MatchService.getCurrentUserMatches();
+			// console.log('Request Body:', request.user.userId); // Log the request body
+			const match = await MatchService.getCurrentUserMatches(request.user.userId);
 			if (!match) {
 				reply.code(404);
 				return { error: 'No matches for this user found' };
@@ -40,6 +41,20 @@ class MatchController {
 			return { error: 'Failed to retrieve matches for this user', details: error.message };
 		}
 	}
+	
+	static async initiateMatch(request, reply) {
+		try {
+			// console.log('Request Body:', request.body); // Log the request body
+			const { player1, player2, matchtype } = request.body; // Correctly access the body
+			const match = await MatchService.initiateMatch(player1, player2, matchtype);
+			return match;
+		} catch (error) {
+			reply.code(500);
+			return { error: 'Failed to initiate match', details: error.message };
+		}
+
+	}
+
 }
 
 export default MatchController;

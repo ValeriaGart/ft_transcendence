@@ -15,6 +15,15 @@ class MatchService {
 		const match = await dbGet('SELECT * FROM match WHERE player1_id = ? or player2_id = ?', [userId, userId]);
 		return match;
 	}
+	
+	static async initiateMatch(player1, player2, matchtype) {
+		const matchResult = await dbRun(
+			'INSERT INTO match (player1_id, player2_id, type) VALUES (?, ?, ?)',
+			[player1, player2, matchtype]
+		);
+		const matchID = matchResult.lastID;
+		return matchID;
+	}
 }
 
 

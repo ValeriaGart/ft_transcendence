@@ -1,7 +1,8 @@
 import MatchController from '../controllers/match.controller.js';
-// import {
-// 	matchParamsSchema
-// } from '../schemas/match.schemas.js';
+import {
+	// matchParamsSchema
+	matchStartSchema
+} from '../schemas/match.schemas.js';
 
 async function routes(fastify, options) {
 	fastify.get('/match', MatchController.getAllMatches);
@@ -10,6 +11,11 @@ async function routes(fastify, options) {
 		preHandler: [fastify.authenticate]
 	} , MatchController.getCurrentUserMatches);
 
+	fastify.post('/match/startgame', {
+		schema: {
+			body: matchStartSchema
+		}
+	}, MatchController.initiateMatch);
 
 }
 

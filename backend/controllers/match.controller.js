@@ -52,8 +52,21 @@ class MatchController {
 			reply.code(500);
 			return { error: 'Failed to initiate match', details: error.message };
 		}
-
 	}
+
+	static async finishMatch(request, reply) {
+		try {
+			// console.log('Request Body:', request.body); // Log the request body
+			const { player1_score, player2_score, match_id } = request.body; // Correctly access the body
+			const match = await MatchService.finishMatch(player1_score, player2_score, match_id);
+			return match;
+		} catch (error) {
+			reply.code(500);
+			return { error: 'Failed to finish match', details: error.message };
+		}
+	}
+
+	
 
 }
 

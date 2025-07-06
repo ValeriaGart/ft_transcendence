@@ -1,7 +1,8 @@
 import MatchController from '../controllers/match.controller.js';
 import {
 	// matchParamsSchema
-	matchStartSchema
+	matchStartSchema,
+	matchFinishSchema
 } from '../schemas/match.schemas.js';
 
 async function routes(fastify, options) {
@@ -17,6 +18,11 @@ async function routes(fastify, options) {
 		}
 	}, MatchController.initiateMatch);
 
+	fastify.patch('/match/finishgame', {
+		schema: {
+			body: matchFinishSchema
+		}
+	}, MatchController.finishMatch );
 }
 
 export default routes;

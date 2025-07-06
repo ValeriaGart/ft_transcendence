@@ -24,8 +24,26 @@ class MatchService {
 		const matchID = matchResult.lastID;
 		return matchID;
 	}
-}
 
+	static async finishMatch(player1_score, player2_score, match_id) {
+		const win = player1_score > player2_score ? "1" : player1_score === player2_score ? "0" : "2";
+		const matchResult = await dbRun(
+			'UPDATE match \
+			SET player1_score = ?, player2_score = ?, \
+			winner_id = CASE \
+				WHEN ? = "1" THEN player1_id	\
+				WHEN ? = "2" THEN player2_id \
+				ELSE NULL \
+			END, \
+			gameFinishedAt = CURRENT_TIMESTAMP \
+			WHERE id = ?',
+			[player1_score, player2_score, win, win, match_id]
+		);
+		const matchID = matchResult.lastID;
+		return matchID;
+	}
+	
+}
 
 
 export default MatchService;

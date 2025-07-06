@@ -61,7 +61,7 @@ function initialize() {
         player1_score INTEGER,
         player2_score INTEGER,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        gameFinished TIMESTAMP,
+        gameFinishedAt TIMESTAMP,
         FOREIGN KEY (player1_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (player2_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (winner_id) REFERENCES users (id) ON DELETE CASCADE

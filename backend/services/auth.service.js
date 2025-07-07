@@ -42,15 +42,19 @@ class AuthService {
   static async createGoogleUser(userData) {
     try {
       const result = await dbRun(
-        `INSERT INTO users (email, name, googleId, profilePicture, emailVerified, lastLoginAt)
-         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        `INSERT INTO users (email, googleId, emailVerified, lastLoginAt)
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
         [
           userData.email,
-          userData.name,
           userData.googleId,
-          userData.profilePicture,
           userData.emailVerified ? 1 : 0
         ]
+      );
+
+      // Create corresponding profile entry with Google data
+      await dbRun(
+        'INSERT INTO profiles (userId, nickname, profilePictureUrl) VALUES (?, ?, ?)',
+        [result.lastID, userData.name, userData.profilePicture]
       );
 
       return await this.findUserById(result.lastID);
@@ -66,10 +70,18 @@ class AuthService {
       const passwordHash = await bcrypt.hash(userData.password, AUTH_CONFIG.PASSWORD.SALT_ROUNDS);
 
       const result = await dbRun(
-        `INSERT INTO users (email, name, passwordHash, lastLoginAt)
-         VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
-        [userData.email, userData.name, passwordHash]
+        `INSERT INTO users (email, passwordHash, lastLoginAt)
+         VALUES (?, ?, CURRENT_TIMESTAMP)`,
+        [userData.email, passwordHash]
       );
+
+      // Create corresponding profile entry
+      if (userData.name) {
+        await dbRun(
+          'INSERT INTO profiles (userId, nickname) VALUES (?, ?)',
+          [result.lastID, userData.name]
+        );
+      }
 
       return await this.findUserById(result.lastID);
     } catch (error) {
@@ -165,16 +177,6 @@ class AuthService {
       const values = [];
 
       // Only update provided fields
-      if (updateData.name !== undefined) {
-        fields.push('name = ?');
-        values.push(updateData.name);
-      }
-
-      if (updateData.profilePicture !== undefined) {
-        fields.push('profilePicture = ?');
-        values.push(updateData.profilePicture);
-      }
-
       if (updateData.emailVerified !== undefined) {
         fields.push('emailVerified = ?');
         values.push(updateData.emailVerified ? 1 : 0);

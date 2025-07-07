@@ -53,8 +53,6 @@ class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          name: null, // Now stored in profiles table
-          profilePicture: null // Now stored in profiles table
         },
         token
       };

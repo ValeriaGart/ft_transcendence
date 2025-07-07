@@ -40,8 +40,6 @@ function initialize() {
         email TEXT UNIQUE NOT NULL,
         passwordHash TEXT,
         googleId TEXT UNIQUE,
-        name TEXT,
-        profilePicture TEXT,
         emailVerified BOOLEAN DEFAULT FALSE,
         isActive BOOLEAN DEFAULT TRUE,
         lastLoginAt TIMESTAMP,

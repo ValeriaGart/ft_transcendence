@@ -1,0 +1,26 @@
+<blitz-controller-view>
+    <div id="signup_page" class="absolute top-[49%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[37%] ">
+        <img src="/art/signin_up/Backsignup.svg" alt="Back4" class="h-full w-full object-fill" />
+        <blitz-sound-button></blitz-sound-button>
+        <form id="signup_form" class="absolute flex flex-col top-[57%] left-[60%] -translate-x-1/2 -translate-y-1/2 w-[50%]">
+            <input type="email" id="email" placeholder="Email" class="focus:outline-none mb-[11%] text-[13px] lg:text-[1.2vw] text-[#A260ED]" />
+            <input type="password" id="password" placeholder="Password" class="focus:outline-none mb-[11%] text-[13px] lg:text-[1.2vw] text-[#A260ED]" />
+            <input type="password" id="confirm_password" placeholder="Confirm Password" class="focus:outline-none text-[13px] lg:text-[1.2vw] text-[#A260ED]" />
+            <button id="confirm_button"
+            class="absolute top-[-10%] left-[-69.5%]  cursor-pointer hover:opacity-80 transition-opacity duration-300"
+            >
+            <img 
+                src="/art/signin_up/enter_button2.svg" 
+                alt="Enter" 
+                class="h-[8vw] w-auto min-h-25 max-h-35 " 
+            />
+            </button>
+        </form>
+        <button id="google_signin_button" class="absolute top-[79.5%] right-[33%] w-auto cursor-pointer hover:opacity-80">
+            <img src="/art/signin_up/Google_signin.svg" alt="Google Signin" class="h-[27px] xl:h-[2.1vw] w-auto " />
+        </button>
+        <button id="signin_button" class="absolute top-[90.5%] left-[75%] xl:left-[73%] w-auto cursor-pointer hover:opacity-80">
+            <span class="text-[18px] xl:text-[1.8vw] text-[#F7E778] font-['Irish_Grover']">Sign In</span>
+        </button>
+    </div>
+</blitz-controller-view>

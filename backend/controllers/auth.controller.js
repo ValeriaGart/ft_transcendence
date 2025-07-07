@@ -53,14 +53,13 @@ class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
-          profilePicture: user.profilePicture
+          name: null, // Now stored in profiles table
+          profilePicture: null // Now stored in profiles table
         },
         token
       };
 
-    } catch (error) {
-      console.error('Google auth error:', error);
+    } catch (error) { 
       reply.code(500);
       return { error: 'Authentication failed', details: error.message };
     }
@@ -102,13 +101,11 @@ class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name
         },
         token
       };
 
     } catch (error) {
-      console.error('Registration error:', error);
       reply.code(500);
       return { error: 'Registration failed', details: error.message };
     }
@@ -162,14 +159,11 @@ class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
-          profilePicture: user.profilePicture
         },
         token
       };
 
     } catch (error) {
-      console.error('Login error:', error);
       reply.code(500);
       return { error: 'Login failed', details: error.message };
     }
@@ -187,7 +181,6 @@ class AuthController {
       return { success: true, message: 'Logged out successfully' };
 
     } catch (error) {
-      console.error('Logout error:', error);
       reply.code(500);
       return { error: 'Logout failed', details: error.message };
     }
@@ -213,14 +206,11 @@ class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
-          profilePicture: user.profilePicture
         },
         token
       };
 
     } catch (error) {
-      console.error('Token refresh error:', error);
       reply.code(500);
       return { error: 'Token refresh failed', details: error.message };
     }
@@ -241,8 +231,6 @@ class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
-          profilePicture: user.profilePicture,
           emailVerified: user.emailVerified,
           lastLoginAt: user.lastLoginAt,
           createdAt: user.createdAt
@@ -250,7 +238,6 @@ class AuthController {
       };
 
     } catch (error) {
-      console.error('Get current user error:', error);
       reply.code(500);
       return { error: 'Failed to get user information', details: error.message };
     }

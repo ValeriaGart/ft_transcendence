@@ -24,8 +24,6 @@ let authState: AuthState = {
   error: null
 };
 
-let gameInProgress = false;
-
 const authSubscribers: ((state: AuthState) => void)[] = [];
 
 export function subscribeToAuth(callback: (state: AuthState) => void) {
@@ -38,9 +36,7 @@ export function subscribeToAuth(callback: (state: AuthState) => void) {
   };
 }
 
-export function setGameInProgress(inProgress: boolean) {
-  gameInProgress = inProgress;
-}
+
 
 function updateAuthState(updates: Partial<AuthState>) {
   authState = { ...authState, ...updates };
@@ -214,11 +210,6 @@ export async function loginWithEmailPassword(email: string, password: string) {
 }
 
 export async function verifyAuthToken() {
-  // Skip verification if game is in progress to prevent interruptions
-  if (gameInProgress) {
-    return authState.user;
-  }
-  
   updateAuthState({ isLoading: true });
   
   try {
@@ -243,39 +234,29 @@ export async function verifyAuthToken() {
     return data.user;
   } catch (error) {
     console.error('❌ Token verification failed:', error);
-    if (!gameInProgress) {
-      updateAuthState({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null
-      });
-    } else {
-      console.log('🎮 Game in progress, not logging out due to verification failure');
-      updateAuthState({
-        isLoading: false,
-        error: null
-      });
-    }
+    updateAuthState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null
+    });
     return null;
   }
 }
 
 export async function logout() {
-  console.log('🚪 LOGOUT CALLED!');
-  console.log('📍 Called from:', new Error().stack?.split('\n')[2]?.trim());
-  console.log('🎮 Game in progress:', gameInProgress);
-  
   try {
     await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGOUT), {
       method: 'POST',
       credentials: 'include',
+      body: JSON.stringify({}), // Send empty JSON object instead of no body
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
   } catch (error) {
     console.error('Logout request failed:', error);
   }
-  
-  setGameInProgress(false);
   
   updateAuthState({
     user: null,

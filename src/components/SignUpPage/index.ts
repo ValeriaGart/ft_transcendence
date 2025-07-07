@@ -1,6 +1,7 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
-import { Error } from "../Error";
+import { Error as ErrorComponent } from "../Error";
+import { authService } from "../../lib/auth";
 
 interface SignUpPageState {
     email: string;
@@ -11,11 +12,19 @@ interface SignUpPageState {
     showError: boolean;
     isConfirmPasswordValid: boolean;
     errorMessage: string | null;
+    isGoogleLoading: boolean;
+}
+
+declare global {
+  interface Window {
+    google: any;
+    handleGoogleCredentialResponse: (response: any) => void;
+  }
 }
 
 export class SignUpPage extends Component<SignUpPageState> {
 
-    private currentErrorComponent: Error | null = null;
+    private currentErrorComponent: ErrorComponent | null = null;
 
     protected static state: SignUpPageState = {
         email: "",
@@ -26,6 +35,7 @@ export class SignUpPage extends Component<SignUpPageState> {
         isConfirmPasswordValid: false,
         showError: false,
         errorMessage: null,
+        isGoogleLoading: false,
     };
 
     constructor() {
@@ -34,6 +44,8 @@ export class SignUpPage extends Component<SignUpPageState> {
         this.handleEmailChange = this.handleEmailChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
         this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
+        this.handleGoogleSignIn = this.handleGoogleSignIn.bind(this);
+        this.initializeGoogleAuth = this.initializeGoogleAuth.bind(this);
     }
 
     private validateEmail(email: string): boolean {
@@ -126,7 +138,7 @@ export class SignUpPage extends Component<SignUpPageState> {
         // Remove any existing error component first
         this.removeErrorComponent();
 
-        const errorComponent = new Error({
+        const errorComponent = new ErrorComponent({
             message: message,
             onClose: () => this.hideError()
         });
@@ -144,8 +156,152 @@ export class SignUpPage extends Component<SignUpPageState> {
 
     private removeErrorComponent() {
         if (this.currentErrorComponent) {
-            this.currentErrorComponent.element.remove();
+            this.currentErrorComponent.unmount();
             this.currentErrorComponent = null;
+        }
+    }
+
+    private async loadGoogleScript(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (window.google) {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.async = true;
+            script.defer = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Google SDK'));
+            document.head.appendChild(script);
+        });
+    }
+
+    private async initializeGoogleAuth(): Promise<void> {
+        try {
+            await this.loadGoogleScript();
+
+            if (!window.google) {
+                throw new Error('Google SDK not loaded');
+            }
+
+            window.handleGoogleCredentialResponse = this.handleCredentialResponse.bind(this);
+
+            window.google.accounts.id.initialize({
+                client_id: '921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com',
+                callback: window.handleGoogleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true,
+                context: 'signup',
+                ux_mode: 'popup',
+                use_fedcm_for_prompt: false
+            });
+
+            console.log('Google Auth initialized successfully for signup');
+
+        } catch (error) {
+            console.error('Failed to initialize Google Auth:', error);
+            this.showError('Failed to initialize Google Sign-up');
+        }
+    }
+
+    private async handleCredentialResponse(response: any): Promise<void> {
+        try {
+            console.log('Google credential response received for signup');
+
+            const result = await authService.googleLogin(response.credential);
+            console.log('Google signup result:', result);
+
+            if (result.success) {
+                console.log('Google signup successful');
+                this.setState({ isGoogleLoading: false });
+                Router.getInstance().navigate("/greatsuccess");
+            } else {
+                console.error('Google signup failed:', result.error);
+                this.setState({ isGoogleLoading: false });
+                this.showError(result.error || 'Google Sign-up failed');
+            }
+
+        } catch (error) {
+            console.error('Google credential response error:', error);
+            this.setState({ isGoogleLoading: false });
+            
+            let errorMessage = 'Google Sign-up failed';
+            
+            if (error instanceof Error) {
+                if (error.message.includes('Invalid') || error.message.includes('401')) {
+                    errorMessage = 'Google authentication failed. Please try again or use email/password signup.';
+                } else if (error.message.includes('redirect_uri_mismatch') || error.message.includes('400')) {
+                    errorMessage = 'Google Sign-up configuration error. Please contact support.';
+                } else {
+                    errorMessage = error.message;
+                }
+            }
+            
+            this.showError(errorMessage);
+        }
+    }
+
+    private async handleGoogleSignIn(event: Event): Promise<void> {
+        event.preventDefault();
+        
+        if (this.state.isGoogleLoading) return;
+
+        try {
+            if (!window.google) {
+                await this.initializeGoogleAuth();
+            }
+
+            if (!window.google) {
+                throw new Error('Google Sign-up not available');
+            }
+
+            this.setState({ isGoogleLoading: true });
+
+            // Create a temporary container for Google button (simplified but working approach)
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            document.body.appendChild(tempContainer);
+
+            // Render Google button
+            window.google.accounts.id.renderButton(tempContainer, {
+                theme: 'outline',
+                size: 'large',
+                type: 'standard',
+                text: 'signup_with',
+                shape: 'rectangular',
+                width: 250
+            });
+
+            // Auto-click the button after a short delay
+            setTimeout(() => {
+                const googleButton = tempContainer.querySelector('div[role="button"]') as HTMLElement;
+                if (googleButton) {
+                    googleButton.click();
+                } else {
+                    // Fallback to prompt
+                    window.google.accounts.id.prompt((notification: any) => {
+                        this.setState({ isGoogleLoading: false });
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            this.showError('Google Sign-up was cancelled or not available.');
+                        }
+                    });
+                }
+                
+                // Clean up the temporary container
+                setTimeout(() => {
+                    if (document.body.contains(tempContainer)) {
+                        document.body.removeChild(tempContainer);
+                    }
+                }, 1000);
+            }, 100);
+
+        } catch (error) {
+            console.error('Google Sign-up error:', error);
+            this.setState({ isGoogleLoading: false });
+            this.showError('Google Sign-up not available. Please check your internet connection.');
         }
     }
 
@@ -217,6 +373,10 @@ export class SignUpPage extends Component<SignUpPageState> {
         this.bind("#confirm_password", "confirmPassword", { twoWay: true }); 
         this.addEventListener("#signup_form", "submit", this.handleSignUp);
         this.addEventListener("#signin_button", "click", this.handleSignIn);
+        this.addEventListener("#google_signin_button", "click", this.handleGoogleSignIn);
+        
+        // Initialize Google Auth
+        this.initializeGoogleAuth();
         
         // Add input event listener for email validation
         const emailElement = this.element.querySelector("#email") as HTMLInputElement;

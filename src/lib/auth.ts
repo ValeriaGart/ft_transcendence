@@ -217,6 +217,56 @@ class AuthService {
   }
 
   /**
+   * Login user with Google credential
+   */
+  public async googleLogin(googleCredential: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('AuthService: Attempting Google login');
+      
+      const response = await fetch('http://localhost:3000/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          credential: googleCredential
+        }),
+      });
+
+      console.log('AuthService: Google login response status:', response.status);
+      const data = await response.json();
+      console.log('AuthService: Google login response data:', data);
+      console.log('AuthService: response.ok:', response.ok);
+      console.log('AuthService: data.success:', data.success);
+
+      if (response.ok && data.success) {
+        const user = data.user;
+        const token = data.token;
+
+        console.log('AuthService: Google login successful, storing user:', user);
+
+        this.state = {
+          isAuthenticated: true,
+          user,
+          token
+        };
+
+        this.saveToStorage();
+        this.notifyListeners();
+        console.log('AuthService: Google login complete, state updated');
+        return { success: true };
+      } else {
+        console.log('AuthService: Google login failed:', data.error);
+        return { success: false, error: data.error || 'Google login failed' };
+      }
+    } catch (error) {
+      console.error('AuthService: Google login error:', error);
+      return { success: false, error: 'Network error' };
+    }
+  }
+
+  /**
    * Logout user
    */
   public async logout(): Promise<void> {

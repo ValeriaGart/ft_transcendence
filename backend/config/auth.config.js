@@ -11,7 +11,6 @@ export const AUTH_CONFIG = {
   GOOGLE: {
     CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com',
     CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || ''
-    // No REDIRECT_URI needed for popup mode
   },
 
   PASSWORD: {

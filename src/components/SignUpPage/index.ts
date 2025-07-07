@@ -67,8 +67,8 @@ export class SignUpPage extends Component<SignUpPageState> {
     }
 
     private validatePassword(password: string): boolean {
-        // Must be at least 6 characters and no more than 20
-        if (password.length < 6 || password.length > 20) {
+        //  backend requires at least 8 characters and no more than 128 
+        if (password.length < 8 || password.length > 128) {
             return false;
         }
         
@@ -315,8 +315,8 @@ export class SignUpPage extends Component<SignUpPageState> {
         }
         
         if (!this.state.isPasswordValid) {
-            this.showError('Password must be longer than 6 and shorter than 20 characters and contain at least 1 number');
-            console.log('Password must be longer than 6 and shorter than 20 characters and contain at least 1 number');
+            this.showError('Password must be at least 8 characters, 1 uppercase letter, and contain at least 1 number');
+            console.log('Password must be at least 8 characters, 1 uppercase letter, and contain at least 1 number');
             return;
         }
         
@@ -328,33 +328,18 @@ export class SignUpPage extends Component<SignUpPageState> {
         
 
         try {
-            console.log('Sending signup request to backend...');
+            console.log('Sending signup request via authService...');
             
-            const response = await fetch('http://localhost:3000/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: this.state.email,
-                    passwordString: this.state.password
-                })
-            });
+            const result = await authService.register(this.state.email, this.state.password);
             
-            console.log('Response status:', response.status);
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Backend error:', errorData);
-                this.showError(`Registration failed: ${errorData.error || 'Unknown error'}`);
-                return;
+            if (result.success) {
+                console.log('Registration successful');
+                // Registration successful, navigate to success page
+                Router.getInstance().navigate("/greatsuccess");
+            } else {
+                console.error('Registration failed:', result.error);
+                this.showError(`Registration failed: ${result.error || 'Unknown error'}`);
             }
-            
-            const data = await response.json();
-            console.log('Registration successful:', data);
-            
-            // Registration successful, navigate to success page
-            Router.getInstance().navigate("/greatsuccess");
             
         } catch (error) {
             console.error('Network error:', error);

@@ -146,7 +146,7 @@ class AuthService {
         credentials: 'include',
         body: JSON.stringify({
           email,
-          passwordString: password
+          password: password
         }),
       });
 
@@ -182,7 +182,7 @@ class AuthService {
         credentials: 'include', // Include cookies for session management
         body: JSON.stringify({
           email,
-          passwordString: password
+          password: password
         }),
       });
 

@@ -11,7 +11,7 @@ class FriendService {
 		// if friendship request already exists error
 		// if friendship already exists error
 		const friend = await dbRun(
-			'INSERT INTO friend [initiator_id, recipient_id] VALUES (?, ?)',
+			'INSERT INTO friend (initiator_id, recipient_id) VALUES (?, ?)',
 			[id, friend_id]
 		);
 		return friend;

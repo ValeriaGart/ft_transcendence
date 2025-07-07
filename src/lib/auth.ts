@@ -1,3 +1,5 @@
+import { getApiUrl, API_CONFIG } from '../config/api';
+
 /**
  * Authentication service for managing user tokens and login state
  */
@@ -136,7 +138,7 @@ class AuthService {
     try {
       console.log('AuthService: Attempting registration for email:', email);
       
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.REGISTER), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +174,7 @@ class AuthService {
     try {
       console.log('AuthService: Attempting login for email:', email);
       
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,9 +223,7 @@ class AuthService {
    */
   public async googleLogin(googleCredential: string): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('AuthService: Attempting Google login');
-      
-      const response = await fetch('http://localhost:3000/auth/google', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.GOOGLE_AUTH), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -272,13 +272,14 @@ class AuthService {
   public async logout(): Promise<void> {
     try {
       // Call backend logout endpoint
-      const response = await fetch('http://localhost:3000/users/logout', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGOUT), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.getToken()}`,
           'Content-Type': 'application/json',
         },
         credentials: 'include',
+        body: JSON.stringify({}), // Send empty JSON object to avoid empty body error
       });
 
       if (response.ok) {
@@ -331,7 +332,7 @@ class AuthService {
         return false;
       }
 
-      const response = await fetch('http://localhost:3000/users/me', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.ME), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -426,7 +427,7 @@ class AuthService {
 
       console.log('AuthService: Attempting to delete user:', user.id);
       
-      const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.USERS}/${user.id}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${this.getToken()}`,

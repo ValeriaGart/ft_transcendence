@@ -14,7 +14,7 @@ class FriendController {
 	static async requestFriend(request, reply) {
 		try {
 			const userId = request.user.userId;
-			const friend_id = request.body;
+			const { friend_id } = request.body;
 			const friend = await FriendService.requestFriend(userId, friend_id);
 			return friend;
 		} catch (error) {

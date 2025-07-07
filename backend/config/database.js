@@ -52,6 +52,17 @@ function initialize() {
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       );
+
+      CREATE TABLE IF NOT EXISTS friend (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        initiator_id INTEGER,
+        recipient_id INTEGER,
+        accepted BOOLEAN,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        acceptedAt TIMESTAMP,
+        FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (recipient_id) REFERENCES users (id) ON DELETE CASCADE
+      );
       `,
       (err) => {
         if (err) reject(err);

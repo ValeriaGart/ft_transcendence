@@ -23,6 +23,18 @@ class FriendController {
 		}
 	}
 
+	static async acceptFriend(request, reply) {
+		try {
+			const userId = request.user.userId;
+			const { friend_id } = request.body;
+			const friend = await FriendService.acceptFriend(userId, friend_id);
+			return friend;
+		} catch (error) {
+			reply.code(500);
+			return { error: 'Failed to accept friendship', details: error.message };
+		}
+	}
+
 	
 
 

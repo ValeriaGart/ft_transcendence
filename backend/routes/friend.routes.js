@@ -17,12 +17,12 @@ async function routes(fastify, options) {
 		preHandler: [fastify.authenticate]
 	}, FriendController.requestFriend);
 
-	// fastify.patch('/friend/me', {
-	// 	schema: {
-	// 		body: requestFriendSchema
-	// 	},
-	// 	preHandler: [fastify.authenticate]
-	// }, FriendController.acceptFriend);
+	fastify.patch('/friend/me', {
+		schema: {
+			body: requestFriendSchema
+		},
+		preHandler: [fastify.authenticate]
+	}, FriendController.acceptFriend);
 
 }
 

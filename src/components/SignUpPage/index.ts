@@ -67,8 +67,8 @@ export class SignUpPage extends Component<SignUpPageState> {
     }
 
     private validatePassword(password: string): boolean {
-        //  backend requires at least 8 characters and no more than 128 
-        if (password.length < 8 || password.length > 128) {
+        // Must be at least 6 characters and no more than 20
+        if (password.length < 6 || password.length > 20) {
             return false;
         }
         
@@ -310,19 +310,16 @@ export class SignUpPage extends Component<SignUpPageState> {
         
         if (!this.state.isEmailValid) {
             this.showError('Please enter a valid email address');
-            console.log('Please enter a valid email address');
             return;
         }
         
         if (!this.state.isPasswordValid) {
             this.showError('Password must be at least 8 characters, 1 uppercase letter, and contain at least 1 number');
-            console.log('Password must be at least 8 characters, 1 uppercase letter, and contain at least 1 number');
             return;
         }
         
         if (!this.state.isConfirmPasswordValid) {
             this.showError('Confirm password must match the password');
-            console.log('Confirm password must match the password');
             return;
         }
         

@@ -22,8 +22,8 @@ export const registerSchema = {
     },
     password: {
       type: 'string',
-      minLength: 8,
-      maxLength: 128
+      minLength: 6,
+      maxLength: 20
     },
     name: {
       type: 'string',
@@ -46,7 +46,7 @@ export const loginSchema = {
     password: {
       type: 'string',
       minLength: 1,
-      maxLength: 128
+      maxLength: 20
     }
   },
   additionalProperties: false

@@ -3,7 +3,7 @@ export const userBodySchema = {
   required: ['email', 'passwordString'],
   properties: {
     email: { type: 'string', format: 'email' },
-    passwordString: { type: 'string', minLength: 6 }
+    passwordString: { type: 'string', minLength: 6, maxLength: 20 }
   }
 };
 
@@ -11,7 +11,7 @@ export const userPatchSchema = {
   type: 'object',
   properties: {
     email: { type: 'string', format: 'email' },
-    passwordString: { type: 'string', minLength: 6 }
+    passwordString: { type: 'string', minLength: 6, maxLength: 20 }
   },
   anyOf: [
     { required: ['email'] },
@@ -32,6 +32,6 @@ export const loginSchema = {
   required: ['email', 'passwordString'],
   properties: {
     email: { type: 'string', format: 'email' },
-    passwordString: { type: 'string', minLength: 1 }
+    passwordString: { type: 'string', minLength: 1, maxLength: 20 }
   }
 };

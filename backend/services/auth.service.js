@@ -54,7 +54,7 @@ class AuthService {
       // Create corresponding profile entry with Google data
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
-        [result.lastID, userData.name, userData.profilePicture, null]
+        [result.lastID, userData.name, 'profile_no.svg', null]
       );
 
       return await this.findUserById(result.lastID);

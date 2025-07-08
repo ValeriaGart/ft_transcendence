@@ -14,7 +14,7 @@ export const AUTH_CONFIG = {
   },
 
   PASSWORD: {
-    MIN_LENGTH: 8,
+    MIN_LENGTH: 6,
     REQUIRE_UPPERCASE: true,
     REQUIRE_LOWERCASE: true,
     REQUIRE_NUMBERS: true,

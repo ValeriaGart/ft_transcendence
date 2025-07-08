@@ -125,16 +125,13 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       
       const profileData = await response.json();
       
-      // Create a proper URI for the profile picture
-      const pictureUrl = `http://localhost:3000/art/profile/${pictureName}`;
-      
-      // Update the profile picture
+      // Update the profile picture using just the filename
       const updateResponse = await authService.authenticatedFetch(`http://localhost:3000/profiles/${profileData.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ profilePictureUrl: pictureUrl }),
+        body: JSON.stringify({ profilePictureUrl: pictureName }),
       });
       
       if (updateResponse.ok) {

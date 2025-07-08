@@ -375,6 +375,26 @@ class AuthService {
   }
 
   /**
+   * Get user authentication type
+   */
+  public async getUserAuthType(): Promise<{ success: boolean; authType?: any; error?: string }> {
+    try {
+      const response = await this.authenticatedFetch(getApiUrl('/users/me/auth-type'));
+      
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, authType: data.authType };
+      } else {
+        const errorData = await response.json();
+        return { success: false, error: errorData.error || 'Failed to get auth type' };
+      }
+    } catch (error) {
+      console.error('AuthService: Get auth type error:', error);
+      return { success: false, error: 'Network error' };
+    }
+  }
+
+  /**
    * Subscribe to auth state changes
    */
   public subscribe(listener: (state: AuthState) => void): () => void {
@@ -403,10 +423,23 @@ class AuthService {
    */
   public async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const token = this.getToken();
-    const headers = {
+    console.log('AuthService.authenticatedFetch:', { 
+      url, 
+      hasToken: !!token, 
+      tokenLength: token ? token.length : 0,
+      method: options.method || 'GET'
+    });
+    
+    const headers: any = {
       ...options.headers,
-      'Authorization': token ? `Bearer ${token}` : '',
     };
+    
+    // Only add Authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('AuthService.authenticatedFetch: No token available!');
+    }
 
     return fetch(url, {
       ...options,

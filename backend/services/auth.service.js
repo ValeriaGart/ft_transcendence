@@ -53,8 +53,8 @@ class AuthService {
 
       // Create corresponding profile entry with Google data
       await dbRun(
-        'INSERT INTO profiles (userId, nickname, profilePictureUrl) VALUES (?, ?, ?)',
-        [result.lastID, userData.name, userData.profilePicture]
+        'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
+        [result.lastID, userData.name, userData.profilePicture, null]
       );
 
       return await this.findUserById(result.lastID);
@@ -75,13 +75,27 @@ class AuthService {
         [userData.email, passwordHash]
       );
 
-      // Create corresponding profile entry
-      if (userData.name) {
-        await dbRun(
-          'INSERT INTO profiles (userId, nickname) VALUES (?, ?)',
-          [result.lastID, userData.name]
-        );
-      }
+      // Always create a corresponding profile entry (with default values)
+      const nickname = userData.name || userData.email.split('@')[0];
+      
+      console.log('Creating profile with data:', {
+        userId: result.lastID,
+        nickname: nickname,
+        profilePictureUrl: 'profile_no.svg',
+        bio: null
+      });
+      
+      await dbRun(
+        'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
+        [
+          result.lastID, 
+          nickname,
+          'profile_no.svg', 
+          null 
+        ]
+      );
+      
+      console.log('Profile created successfully');
 
       return await this.findUserById(result.lastID);
     } catch (error) {

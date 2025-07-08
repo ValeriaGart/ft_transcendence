@@ -35,11 +35,20 @@ async function routes(fastify, options) {
   }, UserController.loginUser);
 
 
-  // Protected routes -  requires authentication
   // Get current user info
   fastify.get('/users/me', {
 	preHandler: [fastify.authenticate]
   }, UserController.getCurrentUser);
+
+  // Get current user authentication type
+  fastify.get('/users/me/auth-type', {
+	preHandler: [fastify.authenticate]
+  }, UserController.getCurrentUserAuthType);
+
+  // Verify current user's password
+  fastify.post('/users/me/verify-password', {
+	preHandler: [fastify.authenticate]
+  }, UserController.verifyCurrentUserPassword);
 
   //Logout
   fastify.post('/users/logout', {

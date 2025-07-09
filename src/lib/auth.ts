@@ -1,3 +1,5 @@
+import { getApiUrl, API_CONFIG } from '../config/api';
+
 /**
  * Authentication service for managing user tokens and login state
  */
@@ -136,7 +138,7 @@ class AuthService {
     try {
       console.log('AuthService: Attempting registration for email:', email);
       
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.REGISTER), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +146,7 @@ class AuthService {
         credentials: 'include',
         body: JSON.stringify({
           email,
-          passwordString: password
+          password: password
         }),
       });
 
@@ -172,7 +174,7 @@ class AuthService {
     try {
       console.log('AuthService: Attempting login for email:', email);
       
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +182,7 @@ class AuthService {
         credentials: 'include', // Include cookies for session management
         body: JSON.stringify({
           email,
-          passwordString: password
+          password: password
         }),
       });
 
@@ -217,18 +219,67 @@ class AuthService {
   }
 
   /**
+   * Login user with Google credential
+   */
+  public async googleLogin(googleCredential: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.GOOGLE_AUTH), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          credential: googleCredential
+        }),
+      });
+
+      console.log('AuthService: Google login response status:', response.status);
+      const data = await response.json();
+      console.log('AuthService: Google login response data:', data);
+      console.log('AuthService: response.ok:', response.ok);
+      console.log('AuthService: data.success:', data.success);
+
+      if (response.ok && data.success) {
+        const user = data.user;
+        const token = data.token;
+
+        console.log('AuthService: Google login successful, storing user:', user);
+
+        this.state = {
+          isAuthenticated: true,
+          user,
+          token
+        };
+
+        this.saveToStorage();
+        this.notifyListeners();
+        console.log('AuthService: Google login complete, state updated');
+        return { success: true };
+      } else {
+        console.log('AuthService: Google login failed:', data.error);
+        return { success: false, error: data.error || 'Google login failed' };
+      }
+    } catch (error) {
+      console.error('AuthService: Google login error:', error);
+      return { success: false, error: 'Network error' };
+    }
+  }
+
+  /**
    * Logout user
    */
   public async logout(): Promise<void> {
     try {
       // Call backend logout endpoint
-      const response = await fetch('http://localhost:3000/users/logout', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGOUT), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.getToken()}`,
           'Content-Type': 'application/json',
         },
         credentials: 'include',
+        body: JSON.stringify({}), // Send empty JSON object to avoid empty body error
       });
 
       if (response.ok) {
@@ -281,7 +332,7 @@ class AuthService {
         return false;
       }
 
-      const response = await fetch('http://localhost:3000/users/me', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.ME), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -324,6 +375,26 @@ class AuthService {
   }
 
   /**
+   * Get user authentication type
+   */
+  public async getUserAuthType(): Promise<{ success: boolean; authType?: any; error?: string }> {
+    try {
+      const response = await this.authenticatedFetch(getApiUrl('/users/me/auth-type'));
+      
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, authType: data.authType };
+      } else {
+        const errorData = await response.json();
+        return { success: false, error: errorData.error || 'Failed to get auth type' };
+      }
+    } catch (error) {
+      console.error('AuthService: Get auth type error:', error);
+      return { success: false, error: 'Network error' };
+    }
+  }
+
+  /**
    * Subscribe to auth state changes
    */
   public subscribe(listener: (state: AuthState) => void): () => void {
@@ -352,10 +423,23 @@ class AuthService {
    */
   public async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const token = this.getToken();
-    const headers = {
+    console.log('AuthService.authenticatedFetch:', { 
+      url, 
+      hasToken: !!token, 
+      tokenLength: token ? token.length : 0,
+      method: options.method || 'GET'
+    });
+    
+    const headers: any = {
       ...options.headers,
-      'Authorization': token ? `Bearer ${token}` : '',
     };
+    
+    // Only add Authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('AuthService.authenticatedFetch: No token available!');
+    }
 
     return fetch(url, {
       ...options,
@@ -376,7 +460,7 @@ class AuthService {
 
       console.log('AuthService: Attempting to delete user:', user.id);
       
-      const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.USERS}/${user.id}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${this.getToken()}`,

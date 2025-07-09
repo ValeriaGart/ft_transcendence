@@ -2,7 +2,7 @@ export const profileBodySchema = {
   type: "object",
   properties: {
     nickname: { type: 'string', minLength: 2 },
-    profilePictureUrl: { type: 'string', format: "uri" },
+    profilePictureUrl: { type: 'string', minLength: 1 },
     bio: { type: 'string', maxLength: 500 }
   },
   required: ["nickname", "profilePictureUrl", "bio"]
@@ -20,7 +20,7 @@ export const profilePatchSchema = {
   type: "object",
   properties: {
     nickname: { type: 'string', minLength: 2 },
-    profilePictureUrl: { type: 'string', format: "uri" },
+    profilePictureUrl: { type: 'string', minLength: 1 },
     bio: { type: 'string', maxLength: 500 }
   },
   anyOf: [

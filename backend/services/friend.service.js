@@ -44,8 +44,12 @@ class FriendService {
 			throw new Error('You cannot send a friendship request to yourself.');
 		}
 
+		if (! await dbGet(`SELECT * FROM users WHERE id = ?`, [friend_id]))
+		{
+			throw new Error ('User you want to befriend doesn\'t exist');
+		}
 		// if friendship request already exists error
-		if (dbGet(`SELECT * FROM friend \
+		if (await dbGet(`SELECT * FROM friend \
 				WHERE \
 					(initiator_id = ? and recipient_id = ?) \
 					OR \
@@ -72,7 +76,7 @@ class FriendService {
 		// Check if the friendship request exists and is pending
 		const friendship = await dbGet(
 			`SELECT * FROM friend \
-			WHERE initiator_id = ? AND recipient_id = ? AND accepted = NULL`,
+			WHERE initiator_id = ? AND recipient_id = ? AND accepted IS NULL`,
 			[friend_id, id]
 		);
 		if (!friendship) {

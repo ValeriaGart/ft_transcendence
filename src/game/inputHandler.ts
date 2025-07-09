@@ -119,12 +119,10 @@ export class InputHandler {
 	private handleGameScreenDown(event: KeyboardEvent): void {
 		const gameStats = this._engine._pongGame._gameStats.paddleDirection;
 
-		// gameStats.left = 0;
 		if (!this._engine._pongGame._p1.getBot() ||(this._engine._pongGame._p1.getBot() && event.location == 1)) {
 			if (this._keysPressed['w']) gameStats.left = -1;
 			if (this._keysPressed['s']) gameStats.left = +1;
 		}
-		
 		
 		if (!this._engine._pongGame._p2.getBot() ||(this._engine._pongGame._p2.getBot() && event.location == 1)) {
 			if (this._keysPressed['ArrowUp']) gameStats.right = -1;

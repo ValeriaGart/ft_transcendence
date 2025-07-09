@@ -1,6 +1,6 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
-import { Error as ErrorComponent } from "../Error";
+import { ErrorManager } from "../Error";
 import { authService } from "../../lib/auth";
 
 interface SignInPageState {
@@ -20,8 +20,6 @@ declare global {
 
 export class SignInPage extends Component<SignInPageState> {
 
-    private currentErrorComponent: ErrorComponent | null = null;
-
     protected static state: SignInPageState = {
         email: "",
         password: "",
@@ -37,43 +35,19 @@ export class SignInPage extends Component<SignInPageState> {
         this.initializeGoogleAuth = this.initializeGoogleAuth.bind(this);
     }
 
+
     private showError(message: string) {
         this.setState({
             showError: true,
             errorMessage: message
         });
-
-        this.displayErrorComponent(message);
-    }
-
-    private hideError() {
-        this.setState({
-            showError: false,
-            errorMessage: null
+    
+        ErrorManager.showError(message, this.element, () => {
+            this.setState({
+                showError: false,
+                errorMessage: null
+            });
         });
-        
-        // Remove the error component
-        this.removeErrorComponent();
-    }
-
-    private displayErrorComponent(message: string) {
-        this.removeErrorComponent();
-
-        const errorComponent = new ErrorComponent({
-            message: message,
-            onClose: () => this.hideError()
-        });
-        
-        errorComponent.mount(this.element);
-        
-        this.currentErrorComponent = errorComponent;
-    }
-
-    private removeErrorComponent() {
-        if (this.currentErrorComponent) {
-            this.currentErrorComponent.unmount();
-            this.currentErrorComponent = null;
-        }
     }
 
     public async handleSignIn(e: Event) {

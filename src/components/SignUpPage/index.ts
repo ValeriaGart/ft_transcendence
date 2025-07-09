@@ -1,6 +1,6 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
-import { Error as ErrorComponent } from "../Error";
+import { ErrorManager } from "../Error";
 import { authService } from "../../lib/auth";
 
 interface SignUpPageState {
@@ -23,8 +23,6 @@ declare global {
 }
 
 export class SignUpPage extends Component<SignUpPageState> {
-
-    private currentErrorComponent: ErrorComponent | null = null;
 
     protected static state: SignUpPageState = {
         email: "",
@@ -112,53 +110,19 @@ export class SignUpPage extends Component<SignUpPageState> {
         });
     }
 
+
     private showError(message: string) {
-        this.setState({
-            errorMessage: message,
-            showError: true
-        });
-        
-        // Create and mount the error component immediately
-        this.displayErrorComponent(message);
-    }
-
-    private hideError() {
-        this.setState({
-            showError: false,
-            errorMessage: null
-        });
-        
-        // Remove the error component
-        this.removeErrorComponent();
-    }
-
-    private displayErrorComponent(message: string) {
-        console.log('Creating error component with message:', message);
-        
-        // Remove any existing error component first
-        this.removeErrorComponent();
-
-        const errorComponent = new ErrorComponent({
-            message: message,
-            onClose: () => this.hideError()
-        });
-        
-        console.log('Error component created:', errorComponent);
-        
-        // Mount error component to the page
-        errorComponent.mount(this.element);
-        
-        console.log('Error component mounted to:', this.element);
-        
-        // Store reference to remove later
-        this.currentErrorComponent = errorComponent;
-    }
-
-    private removeErrorComponent() {
-        if (this.currentErrorComponent) {
-            this.currentErrorComponent.unmount();
-            this.currentErrorComponent = null;
-        }
+      this.setState({
+          showError: true,
+          errorMessage: message
+      });
+  
+      ErrorManager.showError(message, this.element, () => {
+          this.setState({
+              showError: false,
+              errorMessage: null
+          });
+      });
     }
 
     private async loadGoogleScript(): Promise<void> {

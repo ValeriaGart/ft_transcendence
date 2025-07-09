@@ -75,6 +75,16 @@ export class SignUpPage extends Component<SignUpPageState> {
             return false;
         }
         
+        // Must have at least 1 uppercase letter
+        if (!/[A-Z]/.test(password)) {
+            return false;
+        }
+        
+        // Must have at least 1 lowercase letter
+        if (!/[a-z]/.test(password)) {
+            return false;
+        }
+        
         // Must have at least 1 number
         if (!/\d/.test(password)) {
             return false;
@@ -89,6 +99,18 @@ export class SignUpPage extends Component<SignUpPageState> {
         const isValid = this.validatePassword(newPassword);
         
         console.log('Password changed:', { newPassword, isValid });
+        
+        // Update password requirements visibility
+        const requirementsElement = this.element.querySelector('#password_requirements') as HTMLElement;
+        if (requirementsElement) {
+            if (newPassword.length > 0) {
+                requirementsElement.style.opacity = isValid ? '0.3' : '0.8';
+                requirementsElement.style.color = isValid ? '#4CAF50' : '#A260ED';
+            } else {
+                requirementsElement.style.opacity = '0.7';
+                requirementsElement.style.color = '#A260ED';
+            }
+        }
         
         this.setState({ 
             password: newPassword, 
@@ -278,7 +300,7 @@ export class SignUpPage extends Component<SignUpPageState> {
         }
         
         if (!this.state.isPasswordValid) {
-            this.showError('Password must be at least 8 characters, 1 uppercase letter, and contain at least 1 number');
+            this.showError('Password must be 6-20 characters, contain at least 1 uppercase letter, 1 lowercase letter, and 1 number');
             return;
         }
         

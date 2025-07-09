@@ -17,6 +17,10 @@ class MatchService {
 	}
 	
 	static async initiateMatch(player1, player2, matchtype) {
+		if (player1 === player2)
+		{
+			throw new Error ("Can't match against yourself...");
+		}
 		const matchResult = await dbRun(
 			'INSERT INTO match (player1_id, player2_id, type) VALUES (?, ?, ?)',
 			[player1, player2, matchtype]

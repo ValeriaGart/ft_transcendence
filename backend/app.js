@@ -26,6 +26,7 @@ import fastify from 'fastify';
 import { initialize } from './config/database.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
+import matchRoutes from './routes/match.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
@@ -62,6 +63,7 @@ await app.register(import('@fastify/rate-limit'), {
 await app.register(authRoutes);
 await app.register(userRoutes);
 await app.register(profileRoutes);
+await app.register(matchRoutes);
 
 
 async function bootstrap() {

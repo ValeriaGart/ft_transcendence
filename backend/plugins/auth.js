@@ -1,13 +1,14 @@
 import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
 import { dbGet } from '../config/database.js';
+import { AUTH_CONFIG } from '../config/auth.config.js';
 
 async function authPlugin(fastify, options) {
   // Register JWT plugin with fallback secret
   await fastify.register(jwt, {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-here-let-us-make-it-long-and-random',
+    secret: AUTH_CONFIG.JWT.SECRET,
     sign: {
-      expiresIn: process.env.JWT_EXPIRES_IN || '1h'
+      expiresIn: AUTH_CONFIG.JWT.EXPIRES_IN
     }
   });
 
@@ -15,11 +16,10 @@ async function authPlugin(fastify, options) {
   fastify.decorate('authenticate', async function(request, reply) {
     try {
       // Check if token is in cookie, if so, add it to authorization header
-      if (!request.headers.authorization && request.cookies && request.cookies.authToken) {
-        request.headers.authorization = `Bearer ${request.cookies.authToken}`;
+      if (!request.headers.authorization && request.cookies && request.cookies['auth-token']) {
+        request.headers.authorization = `Bearer ${request.cookies['auth-token']}`;
       }
       
-      // Use standard Fastify JWT verification
       await request.jwtVerify();
     } catch (err) {
       reply.code(401).send({ 
@@ -68,7 +68,6 @@ async function authPlugin(fastify, options) {
       const profileId = parseInt(request.params.id);
       const userId = request.user.userId;
       
-      // Get profile to check ownership
       const profile = await dbGet('SELECT userId FROM profiles WHERE id = ?', [profileId]);
       
       if (!profile || profile.userId !== userId) {

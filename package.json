@@ -1,15 +1,18 @@
 {
   "name": "ft_transcendence",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "node backend/app.js",
+    "dev:both": "concurrently \"npm run dev\" \"npm run dev:backend\"",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "concurrently": "^9.1.2",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
   },
@@ -20,11 +23,17 @@
     "@fastify/rate-limit": "^10.3.0",
     "@tailwindcss/vite": "^4.1.8",
     "argon2": "^0.43.0",
+    "bcrypt": "^6.0.0",
+    "elastic-apm-node": "^4.13.0",
     "dotenv": "^16.5.0",
     "fastify": "^5.3.3",
     "fastify-plugin": "^5.0.1",
     "fastify-sqlite": "^1.1.0",
+    "google-auth-library": "^10.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "path": "^0.12.7",
     "sqlite3": "^5.1.7",
-    "tailwindcss": "^4.1.8"
+    "tailwindcss": "^4.1.8",
+    "url": "^0.11.4"
   }
 }

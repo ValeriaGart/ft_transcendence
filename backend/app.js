@@ -1,3 +1,21 @@
+// Add this to the VERY top of the first file loaded in your app
+/* import apmInit from 'elastic-apm-node';
+const apm = apmInit.start({
+  // Override service name from package.json
+  // Allowed characters: a-z, A-Z, 0-9, -, _, and space
+  serviceName: 'apm',
+
+  // Use if APM Server requires a token
+  secretToken: '',
+
+  // Use if APM Server uses API keys for authentication
+  apiKey: '',
+
+  // Set custom APM Server URL (default: http://127.0.0.1:8200)
+  serverUrl: 'http://0.0.0.0:8200',
+})
+ */
+
 import { config } from 'dotenv';
 import path from 'path';
 
@@ -9,6 +27,7 @@ import { initialize } from './config/database.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import matchRoutes from './routes/match.routes.js';
+import authRoutes from './routes/auth.routes.js';
 import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
@@ -41,6 +60,7 @@ await app.register(import('@fastify/rate-limit'), {
 });
 
 // Register routes
+await app.register(authRoutes);
 await app.register(userRoutes);
 await app.register(profileRoutes);
 await app.register(matchRoutes);

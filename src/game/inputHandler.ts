@@ -125,7 +125,7 @@ export class InputHandler {
 			if (this._keysPressed['s']) gameStats.left = +1;
 		}
 		
-		// gameStats.right = 0;
+		
 		if (!this._engine._pongGame._p2.getBot() ||(this._engine._pongGame._p2.getBot() && event.location == 1)) {
 			if (this._keysPressed['ArrowUp']) gameStats.right = -1;
 			if (this._keysPressed['ArrowDown']) gameStats.right = +1;

@@ -1,4 +1,5 @@
 import { dbRun, dbGet, dbAll } from "../config/database.js"
+import UserService from "../services/user.service.js"
 
 class FriendService {
 	static async getAllFriendships() {
@@ -44,7 +45,7 @@ class FriendService {
 			throw new Error('You cannot send a friendship request to yourself.');
 		}
 
-		if (! await dbGet(`SELECT * FROM users WHERE id = ?`, [friend_id]))
+		if (! await UserService.getUserById(friend_id))
 		{
 			throw new Error ('User you want to befriend doesn\'t exist');
 		}

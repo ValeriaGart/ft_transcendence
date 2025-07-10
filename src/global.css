@@ -15,3 +15,18 @@
 .animate-pulse-slow {
     animation: pulse-slow 1s ease-in-out infinite;
 }
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: black;
+    padding: 20px;
+}
+
+.game-container canvas {
+    border: 2px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}

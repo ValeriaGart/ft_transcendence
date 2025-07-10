@@ -1,4 +1,5 @@
 import { Component } from "@blitz-ts/Component";
+import { Router } from "@blitz-ts";
 
 interface MatchComponentState {
   error: string | null;
@@ -42,7 +43,14 @@ export class MatchComponent extends Component<MatchComponentState> {
     try {
       console.log('Starting AI match...');
       
-      // TODO: Navigate to AI game page
+      // Navigate to the game page
+      const router = Router.getInstance();
+      if (router) {
+        router.navigate('/game');
+      } else {
+        // Fallback: use window.location if router is not available
+        window.location.href = '/game';
+      }
       
     } catch (error) {
       console.error('Error starting AI match:', error);

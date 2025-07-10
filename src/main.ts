@@ -7,6 +7,7 @@ import { SignInPage } from "./components/SignInPage";
 import { GreatSuccessPage } from "./components/GreatSuccessPage";
 import { UserPage } from "./components/UserPage";
 import { SettingsPage } from "./components/SettingsPage";
+import { GamePage } from "./components/GamePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { authService } from "./lib/auth";
@@ -67,6 +68,10 @@ if (app) {
 	.addRoute({
 		path: "/greatsuccess",
 		component: GreatSuccessPage,
+	})
+	.addRoute({
+		path: "/game",
+		component: GamePage,
 	})
 	.addRoute({
 		path: "/user",

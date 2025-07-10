@@ -26,28 +26,28 @@ export class InputHandler {
 
 		switch(this._engine._gameStateMachine.getCurrentState()) {
 			case GameState.START:
-				this.handleStartScreen();
+				this.handleStartScreen(event);
 				break;
 			case GameState.OPPONENT:
-				this.handleOpponentScreen();
+				this.handleOpponentScreen(event);
 				break;
 			case GameState.SELECT:
-				this.handleSelectScreen();
+				this.handleSelectScreen(event);
 				break;
 			case GameState.GAME:
 				this.handleGameScreenDown(event);
 				break;
 			case GameState.PAUSED:
-				this.handlePauseScreen();
+				this.handlePauseScreen(event);
 				break;
 			case GameState.GAME_OVER:
-				this.handleGameOverScreen();
+				this.handleGameOverScreen(event);
 				break;
 			case GameState.PRE_BATTLE_SCREEN:
-				this.handlePreBattleScreen();
+				this.handlePreBattleScreen(event);
 				break;
 			case GameState.TOURNAMENT_MIDDLE:
-				this.handleTournamentMiddle();
+				this.handleTournamentMiddle(event);
 		}
 	}
 
@@ -60,51 +60,51 @@ export class InputHandler {
 		}
 	}
 
-	private handleStartScreen(): void {
-		if (this._keysPressed['Enter']) {
+	private handleStartScreen(event: KeyboardEvent): void {
+		if (event.key == 'Enter') {
 			console.log("pressed start");
 			this._engine._gameStateMachine.transition(GameState.OPPONENT);
 		}
 	}
 
-	private handleSelectScreen(): void {
-		if (this._keysPressed['ArrowUp']) {
+	private handleSelectScreen(event: KeyboardEvent): void {
+		if (event.key == 'ArrowUp') {
 			var currentIndex = this._engine._selectScreen._options.indexOf(this._engine._selectScreen._currentOption);
 			this._engine._selectScreen._currentOption = this._engine._selectScreen._options[
 				(currentIndex - 1 + this._engine._selectScreen._options.length) % this._engine._selectScreen._options.length];
 		}
 
-		if (this._keysPressed['ArrowDown']) {
+		if (event.key == 'ArrowDown') {
 			var currentIndex = this._engine._selectScreen._options.indexOf(this._engine._selectScreen._currentOption);
 			this._engine._selectScreen._currentOption = this._engine._selectScreen._options[
 				(currentIndex + 1) % this._engine._selectScreen._options.length];
 		}
 
-		if (this._keysPressed['Enter']) {
+		if (event.key == 'Enter') {
 			console.log("selected mode: ", this._engine._selectScreen._currentOption);
 			this._engine._gameStateMachine.transition(GameState.GAME);
 			this._engine.startGame(this._engine._selectScreen._currentOption, this._oppMode);
 		}
 
-		if (this._keysPressed['Escape']) {
+		if (event.key == 'Escape') {
 			this._engine._gameStateMachine.transition(GameState.OPPONENT);
 		}
 	}
 
-	private handleOpponentScreen(): void {
-		if (this._keysPressed['ArrowUp']) {
+	private handleOpponentScreen(event: KeyboardEvent): void {
+		if (event.key == 'ArrowUp') {
 			var currentIndex = this._engine._opponentScreen._options.indexOf(this._engine._opponentScreen._currentOption);
 			this._engine._opponentScreen._currentOption = this._engine._opponentScreen._options[
 				(currentIndex - 1 + this._engine._opponentScreen._options.length) % this._engine._opponentScreen._options.length];
 		}
 
-		if (this._keysPressed['ArrowDown']) {
+		if (event.key == 'ArrowDown') {
 			var currentIndex = this._engine._opponentScreen._options.indexOf(this._engine._opponentScreen._currentOption);
 			this._engine._opponentScreen._currentOption = this._engine._opponentScreen._options[
 				(currentIndex + 1) % this._engine._opponentScreen._options.length];
 		}
 
-		if (this._keysPressed['Enter']) {
+		if (event.key == 'Enter') {
 			console.log("selected mode: ", this._engine._opponentScreen._currentOption);
 			this._oppMode = this._engine._opponentScreen._currentOption;
 			if (this._oppMode == OpponentMode.ONLINE) {
@@ -146,29 +146,29 @@ export class InputHandler {
 		}
 	}
 	
-	private handlePauseScreen(): void {
-		if (this._keysPressed['Escape']) {
+	private handlePauseScreen(event: KeyboardEvent): void {
+		if (event.key == 'Escape') {
 			this._engine._gameStateMachine.transition(GameState.GAME);
 		}
-		if (this._keysPressed['Enter']) {
+		if (event.key == 'Enter') {
 			this._engine._gameStateMachine.transition(GameState.SELECT);
 		}
 	}
 		
-	private handleGameOverScreen(): void {
-		if (this._keysPressed['Enter']) {
+	private handleGameOverScreen(event: KeyboardEvent): void {
+		if (event.key == 'Enter') {
 			this._engine._gameStateMachine.transition(GameState.SELECT);
 		}
 	}
 
-	private handlePreBattleScreen(): void {
-		if (this._keysPressed['Enter']) {
+	private handlePreBattleScreen(event: KeyboardEvent): void {
+		if (event.key == 'Enter') {
 			this._engine._gameStateMachine.transition(GameState.GAME);
 		}
 	}
 
-	private handleTournamentMiddle(): void {
-		if (this._keysPressed['Enter']) {
+	private handleTournamentMiddle(event: KeyboardEvent): void {
+		if (event.key == 'Enter') {
 			this._engine.startRoundThree();
 		}
 	}

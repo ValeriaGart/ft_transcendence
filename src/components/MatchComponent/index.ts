@@ -37,19 +37,20 @@ export class MatchComponent extends Component<MatchComponentState> {
 
   /**
    * Handle AI match start button click
-   * Navigates to AI game page with parameters
+   * Navigates to AI game page
    */
   private handleStartAiMatch(): void {
     try {
       console.log('Starting AI match...');
       
-      // Navigate to the game page
+      const gameMode = 'ai';
+      const opponentMode = 'single';
       const router = Router.getInstance();
       if (router) {
-        router.navigate('/game');
+        router.navigate(`/game?mode=${gameMode}&opponent=${opponentMode}`);
       } else {
         // Fallback: use window.location if router is not available
-        window.location.href = '/game';
+        window.location.href = `/game?mode=${gameMode}&opponent=${opponentMode}`;
       }
       
     } catch (error) {

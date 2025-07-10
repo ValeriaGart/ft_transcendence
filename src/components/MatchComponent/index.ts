@@ -37,7 +37,7 @@ export class MatchComponent extends Component<MatchComponentState> {
 
   /**
    * Handle AI match start button click
-   * Navigates to AI game page
+   * Navigates to AI game page with parameters
    */
   private handleStartAiMatch(): void {
     try {

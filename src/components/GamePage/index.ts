@@ -1,14 +1,33 @@
 import { Component } from "@blitz-ts";
 import { GameEngine } from "../../game/gameEngine";
 
-export class GamePage extends Component {
+interface GamePageState {
+  gameMode: string;
+  opponentMode: string;
+}
+
+interface GamePageProps {
+  mode?: string;
+  opponent?: string;
+}
+
+export class GamePage extends Component<GamePageProps, GamePageState> {
     private gameEngine: GameEngine | null = null;
 
-    constructor() {
-        super();
+    protected static state: GamePageState = {
+        gameMode: 'ai',
+        opponentMode: 'single'
+    };
+
+    constructor(props: GamePageProps = {}) {
+        super(props);
     }
 
     render() {
+        // Read parameters from props (router) or URL
+        this.readParameters();
+        
+        // Create canvas element for the game
         const canvas = document.createElement('canvas');
         canvas.id = 'gameCanvas';
         canvas.style.width = '100%';
@@ -27,10 +46,41 @@ export class GamePage extends Component {
         }
     }
 
+    private readParameters(): void {
+        // First try to get parameters from props (router parameters)
+        let mode = this.props.mode;
+        let opponent = this.props.opponent;
+        
+        // If not in props, fall back to URL parameters
+        if (!mode || !opponent) {
+            const urlParams = new URLSearchParams(window.location.search);
+            mode = mode || urlParams.get('mode') || 'ai';
+            opponent = opponent || urlParams.get('opponent') || 'single';
+        }
+        
+        this.setState({
+            gameMode: mode,
+            opponentMode: opponent
+        });
+        
+        console.log('Game parameters:', { mode, opponent });
+    }
+
     private initializeGame(): void {
         try {
             this.gameEngine = new GameEngine('gameCanvas');
-            this.gameEngine.startGameLoop();
+            
+            // Start the game with the parameters
+            if (this.state.gameMode === 'ai') {
+                // You can pass these parameters to your game engine
+                // For now, just start the game loop
+                this.gameEngine.startGameLoop();
+                console.log('AI game started with opponent mode:', this.state.opponentMode);
+            } else {
+                this.gameEngine.startGameLoop();
+                console.log('Game started with mode:', this.state.gameMode);
+            }
+            
             console.log('Game engine initialized successfully');
         } catch (error) {
             console.error('Failed to initialize game engine:', error);
@@ -38,6 +88,10 @@ export class GamePage extends Component {
     }
 
     protected onUnmount(): void {
+        if (this.gameEngine) {
+            // Add any cleanup logic here if needed
+            console.log('GamePage component unmounted');
+        }
         super.onUnmount();
     }
 }

@@ -57,23 +57,25 @@ export class Tournament {
 	}
 	
 	public battleOne(): void {
-		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
-		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
-		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
-		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
+		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 1);
+		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition(), " : ", this._players[this._p1].getSide(), " : isbot: ", this._players[this._p1].isBot());
+		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition(), " : ", this._players[this._p2].getSide(), " : isbot: ", this._players[this._p2].isBot());
+		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition(), " : ", this._players[this._p3].getSide(), " : isbot: ", this._players[this._p3].isBot());
+		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition(), " : ", this._players[this._p4].getSide(), " : isbot: ", this._players[this._p4].isBot());
 	}
 	
 	public battleTwo(): void {
-		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
-		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
-		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
-		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
+		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 2);
+		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition(), " : ", this._players[this._p1].getSide(), " : isbot: ", this._players[this._p1].isBot());
+		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition(), " : ", this._players[this._p2].getSide(), " : isbot: ", this._players[this._p2].isBot());
+		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition(), " : ", this._players[this._p3].getSide(), " : isbot: ", this._players[this._p3].isBot());
+		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition(), " : ", this._players[this._p4].getSide(), " : isbot: ", this._players[this._p4].isBot());
 	}
 	
 	public tournamentMiddle(): void {
@@ -82,10 +84,7 @@ export class Tournament {
 	}
 
 	public battleThree(): void {
-		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
-		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
-		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
-		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
+		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 
 		this._p1 = 0;
@@ -100,7 +99,7 @@ export class Tournament {
 				this._p4 = i;
 			}
 		}
-		if (this._oppMode == OpponentMode.SINGLE && this._players[this._p4].getBot() == false) {
+		if (this._oppMode == OpponentMode.SINGLE && this._players[this._p4].isBot() == false) {
 			var temp = this._p4;
 			this._p4 = this._p3;
 			this._p3 = temp;
@@ -116,7 +115,7 @@ export class Tournament {
 		}
 		this._players[this._p1].setPosition(this._players[this._p1].getPosition() - 1);
 		this._players[this._p2].setPosition(this._players[this._p2].getPosition() - 1);
-		if (this._oppMode == OpponentMode.SINGLE && this._players[this._p2].getBot() == false) {
+		if (this._oppMode == OpponentMode.SINGLE && this._players[this._p2].isBot() == false) {
 			var temp = this._p2;
 			this._p2 = this._p1;
 			this._p1 = temp;
@@ -125,23 +124,28 @@ export class Tournament {
 
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 3);
+		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition(), " : ", this._players[this._p1].getSide(), " : isbot: ", this._players[this._p1].isBot());
+		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition(), " : ", this._players[this._p2].getSide(), " : isbot: ", this._players[this._p2].isBot());
+		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition(), " : ", this._players[this._p3].getSide(), " : isbot: ", this._players[this._p3].isBot());
+		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition(), " : ", this._players[this._p4].getSide(), " : isbot: ", this._players[this._p4].isBot());
 	}
 
 	public battleFour(): void {
-		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
-		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
-		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
-		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
+		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 4);
+		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition(), " : ", this._players[this._p1].getSide(), " : isbot: ", this._players[this._p1].isBot());
+		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition(), " : ", this._players[this._p2].getSide(), " : isbot: ", this._players[this._p2].isBot());
+		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition(), " : ", this._players[this._p3].getSide(), " : isbot: ", this._players[this._p3].isBot());
+		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition(), " : ", this._players[this._p4].getSide(), " : isbot: ", this._players[this._p4].isBot());
 	}
 
 	public winScreen(): void {
-		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition());
-		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition());
-		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition());
-		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition());
+		console.log("p1: ", this._players[this._p1].getName(), ": ", this._players[this._p1].getPosition(), " : ", this._players[this._p1].getSide(), " : isbot: ", this._players[this._p1].isBot());
+		console.log("p2: ", this._players[this._p2].getName(), ": ", this._players[this._p2].getPosition(), " : ", this._players[this._p2].getSide(), " : isbot: ", this._players[this._p2].isBot());
+		console.log("p3: ", this._players[this._p3].getName(), ": ", this._players[this._p3].getPosition(), " : ", this._players[this._p3].getSide(), " : isbot: ", this._players[this._p3].isBot());
+		console.log("p4: ", this._players[this._p4].getName(), ": ", this._players[this._p4].getPosition(), " : ", this._players[this._p4].getSide(), " : isbot: ", this._players[this._p4].isBot());
 		this._engine._gameStateMachine.transition(GameState.GAME_OVER);
 		this._p1 = 0;
 		this._p2 = 0;
@@ -160,5 +164,12 @@ export class Tournament {
 		}
 
 		this._winScreen.drawWinScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), this._players[this._p3].getName())
+	}
+
+	private resetSide() {
+		this._players[this._p1].setSide('default');
+		this._players[this._p2].setSide('default');
+		this._players[this._p3].setSide('default');
+		this._players[this._p4].setSide('default');
 	}
 }

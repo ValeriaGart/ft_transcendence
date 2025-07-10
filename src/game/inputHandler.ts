@@ -119,12 +119,12 @@ export class InputHandler {
 	private handleGameScreenDown(event: KeyboardEvent): void {
 		const gameStats = this._engine._pongGame._gameStats.paddleDirection;
 
-		if (!this._engine._pongGame._p1.getBot() ||(this._engine._pongGame._p1.getBot() && event.location == 1)) {
+		if ((!this._engine._pongGame._p1.isBot() && event.location == 0) || (this._engine._pongGame._p1.isBot() && event.location == 1)) {
 			if (this._keysPressed['w']) gameStats.left = -1;
 			if (this._keysPressed['s']) gameStats.left = +1;
 		}
 		
-		if (!this._engine._pongGame._p2.getBot() ||(this._engine._pongGame._p2.getBot() && event.location == 1)) {
+		if ((!this._engine._pongGame._p2.isBot() && event.location == 0) || (this._engine._pongGame._p2.isBot() && event.location == 1)) {
 			if (this._keysPressed['ArrowUp']) gameStats.right = -1;
 			if (this._keysPressed['ArrowDown']) gameStats.right = +1;
 		}
@@ -137,11 +137,11 @@ export class InputHandler {
 	private handleGameScreenUp(event: KeyboardEvent): void {
 		const gameStats = this._engine._pongGame._gameStats.paddleDirection;
 
-		if (!this._engine._pongGame._p1.getBot() ||(this._engine._pongGame._p1.getBot() && event.location == 1)) {
+		if ((!this._engine._pongGame._p1.isBot() && event.location == 0) ||(this._engine._pongGame._p1.isBot() && event.location == 1)) {
 			if (!this._keysPressed['w'] && !this._keysPressed['s']) gameStats.left = 0;
 		}
 		
-		if (!this._engine._pongGame._p2.getBot() ||(this._engine._pongGame._p2.getBot() && event.location == 1)) {
+		if ((!this._engine._pongGame._p2.isBot() && event.location == 0) ||(this._engine._pongGame._p2.isBot() && event.location == 1)) {
 			if (!this._keysPressed['ArrowUp'] && !this._keysPressed['ArrowDown']) gameStats.right = 0;
 		}
 	}

@@ -28,9 +28,10 @@ export class BotAI{
 		if (this._side == 'left') {
 			paddlePosition = pongGame._gameStats.paddlePositions.left;
 		}
-		else {
+		else if (this._side == 'right') {
 			paddlePosition = pongGame._gameStats.paddlePositions.right;
 		}
+		else return;
 
 		if ((this._side == 'left' && pongGame._gameStats.ballVelocity.x > 0)
 			|| (this._side == 'right' && pongGame._gameStats.ballVelocity.x < 0)) {
@@ -45,7 +46,7 @@ export class BotAI{
 				}
 				this.generateKeyPress('s', 'keydown');
 			}
-			else {
+			else if (this._side == 'right') {
 				if (this._upPressed) {
 					this.generateKeyPress('ArrowUp', 'keyup');
 					this._upPressed = false;
@@ -54,7 +55,7 @@ export class BotAI{
 			}
 			this._downPressed = true;
 		}
-		else if (ballPosition.y < paddlePosition){// + PADDLE_HEIGHT / 3) {
+		else if (ballPosition.y < paddlePosition + (PADDLE_HEIGHT / 3) * 2) {
 			if (this._side == 'left') {
 				if (this._downPressed) {
 					this.generateKeyPress('s', 'keyup');
@@ -62,7 +63,7 @@ export class BotAI{
 				}
 				this.generateKeyPress('w', 'keydown');
 			}
-			else {
+			else if (this._side == 'right') {
 				if (this._downPressed) {
 					this.generateKeyPress('ArrowDown', 'keyup');
 					this._downPressed = false;
@@ -82,7 +83,7 @@ export class BotAI{
 					this._upPressed = false;
 				}
 			}
-			else {
+			else if (this._side == 'right') {
 				if (this._downPressed) {
 					this.generateKeyPress('ArrowDown', 'keyup');
 					this._downPressed = false;

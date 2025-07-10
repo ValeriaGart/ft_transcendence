@@ -1,3 +1,4 @@
+import { idText } from 'typescript';
 import FriendService from '../services/friend.service.js'
 
 class FriendController {
@@ -10,6 +11,19 @@ class FriendController {
 			console.warn(`[FriendController] Error in getAllFriendships: `, error.message);
 			reply.code(500);
 			return { error: 'Failed to fetch all friendships', details: error.message };
+		}
+	}
+	
+	static async getFriendshipStatus(request, reply) {
+		try {
+			const { friend_id1, friend_id2 } = request.query;
+			console.log(`[FriendController] getFriendshipStatus of users ${friend_id1} and ${friend_id2}`);
+			const friendstatus = await FriendService.getFriendshipStatus(friend_id1, friend_id2);
+			return friendstatus;
+		} catch (error) {
+			console.warn(`[FriendController] Error in getFriendshipStatus: `, error.message);
+			reply.code(500);
+			return { error: 'Failed to get status on friendship', details: error.message };
 		}
 	}
 

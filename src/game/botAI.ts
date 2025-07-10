@@ -3,14 +3,21 @@ import { PongGame } from "./pongGame.ts";
 
 export class BotAI{
 	private _side: string;
+	private _upPressed: boolean = false;
+	private _downPressed: boolean = false;
 
 	constructor(side: string) {
 		this._side = side;
 	}
 
-	private generateKeyPress(evenType: string): void {
-		const event = new KeyboardEvent('keydown', { key: evenType, cancelable: true, bubbles: true });
 
+	private generateKeyPress(keypress: string, eventType: string): void {
+		const event = new KeyboardEvent(eventType, {
+			key: keypress,
+			cancelable: true,
+			bubbles: true,
+			location: 1
+		});
 		document.dispatchEvent(event);
 	}
 
@@ -32,21 +39,60 @@ export class BotAI{
 
 		if (ballPosition.y > paddlePosition + PADDLE_HEIGHT){// - PADDLE_HEIGHT / 3) {
 			if (this._side == 'left') {
-				this.generateKeyPress('s');
+				if (this._upPressed) {
+					this.generateKeyPress('w', 'keyup');
+					this._upPressed = false;
+				}
+				this.generateKeyPress('s', 'keydown');
 			}
 			else {
-				this.generateKeyPress('ArrowDown');
+				if (this._upPressed) {
+					this.generateKeyPress('ArrowUp', 'keyup');
+					this._upPressed = false;
+				}
+				this.generateKeyPress('ArrowDown', 'keydown');
 			}
+			this._downPressed = true;
 		}
 		else if (ballPosition.y < paddlePosition){// + PADDLE_HEIGHT / 3) {
 			if (this._side == 'left') {
-				this.generateKeyPress('w');
+				if (this._downPressed) {
+					this.generateKeyPress('s', 'keyup');
+					this._downPressed = false;
+				}
+				this.generateKeyPress('w', 'keydown');
 			}
 			else {
-				this.generateKeyPress('ArrowUp');
+				if (this._downPressed) {
+					this.generateKeyPress('ArrowDown', 'keyup');
+					this._downPressed = false;
+				}
+				this.generateKeyPress('ArrowUp', 'keydown');
+			}
+			this._upPressed = true;
+		}
+		else {
+			if (this._side == 'left') {
+				if (this._downPressed) {
+					this.generateKeyPress('s', 'keyup');
+					this._downPressed = false;
+				}
+				if (this._upPressed) {
+					this.generateKeyPress('w', 'keyup');
+					this._upPressed = false;
+				}
+			}
+			else {
+				if (this._downPressed) {
+					this.generateKeyPress('ArrowDown', 'keyup');
+					this._downPressed = false;
+				}
+				if (this._upPressed) {
+					this.generateKeyPress('ArrowUp', 'keyup');
+					this._upPressed = false;
+				}
 			}
 		}
-		else return;
 	}
 
 	public setSide(side: string): void {

@@ -1,4 +1,3 @@
-import { idText } from 'typescript';
 import FriendService from '../services/friend.service.js'
 
 class FriendController {

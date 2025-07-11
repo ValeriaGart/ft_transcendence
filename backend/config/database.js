@@ -67,6 +67,7 @@ function initialize() {
         acceptedAt TIMESTAMP,
         FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (recipient_id) REFERENCES users (id) ON DELETE CASCADE
+    );
       CREATE TABLE IF NOT EXISTS match (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT,

@@ -55,11 +55,9 @@ export class BotAI{
 		else {
 			if (this._side == 'left') {
 				this.generateKeyPress('s', 'keyup');
-				// this.generateKeyPress('w', 'keyup');
 			}
 			else if (this._side == 'right') {
 				this.generateKeyPress('ArrowDown', 'keyup');
-				// this.generateKeyPress('ArrowUp', 'keyup');
 			}
 		}
 	}

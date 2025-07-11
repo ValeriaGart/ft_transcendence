@@ -22,7 +22,7 @@ class FriendService {
 		return friendship.accepted;
 	}
 
-	static async getFriends(id) {
+	static async getAllFriendshipsUserId(id) {
 		const friends = await dbAll(
 			`SELECT * FROM friend \
 			WHERE \

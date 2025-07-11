@@ -7,9 +7,9 @@ import {
 async function routes(fastify, options) {
 	fastify.get('/friend', FriendController.getAllFriendships);
 
-	// fastify.get('/friend/me', {
-	// 	preHandler: [fastify.authenticate]
-	// }, FriendController.getAllFriendshipsCurrentUser);
+	fastify.get('/friend/:friend_id', {
+		schema: { params: requestFriendSchema }
+	}, FriendController.getAllFriendshipsUserId);
 	
 	fastify.post('/friend/me', {
 		schema: {

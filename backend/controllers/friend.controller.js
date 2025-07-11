@@ -13,7 +13,21 @@ class FriendController {
 			return { error: 'Failed to fetch all friendships', details: error.message };
 		}
 	}
+
+	static async getAllFriendshipsUserId(request, reply) {
+		try {
+			const { friend_id } = request.params;
+			console.log(`[FriendController] getAllFriendshipsUserId ${friend_id}`);
+			const friend = await FriendService.getAllFriendshipsUserId(friend_id);
+			return friend;
+		} catch (error) {
+			console.warn(`[FriendController] Error in getAllFriendshipsUserId: `, error.message);
+			reply.code(500);
+			return { error: 'Failed to fetch all friendships', details: error.message };
+		}
+	}
 	
+
 	static async getFriendshipStatus(request, reply) {
 		try {
 			const { friend_id1, friend_id2 } = request.query;

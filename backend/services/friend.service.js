@@ -23,6 +23,10 @@ class FriendService {
 	}
 
 	static async getAllFriendshipsUserId(id) {
+		if (! await UserService.getUserById(id))
+		{
+			throw new Error ('User you want friendslist of doesn\'t exist');
+		}
 		const friends = await dbAll(
 			`SELECT * FROM friend \
 			WHERE \

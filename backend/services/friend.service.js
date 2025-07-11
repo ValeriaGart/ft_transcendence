@@ -8,6 +8,16 @@ class FriendService {
 	}
 
 	static async getFriendshipStatus(id, friend_id) {
+		if (!id || !friend_id) {
+			throw new Error('Both user IDs must be provided.');
+		}
+		if (id === friend_id) {
+			throw new Error('IDs have to be different.');
+		}
+		if (! await UserService.getUserById(id) || ! await UserService.getUserById(friend_id))
+		{
+			throw new Error ('Both user IDs must exist');
+		}
 		const friendship = await dbGet(
 			`SELECT * FROM friend \
 			WHERE \

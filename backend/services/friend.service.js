@@ -19,7 +19,7 @@ class FriendService {
 		if (!friendship) {
 			throw new Error('No friendship found between the specified users.');
 		}
-		return friendship;
+		return friendship.accepted;
 	}
 
 	static async getFriends(id) {

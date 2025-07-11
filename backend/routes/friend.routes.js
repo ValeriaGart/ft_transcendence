@@ -18,6 +18,7 @@ async function routes(fastify, options) {
 		preHandler: [fastify.authenticate]
 	}, FriendController.requestFriend);
 
+/* return "null" for pending, "1" for existing friendship, and error message for non-existing */
 	fastify.get('/friend/status', {
 		schema: {
 			query: friendStatusSchema

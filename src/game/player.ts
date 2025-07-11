@@ -12,8 +12,12 @@ export class Player {
 		this._name = name || this._name;
 		this._position = pos || this._position;
 		this._isBot = isBot || this._isBot;
-		this._side = side || 'right';
+		this._side = side || 'default';
 		this._AI = new BotAI(this._side);
+	}
+
+	public getSide(): string {
+		return this._side;
 	}
 
 	public getName(): string {
@@ -24,7 +28,7 @@ export class Player {
 		return this._position;
 	}
 
-	public getBot(): boolean {
+	public isBot(): boolean {
 		return this._isBot;
 	}
 

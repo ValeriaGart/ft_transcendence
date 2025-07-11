@@ -1,6 +1,7 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
-import { Error } from "../Error";
+import { ErrorManager } from "../Error";
+import { authService } from "../../lib/auth";
 
 interface SignUpPageState {
     email: string;
@@ -11,11 +12,17 @@ interface SignUpPageState {
     showError: boolean;
     isConfirmPasswordValid: boolean;
     errorMessage: string | null;
+    isGoogleLoading: boolean;
+}
+
+declare global {
+  interface Window {
+    google: any;
+    handleGoogleCredentialResponse: (response: any) => void;
+  }
 }
 
 export class SignUpPage extends Component<SignUpPageState> {
-
-    private currentErrorComponent: Error | null = null;
 
     protected static state: SignUpPageState = {
         email: "",
@@ -26,6 +33,7 @@ export class SignUpPage extends Component<SignUpPageState> {
         isConfirmPasswordValid: false,
         showError: false,
         errorMessage: null,
+        isGoogleLoading: false,
     };
 
     constructor() {
@@ -34,6 +42,8 @@ export class SignUpPage extends Component<SignUpPageState> {
         this.handleEmailChange = this.handleEmailChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
         this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
+        this.handleGoogleSignIn = this.handleGoogleSignIn.bind(this);
+        this.initializeGoogleAuth = this.initializeGoogleAuth.bind(this);
     }
 
     private validateEmail(email: string): boolean {
@@ -65,6 +75,16 @@ export class SignUpPage extends Component<SignUpPageState> {
             return false;
         }
         
+        // Must have at least 1 uppercase letter
+        if (!/[A-Z]/.test(password)) {
+            return false;
+        }
+        
+        // Must have at least 1 lowercase letter
+        if (!/[a-z]/.test(password)) {
+            return false;
+        }
+        
         // Must have at least 1 number
         if (!/\d/.test(password)) {
             return false;
@@ -79,6 +99,18 @@ export class SignUpPage extends Component<SignUpPageState> {
         const isValid = this.validatePassword(newPassword);
         
         console.log('Password changed:', { newPassword, isValid });
+        
+        // Update password requirements visibility
+        const requirementsElement = this.element.querySelector('#password_requirements') as HTMLElement;
+        if (requirementsElement) {
+            if (newPassword.length > 0) {
+                requirementsElement.style.opacity = isValid ? '0.3' : '0.8';
+                requirementsElement.style.color = isValid ? '#4CAF50' : '#A260ED';
+            } else {
+                requirementsElement.style.opacity = '0.7';
+                requirementsElement.style.color = '#A260ED';
+            }
+        }
         
         this.setState({ 
             password: newPassword, 
@@ -100,52 +132,162 @@ export class SignUpPage extends Component<SignUpPageState> {
         });
     }
 
+
     private showError(message: string) {
-        this.setState({
-            errorMessage: message,
-            showError: true
-        });
-        
-        // Create and mount the error component immediately
-        this.displayErrorComponent(message);
+      this.setState({
+          showError: true,
+          errorMessage: message
+      });
+  
+      ErrorManager.showError(message, this.element, () => {
+          this.setState({
+              showError: false,
+              errorMessage: null
+          });
+      });
     }
 
-    private hideError() {
-        this.setState({
-            showError: false,
-            errorMessage: null
+    private async loadGoogleScript(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (window.google) {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.async = true;
+            script.defer = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Google SDK'));
+            document.head.appendChild(script);
         });
-        
-        // Remove the error component
-        this.removeErrorComponent();
     }
 
-    private displayErrorComponent(message: string) {
-        console.log('Creating error component with message:', message);
-        
-        // Remove any existing error component first
-        this.removeErrorComponent();
+    private async initializeGoogleAuth(): Promise<void> {
+        try {
+            await this.loadGoogleScript();
 
-        const errorComponent = new Error({
-            message: message,
-            onClose: () => this.hideError()
-        });
-        
-        console.log('Error component created:', errorComponent);
-        
-        // Mount error component to the page
-        errorComponent.mount(this.element);
-        
-        console.log('Error component mounted to:', this.element);
-        
-        // Store reference to remove later
-        this.currentErrorComponent = errorComponent;
+            if (!window.google) {
+                throw new Error('Google SDK not loaded');
+            }
+
+            window.handleGoogleCredentialResponse = this.handleCredentialResponse.bind(this);
+
+            window.google.accounts.id.initialize({
+                client_id: '921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com',
+                callback: window.handleGoogleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true,
+                context: 'signup',
+                ux_mode: 'popup',
+                use_fedcm_for_prompt: false
+            });
+
+            console.log('Google Auth initialized successfully for signup');
+
+        } catch (error) {
+            console.error('Failed to initialize Google Auth:', error);
+            this.showError('Failed to initialize Google Sign-up');
+        }
     }
 
-    private removeErrorComponent() {
-        if (this.currentErrorComponent) {
-            this.currentErrorComponent.element.remove();
-            this.currentErrorComponent = null;
+    private async handleCredentialResponse(response: any): Promise<void> {
+        try {
+            console.log('Google credential response received for signup');
+
+            const result = await authService.googleLogin(response.credential);
+            console.log('Google signup result:', result);
+
+            if (result.success) {
+                console.log('Google signup successful');
+                this.setState({ isGoogleLoading: false });
+                Router.getInstance().navigate("/greatsuccess");
+            } else {
+                console.error('Google signup failed:', result.error);
+                this.setState({ isGoogleLoading: false });
+                this.showError(result.error || 'Google Sign-up failed');
+            }
+
+        } catch (error) {
+            console.error('Google credential response error:', error);
+            this.setState({ isGoogleLoading: false });
+            
+            let errorMessage = 'Google Sign-up failed';
+            
+            if (error instanceof Error) {
+                if (error.message.includes('Invalid') || error.message.includes('401')) {
+                    errorMessage = 'Google authentication failed. Please try again or use email/password signup.';
+                } else if (error.message.includes('redirect_uri_mismatch') || error.message.includes('400')) {
+                    errorMessage = 'Google Sign-up configuration error. Please contact support.';
+                } else {
+                    errorMessage = error.message;
+                }
+            }
+            
+            this.showError(errorMessage);
+        }
+    }
+
+    private async handleGoogleSignIn(event: Event): Promise<void> {
+        event.preventDefault();
+        
+        if (this.state.isGoogleLoading) return;
+
+        try {
+            if (!window.google) {
+                await this.initializeGoogleAuth();
+            }
+
+            if (!window.google) {
+                throw new Error('Google Sign-up not available');
+            }
+
+            this.setState({ isGoogleLoading: true });
+
+            // Create a temporary container for Google button (simplified but working approach)
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            document.body.appendChild(tempContainer);
+
+            // Render Google button
+            window.google.accounts.id.renderButton(tempContainer, {
+                theme: 'outline',
+                size: 'large',
+                type: 'standard',
+                text: 'signup_with',
+                shape: 'rectangular',
+                width: 250
+            });
+
+            // Auto-click the button after a short delay
+            setTimeout(() => {
+                const googleButton = tempContainer.querySelector('div[role="button"]') as HTMLElement;
+                if (googleButton) {
+                    googleButton.click();
+                } else {
+                    // Fallback to prompt
+                    window.google.accounts.id.prompt((notification: any) => {
+                        this.setState({ isGoogleLoading: false });
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            this.showError('Google Sign-up was cancelled or not available.');
+                        }
+                    });
+                }
+                
+                // Clean up the temporary container
+                setTimeout(() => {
+                    if (document.body.contains(tempContainer)) {
+                        document.body.removeChild(tempContainer);
+                    }
+                }, 1000);
+            }, 100);
+
+        } catch (error) {
+            console.error('Google Sign-up error:', error);
+            this.setState({ isGoogleLoading: false });
+            this.showError('Google Sign-up not available. Please check your internet connection.');
         }
     }
 
@@ -154,51 +296,33 @@ export class SignUpPage extends Component<SignUpPageState> {
         
         if (!this.state.isEmailValid) {
             this.showError('Please enter a valid email address');
-            console.log('Please enter a valid email address');
             return;
         }
         
         if (!this.state.isPasswordValid) {
-            this.showError('Password must be longer than 6 and shorter than 20 characters and contain at least 1 number');
-            console.log('Password must be longer than 6 and shorter than 20 characters and contain at least 1 number');
+            this.showError('Password must be 6-20 characters, contain at least 1 uppercase letter, 1 lowercase letter, and 1 number');
             return;
         }
         
         if (!this.state.isConfirmPasswordValid) {
             this.showError('Confirm password must match the password');
-            console.log('Confirm password must match the password');
             return;
         }
         
 
         try {
-            console.log('Sending signup request to backend...');
+            console.log('Sending signup request via authService...');
             
-            const response = await fetch('http://localhost:3000/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: this.state.email,
-                    passwordString: this.state.password
-                })
-            });
+            const result = await authService.register(this.state.email, this.state.password);
             
-            console.log('Response status:', response.status);
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Backend error:', errorData);
-                this.showError(`Registration failed: ${errorData.error || 'Unknown error'}`);
-                return;
+            if (result.success) {
+                console.log('Registration successful');
+                // Registration successful, navigate to success page
+                Router.getInstance().navigate("/greatsuccess");
+            } else {
+                console.error('Registration failed:', result.error);
+                this.showError(`Registration failed: ${result.error || 'Unknown error'}`);
             }
-            
-            const data = await response.json();
-            console.log('Registration successful:', data);
-            
-            // Registration successful, navigate to success page
-            Router.getInstance().navigate("/greatsuccess");
             
         } catch (error) {
             console.error('Network error:', error);
@@ -217,6 +341,10 @@ export class SignUpPage extends Component<SignUpPageState> {
         this.bind("#confirm_password", "confirmPassword", { twoWay: true }); 
         this.addEventListener("#signup_form", "submit", this.handleSignUp);
         this.addEventListener("#signin_button", "click", this.handleSignIn);
+        this.addEventListener("#google_signin_button", "click", this.handleGoogleSignIn);
+        
+        // Initialize Google Auth
+        this.initializeGoogleAuth();
         
         // Add input event listener for email validation
         const emailElement = this.element.querySelector("#email") as HTMLInputElement;

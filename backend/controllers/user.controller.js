@@ -38,10 +38,76 @@ class UserController {
         return { error: 'User not found' };
       }
       
-      return user;
+      return {
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          lastLoginAt: user.lastLoginAt,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        }
+      };
     } catch (error) {
       reply.code(500);
-      return { error: 'Failed to retrieve user' };
+      return { error: 'Failed to get user', details: error.message };
+    }
+  }
+
+  static async getCurrentUserAuthType(request, reply) {
+    try {
+      const userId = request.user.userId;
+      const user = await UserService.getUserWithAuthInfo(userId);
+      
+      if (!user) {
+        reply.code(404);
+        return { error: 'User not found' };
+      }
+      
+      const hasPassword = !!user.passwordHash;
+      const hasGoogleId = !!user.googleId;
+      
+      return {
+        success: true,
+        authType: {
+          hasPassword,
+          hasGoogleId,
+          isGoogleUser: hasGoogleId && !hasPassword,
+          isPasswordUser: hasPassword && !hasGoogleId,
+          isHybridUser: hasPassword && hasGoogleId
+        }
+      };
+    } catch (error) {
+      reply.code(500);
+      return { error: 'Failed to get auth type', details: error.message };
+    }
+  }
+
+  static async verifyCurrentUserPassword(request, reply) {
+    try {
+      const userId = request.user.userId;
+      const { password } = request.body;
+      
+      if (!password) {
+        reply.code(400);
+        return { error: 'Password is required' };
+      }
+      
+      const isValid = await UserService.verifyUserPassword(userId, password);
+      
+      if (!isValid) {
+        reply.code(401);
+        return { error: 'Invalid password' };
+      }
+      
+      return {
+        success: true,
+        message: 'Password verified successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return { error: 'Failed to verify password', details: error.message };
     }
   }
 

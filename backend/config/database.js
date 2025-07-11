@@ -37,8 +37,14 @@ function initialize() {
       `
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
+        email TEXT UNIQUE NOT NULL,
         passwordHash TEXT,
+        googleId TEXT UNIQUE,
+        emailVerified BOOLEAN DEFAULT FALSE,
+        isActive BOOLEAN DEFAULT TRUE,
+        lastLoginAt TIMESTAMP,
+        failedLoginAttempts INTEGER DEFAULT 0,
+        lockedUntil TIMESTAMP,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -52,7 +58,6 @@ function initialize() {
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       );
-
       CREATE TABLE IF NOT EXISTS friend (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         initiator_id INTEGER,
@@ -62,6 +67,19 @@ function initialize() {
         acceptedAt TIMESTAMP,
         FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (recipient_id) REFERENCES users (id) ON DELETE CASCADE
+      CREATE TABLE IF NOT EXISTS match (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT,
+        player1_id INTEGER,
+        player2_id INTEGER,
+        winner_id INTEGER,
+        player1_score INTEGER,
+        player2_score INTEGER,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        gameFinishedAt TIMESTAMP,
+        FOREIGN KEY (player1_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (player2_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (winner_id) REFERENCES users (id) ON DELETE CASCADE
       );
       `,
       (err) => {

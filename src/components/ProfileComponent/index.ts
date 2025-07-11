@@ -125,16 +125,13 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       
       const profileData = await response.json();
       
-      // Create a proper URI for the profile picture
-      const pictureUrl = `http://localhost:3000/art/profile/${pictureName}`;
-      
-      // Update the profile picture
+      // Update the profile picture using just the filename
       const updateResponse = await authService.authenticatedFetch(`http://localhost:3000/profiles/${profileData.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ profilePictureUrl: pictureUrl }),
+        body: JSON.stringify({ profilePictureUrl: pictureName }),
       });
       
       if (updateResponse.ok) {
@@ -188,11 +185,20 @@ export class ProfileComponent extends Component<ProfileComponentState> {
 
       const profileData = await response.json();
       
-      // Extract just the filename from the full URL for display
+      // Handle profile picture URL - external URLs should fallback to default
       let profilePictureUrl = 'profile_no.svg';
       if (profileData.profilePictureUrl) {
-        const urlParts = profileData.profilePictureUrl.split('/');
-        profilePictureUrl = urlParts[urlParts.length - 1]; // Get the filename
+        console.log('ProfileComponent: Processing profilePictureUrl:', profileData.profilePictureUrl);
+        if (profileData.profilePictureUrl.startsWith('http://') || profileData.profilePictureUrl.startsWith('https://')) {
+          // External URL - use default profile picture
+          console.log('ProfileComponent: External URL detected, using default profile picture');
+          profilePictureUrl = 'profile_no.svg';
+        } else {
+          // Local filename - extract just the filename from the path
+          const urlParts = profileData.profilePictureUrl.split('/');
+          profilePictureUrl = urlParts[urlParts.length - 1];
+          console.log('ProfileComponent: Using local filename:', profilePictureUrl);
+        }
       }
       
       this.setState({

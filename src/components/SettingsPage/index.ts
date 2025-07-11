@@ -3,6 +3,7 @@ import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
 import { ErrorManager } from "../Error";
 import { ConfirmDialogManager } from "../ConfirmDialog";
+import { getApiUrl } from "../../config/api";
 
 interface SettingsPageState {
   currentPage: 'page1' | 'page2' | 'confirm' | 'password_change';
@@ -51,9 +52,62 @@ export class SettingsPage extends Component<SettingsPageState> {
   }
 
   protected onMount(): void {
+    console.log('SettingsPage mounted');
     this.setupEventListeners();
-    this.updatePageVisibility();
     this.loadCurrentUserData();
+    this.updatePageVisibility();
+    this.checkUserAuthType();
+  }
+
+  private async checkUserAuthType(): Promise<void> {
+    try {
+      const authTypeResult = await authService.getUserAuthType();
+      if (authTypeResult.success && authTypeResult.authType) {
+        const { authType } = authTypeResult;
+        console.log('Settings: User auth type:', authType);
+        
+        // Hide password confirmation elements for Google users
+        if (authType.isGoogleUser) {
+          console.log('Settings: Google user detected - hiding password elements');
+          this.hidePasswordElements();
+        }
+        
+        // Hide change password button for Google-only users
+        if (authType.isGoogleUser) {
+          const changePasswordButton = this.element.querySelector('#change_password') as HTMLElement;
+          if (changePasswordButton) {
+            changePasswordButton.style.display = 'none';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking user auth type:', error);
+    }
+  }
+
+  private hidePasswordElements(): void {
+    const passwordConfirmDiv = this.element.querySelector('#settings_confirm') as HTMLElement;
+    if (passwordConfirmDiv) {
+      // Hide the password input and label for Google users
+      const passwordLabel = passwordConfirmDiv.querySelector('label[for="password"]') as HTMLElement;
+      const passwordInput = passwordConfirmDiv.querySelector('#password') as HTMLElement;
+      
+      if (passwordLabel) passwordLabel.style.display = 'none';
+      if (passwordInput) passwordInput.style.display = 'none';
+      
+      // Update the confirm button text for Google users
+      const confirmForm = passwordConfirmDiv.querySelector('#confirm_form') as HTMLElement;
+      if (confirmForm) {
+        const existingLabel = confirmForm.querySelector('label[for="password"]');
+        if (existingLabel && existingLabel.parentNode) {
+          // Replace password prompt with general confirmation
+          const newLabel = document.createElement('label');
+          newLabel.className = 'text-[#B784F2] font-[\'Irish_Grover\'] text-[20px] md:text-[3vw] lg:text-[30px]';
+          newLabel.textContent = 'Confirm your changes';
+          existingLabel.parentNode.replaceChild(newLabel, existingLabel);
+        }
+      }
+    }
   }
 
   private setupEventListeners(): void {
@@ -142,14 +196,6 @@ export class SettingsPage extends Component<SettingsPageState> {
     this.addEventListener('#confirm_button', 'click', async (e) => {
       e.preventDefault();
     
-      const passwordInput = this.element.querySelector('#password') as HTMLInputElement;
-      if (!passwordInput || !passwordInput.value.trim()) {
-        this.showError('Please enter your password');
-        return;
-      }
-      
-      const password = passwordInput.value.trim();
-      
       this.setState({ isLoading: true, error: null });
 
       try {
@@ -158,25 +204,49 @@ export class SettingsPage extends Component<SettingsPageState> {
           throw new Error('No user logged in');
         }
         
-        //TODO add the check
-        const verifyResponse = await fetch('http://localhost:3000/users/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ 
-            email: currentUser.email, 
-            passwordString: password 
-          }),
-        });
-        
-        if (!verifyResponse.ok) {
-          this.showError('Invalid password');
-          return;
+        // Get user authentication type
+        const authTypeResult = await authService.getUserAuthType();
+        if (!authTypeResult.success) {
+          throw new Error(authTypeResult.error || 'Failed to get authentication type');
         }
         
-        // Password is valid, now update the user data
+        const { authType } = authTypeResult;
+        console.log('User auth type:', authType);
+        
+        // Only verify password for password-based users
+        if (authType.isPasswordUser || authType.isHybridUser) {
+          const passwordInput = this.element.querySelector('#password') as HTMLInputElement;
+          if (!passwordInput || !passwordInput.value.trim()) {
+            this.setState({ isLoading: false });
+            this.showError('Please enter your password');
+            return;
+          }
+          
+          const password = passwordInput.value.trim()
+          
+          const verifyResponse = await authService.authenticatedFetch(getApiUrl('/users/me/verify-password'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              password: password 
+            }),
+          });
+          
+          if (!verifyResponse.ok) {
+            const errorText = await verifyResponse.text();
+            console.log('Password verification error response:', errorText);
+            this.setState({ isLoading: false });
+            this.showError('Invalid password');
+            return;
+          }
+        } else if (authType.isGoogleUser) {
+          console.log('Google user detected - skipping password verification');
+         
+        }
+        
+        // Password is valid (or not needed), now update the user data
         await this.updateUserData();
         
         Router.getInstance().navigate('/user');

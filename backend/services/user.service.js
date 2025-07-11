@@ -15,6 +15,51 @@ class UserService {
     return user;
   }
 
+  static async getUserWithAuthInfo(id) {
+    const user = await dbGet(
+      'SELECT id, email, passwordHash, googleId, emailVerified, createdAt, updatedAt FROM users WHERE id = ?',
+      [id]
+    );
+    return user;
+  }
+
+  static async verifyUserPassword(userId, password) {
+    try {
+      const user = await dbGet(
+        'SELECT passwordHash FROM users WHERE id = ? AND isActive = 1',
+        [userId]
+      );
+      
+      if (!user || !user.passwordHash) {
+        console.log('Password verification failed: no user or no password hash');
+        return false;
+      }
+      
+      // Detect hash type and use appropriate verification method
+      let result = false;
+      if (user.passwordHash.startsWith('$2b$') || user.passwordHash.startsWith('$2a$')) {
+        // bcrypt hash - import bcrypt and verify
+        const bcrypt = await import('bcrypt');
+        result = await bcrypt.default.compare(password, user.passwordHash);
+        console.log('Using bcrypt verification for user:', userId);
+      } else if (user.passwordHash.startsWith('$argon2')) {
+        // Argon2 hash - use our utility
+        result = await verifyPassword(user.passwordHash, password);
+        console.log('Using Argon2 verification for user:', userId);
+      } else {
+        console.log('Unknown hash format for user:', userId, 'Hash prefix:', user.passwordHash.substring(0, 10));
+        return false;
+      }
+      
+      console.log('Password comparison result:', { userId, isValid: result });
+      
+      return result;
+    } catch (error) {
+      console.error('Error verifying user password:', error);
+      return false;
+    }
+  }
+
   static async getUserByEmail(email) {
     const user = await dbGet(
       'SELECT * FROM users WHERE email = ?',

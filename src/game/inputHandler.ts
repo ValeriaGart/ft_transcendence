@@ -4,7 +4,6 @@ import { GameState, OpponentMode } from './types.ts';
 export class InputHandler {
 	private _engine: GameEngine;
 	private _oppMode: OpponentMode = OpponentMode.SINGLE;
-	private _keysPressed: { [key: string]: boolean } = {};
 
 	constructor(engine: GameEngine) {
 		this._engine = engine;
@@ -13,17 +12,9 @@ export class InputHandler {
 	public setupEventListeners(): void {
 		window.addEventListener('keydown', this.handleKeyDown.bind(this));
 		window.addEventListener('keyup', this.handleKeyUp.bind(this));
-
-		window.addEventListener('blur', () => {
-			Object.keys(this._keysPressed).forEach(key => {
-				this._keysPressed[key] = false;
-			});
-		});
 	}
 
 	private handleKeyDown(event: KeyboardEvent): void {
-		this._keysPressed[event.key] = true;
-
 		switch(this._engine._gameStateMachine.getCurrentState()) {
 			case GameState.START:
 				this.handleStartScreen(event);
@@ -52,7 +43,6 @@ export class InputHandler {
 	}
 
 	private handleKeyUp(event:KeyboardEvent): void {
-		this._keysPressed[event.key] = false;
 		switch(this._engine._gameStateMachine.getCurrentState()) {
 			case GameState.GAME:
 				this.handleGameScreenUp(event);
@@ -120,16 +110,16 @@ export class InputHandler {
 		const gameStats = this._engine._pongGame._gameStats.paddleDirection;
 
 		if ((!this._engine._pongGame._p1.isBot() && event.location == 0) || (this._engine._pongGame._p1.isBot() && event.location == 1)) {
-			if (this._keysPressed['w']) gameStats.left = -1;
-			if (this._keysPressed['s']) gameStats.left = +1;
+			if (event.key == 'w') gameStats.left = -1;
+			if (event.key == 's') gameStats.left = +1;
 		}
 		
 		if ((!this._engine._pongGame._p2.isBot() && event.location == 0) || (this._engine._pongGame._p2.isBot() && event.location == 1)) {
-			if (this._keysPressed['ArrowUp']) gameStats.right = -1;
-			if (this._keysPressed['ArrowDown']) gameStats.right = +1;
+			if (event.key == 'ArrowUp') gameStats.right = -1;
+			if (event.key == 'ArrowDown') gameStats.right = +1;
 		}
 		
-		if (this._keysPressed['Escape']) {
+		if (event.key == 'Escape') {
 			this._engine._gameStateMachine.transition(GameState.PAUSED);
 		}
 	}
@@ -138,11 +128,11 @@ export class InputHandler {
 		const gameStats = this._engine._pongGame._gameStats.paddleDirection;
 
 		if ((!this._engine._pongGame._p1.isBot() && event.location == 0) || (this._engine._pongGame._p1.isBot() && event.location == 1)) {
-			if (!this._keysPressed['w'] && !this._keysPressed['s']) gameStats.left = 0;
+			if (event.key == 'w' || event.key == 's') gameStats.left = 0;
 		}
 		
 		if ((!this._engine._pongGame._p2.isBot() && event.location == 0) || (this._engine._pongGame._p2.isBot() && event.location == 1)) {
-			if (!this._keysPressed['ArrowUp'] && !this._keysPressed['ArrowDown']) gameStats.right = 0;
+			if (event.key == 'ArrowUp' || event.key == 'ArrowDown') gameStats.right = 0;
 		}
 	}
 	

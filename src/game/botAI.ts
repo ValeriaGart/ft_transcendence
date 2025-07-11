@@ -3,8 +3,6 @@ import { PongGame } from "./pongGame.ts";
 
 export class BotAI{
 	private _side: string;
-	private _upPressed: boolean = false;
-	private _downPressed: boolean = false;
 
 	constructor(side: string) {
 		this._side = side;
@@ -40,58 +38,28 @@ export class BotAI{
 
 		if (ballPosition.y > paddlePosition + PADDLE_HEIGHT){// - PADDLE_HEIGHT / 3) {
 			if (this._side == 'left') {
-				if (this._upPressed) {
-					this.generateKeyPress('w', 'keyup');
-					this._upPressed = false;
-				}
 				this.generateKeyPress('s', 'keydown');
 			}
 			else if (this._side == 'right') {
-				if (this._upPressed) {
-					this.generateKeyPress('ArrowUp', 'keyup');
-					this._upPressed = false;
-				}
 				this.generateKeyPress('ArrowDown', 'keydown');
 			}
-			this._downPressed = true;
 		}
 		else if (ballPosition.y < paddlePosition + (PADDLE_HEIGHT / 3) * 2) {
 			if (this._side == 'left') {
-				if (this._downPressed) {
-					this.generateKeyPress('s', 'keyup');
-					this._downPressed = false;
-				}
 				this.generateKeyPress('w', 'keydown');
 			}
 			else if (this._side == 'right') {
-				if (this._downPressed) {
-					this.generateKeyPress('ArrowDown', 'keyup');
-					this._downPressed = false;
-				}
 				this.generateKeyPress('ArrowUp', 'keydown');
 			}
-			this._upPressed = true;
 		}
 		else {
 			if (this._side == 'left') {
-				if (this._downPressed) {
-					this.generateKeyPress('s', 'keyup');
-					this._downPressed = false;
-				}
-				if (this._upPressed) {
-					this.generateKeyPress('w', 'keyup');
-					this._upPressed = false;
-				}
+				this.generateKeyPress('s', 'keyup');
+				// this.generateKeyPress('w', 'keyup');
 			}
 			else if (this._side == 'right') {
-				if (this._downPressed) {
-					this.generateKeyPress('ArrowDown', 'keyup');
-					this._downPressed = false;
-				}
-				if (this._upPressed) {
-					this.generateKeyPress('ArrowUp', 'keyup');
-					this._upPressed = false;
-				}
+				this.generateKeyPress('ArrowDown', 'keyup');
+				// this.generateKeyPress('ArrowUp', 'keyup');
 			}
 		}
 	}

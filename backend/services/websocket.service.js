@@ -29,9 +29,6 @@ class WebsocketService {
 		connection.on('message', message => {
 			try {
 				const parsedMessage = JSON.parse(message);
-				
-				// console.log(`Received message: ${message}`);
-				// console.log(`Received json: ${parsedMessage.type}`);
 
 				if (parsedMessage.type === 1) {
 					console.log("[handleMessage] type 1")
@@ -64,17 +61,13 @@ class WebsocketService {
 			try {
 				const friend = await FriendService.getFriendshipStatus(connection.userId, client.userId);
 				if (friend === 1) {
-					// add to list of friends who are online
 					onlineFriends.push({
 						userId: client.userId
 					});
-					// console.log("1)", connection.userId, " ", client.userId, " are friends ", friend);
 				}
-				// console.log("2)", connection.userId, " ", client.userId, friend);
 			} catch (error) {
-				console.log("db error probably: ", error.message);
+				console.log("DB: ", error.message);
 			}
-			// console.log("3)", connection.userId, " ", client.userId, onlineFriends);
 		}
 		connection.send(JSON.stringify({ onlineFriends }));
 	}
@@ -82,7 +75,6 @@ class WebsocketService {
 	broadcast(message, excludeConnection = null) {
         for (let client of this.websocketServer.clients) {
 			if (client.readyState === 1 && client !== excludeConnection) {
-				console.log("client ", client.userId);
                 client.send(JSON.stringify(message));
             }
         }

@@ -4,8 +4,6 @@ class WebsocketService {
     }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
-/* <><><><><><><><><><><><><><><><><><><><><><><><> */
-/* <><><><><><><><><><><><><><><><><><><><><><><><> */
 
 	handleJoin(connection) {
 		this.broadcast({
@@ -33,9 +31,11 @@ class WebsocketService {
 		});
 	}
 
+/* <><><><><><><><><><><><><><><><><><><><><><><><> */
+
 	broadcast(message, excludeConnection = null) {
         for (let client of this.websocketServer.clients) {
-            if (client.readyState === 1 && client !== excludeConnection) { // Ensure the client is open
+            if (client.readyState === 1 && client !== excludeConnection) {
                 client.send(JSON.stringify(message));
             }
         }

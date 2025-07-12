@@ -7,7 +7,8 @@ async function routes(fastify, options) {
 		websocket: true,
 		preHandler: [fastify.authenticate]
 		}, (connection, req) => {
-		controller.handleConnection(connection);
+		const wsid = req.user.userId;
+		controller.handleConnection(connection, req, wsid);
 	});
 }
 

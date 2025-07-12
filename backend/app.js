@@ -29,11 +29,17 @@ import profileRoutes from './routes/profile.routes.js';
 import friendRoutes from './routes/friend.routes.js';
 import matchRoutes from './routes/match.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import websocketRoutes from './routes/websocket.routes.js';
 import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 
+import ws from '@fastify/websocket';
+
 const app = fastify({ logger: true });
+
+// register websocket
+await app.register(ws)
 
 // Register cookie plugin
 await app.register(cookie, {
@@ -67,6 +73,30 @@ await app.register(profileRoutes);
 await app.register(friendRoutes);
 await app.register(matchRoutes);
 
+await app.register(websocketRoutes);
+/* 
+function broadcast(message) {
+    for(let client of app.websocketServer.clients) {
+        client.send(JSON.stringify(message));
+    }
+}
+
+app.get('/hello-ws', { websocket: true }, (connection, req) => {
+    broadcast({
+        sender: '__server',
+        message: `someone joined`
+    });
+    connection.on('close', () => {
+        broadcast({
+            sender: '__server',
+            message: `someone left`
+        });
+    });
+    connection.on('message', message => {
+        console.log(`Received message: ${message}`);
+        connection.send('Hello Fastify WebSockets');
+    });
+}); */
 
 async function bootstrap() {
   try {

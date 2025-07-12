@@ -1,19 +1,3 @@
-/* 		broadcast(fastify, {
-			sender: '__server',
-			message: `someone joined`
-		});
-		connection.on('close', () => {
-			broadcast(fastify, {
-				sender: '__server',
-				message: `someone left`
-			});
-		});
-		connection.on('message', message => {
-			console.log(`Received message: ${message}`);
-			connection.send('Hello Fastify WebSockets');
-		}); */
-
-
 import WebsocketService  from "../services/websocket.service.js";
 
 class WebsocketController {

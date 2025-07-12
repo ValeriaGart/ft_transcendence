@@ -72,31 +72,7 @@ await app.register(userRoutes);
 await app.register(profileRoutes);
 await app.register(friendRoutes);
 await app.register(matchRoutes);
-
 await app.register(websocketRoutes);
-/* 
-function broadcast(message) {
-    for(let client of app.websocketServer.clients) {
-        client.send(JSON.stringify(message));
-    }
-}
-
-app.get('/hello-ws', { websocket: true }, (connection, req) => {
-    broadcast({
-        sender: '__server',
-        message: `someone joined`
-    });
-    connection.on('close', () => {
-        broadcast({
-            sender: '__server',
-            message: `someone left`
-        });
-    });
-    connection.on('message', message => {
-        console.log(`Received message: ${message}`);
-        connection.send('Hello Fastify WebSockets');
-    });
-}); */
 
 async function bootstrap() {
   try {

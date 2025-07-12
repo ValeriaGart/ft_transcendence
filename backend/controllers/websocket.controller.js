@@ -6,17 +6,11 @@ class WebsocketController {
     }
 
 	handleConnection(connection, req, wsid) {
-		// connection.userId = req.userId;
+		console.log("[WebsocketController] handle connection ", wsid );
+
 		this.service.handleJoin(connection, wsid);
-		this.service.handleLeave(connection, wsid);
-		this.service.handleMessage(connection, wsid);
-
-		try {
-
-			console.log("[WebsocketController] handle connection ", wsid );
-		} catch (error) {
-			console.log("error");
-		}
+		this.service.handleLeave(connection);
+		this.service.handleMessage(connection);
 	}
 }
 

@@ -26,7 +26,10 @@ class WebsocketService {
 	handleMessage(connection) {
 		connection.on('message', message => {
 			console.log(`Received message: ${message}`);
-			connection.send('Hello Fastify WebSockets');
+			this.broadcast({
+				sender: `connection placeholder`,
+				message: `${message}`
+			}, connection);
 		});
 	}
 

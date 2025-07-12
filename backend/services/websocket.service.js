@@ -55,7 +55,7 @@ class WebsocketService {
 	async onlineFriends(connection) {
 		const onlineFriends = [];
 		for (let client of this.websocketServer.clients) {
-			if (connection.userId === client.userId) {
+			if (client.readyState !== 1 || connection.userId === client.userId) {
 				continue ;
 			}
 			try {
@@ -66,7 +66,7 @@ class WebsocketService {
 					});
 				}
 			} catch (error) {
-				console.log("DB: ", error.message);
+				console.log("DB: ", connection.userId, " " ,client.userId, error.message);
 			}
 		}
 		connection.send(JSON.stringify({ onlineFriends }));

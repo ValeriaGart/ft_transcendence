@@ -24,12 +24,34 @@ class MatchMakingService {
 
 
 		
-	/*👉 async createRoom() {
+	/*
+	👉 async createRoom() {
 		insert needed info into new room object
 		push it into this.rooms;
+	👉 use setTimeout function with a promise to 
+		destroyRoom if fulfilled
 	}
 	*/
 
+	/* 
+	👉 async destroyRoom() {
+		check if all players have accepted
+		if not send message to all players informing them
+		then destroy
+		}
+	 */
+
+	/* 
+	👉 async matchMakingAcceptInvitation() {
+		set status to accepted for player
+		check if all accepted
+			if yes, then startMatch()
+		}
+	*/
+
+	/* 
+	👉	async startMatch() {}
+	*/
 
 
 	async matchMakingInvitation(connection, message) {

@@ -65,7 +65,12 @@ class WebsocketService {
 		
 		const flatFriendslist = friendslist.flat();
 		flatFriendslist.forEach(friend => {
-			friendIds.push(friend.initiator_id, friend.recipient_id);
+			if (friend.initiator_id !== connection.userId) {
+				friendIds.push(friend.initiator_id);
+			}
+			else {
+				friendIds.push(friend.recipient_id);
+			}
 		});
 		
 		for (let client of this.websocketServer.clients) {

@@ -1,9 +1,14 @@
-import { dbGet } from "../config/database.js";
+// import { dbGet } from "../config/database.js";
 import FriendService from "./friend.service.js";
+import MatchMakingService from "./matchmaking.service.js";
+
+const _matchMakingService = new MatchMakingService;
 
 class WebsocketService {
     constructor(websocketServer) {
         this.websocketServer = websocketServer;
+		// this.rooms = [];
+		this.matchMakingService = _matchMakingService;
     }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
@@ -51,8 +56,10 @@ class WebsocketService {
 				}
 				else if (parsedMessage.type === 3) {
 					console.log("[handleMessage] type 3: match invitation");
-					// this.onlineFriends(connection);
-
+					if (!parsedMessage.players || !parsedMessage.matchType) {
+						throw new Error ("Invalid message: 'players' or 'matchType' field is missing or empty");
+					}
+					MatchMakingService.matchMakingInvitation(connection, parsedMessage);
 				}
 				else {
 					console.log("[handleMessage] unknown type");
@@ -66,6 +73,8 @@ class WebsocketService {
 			}
 		});
 	}
+
+
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
 
@@ -102,6 +111,8 @@ class WebsocketService {
 		}
 		connection.send(JSON.stringify({ onlineFriends }));
 	}
+
+/* <><><><><><><><><><><><><><><><><><><><><><><><> */
 
 	broadcast(message, excludeConnection = null) {
         for (let client of this.websocketServer.clients) {

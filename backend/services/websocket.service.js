@@ -54,19 +54,28 @@ class WebsocketService {
 
 	async onlineFriends(connection) {
 		const onlineFriends = [];
+		const friendslist = [];
+		const friendIds = [];
+
+		try {
+			friendslist.push( await FriendService.getAllFriendshipsUserId(connection.userId));
+		} catch (error) {
+			console.error("DB ERROR: ", error.message);
+		}
+		
+		const flatFriendslist = friendslist.flat();
+		flatFriendslist.forEach(friend => {
+			friendIds.push(friend.initiator_id, friend.recipient_id);
+		});
+		
 		for (let client of this.websocketServer.clients) {
 			if (client.readyState !== 1 || connection.userId === client.userId) {
 				continue ;
 			}
-			try {
-				const friend = await FriendService.getFriendshipStatus(connection.userId, client.userId);
-				if (friend === 1) {
-					onlineFriends.push({
-						userId: client.userId
-					});
-				}
-			} catch (error) {
-				console.log("DB: ", connection.userId, " " ,client.userId, error.message);
+			if (friendIds.includes(client.userId)) {
+				onlineFriends.push({
+					userId: client.userId
+				});
 			}
 		}
 		connection.send(JSON.stringify({ onlineFriends }));

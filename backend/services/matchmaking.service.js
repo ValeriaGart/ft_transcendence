@@ -35,9 +35,14 @@ class MatchMakingService {
 	async matchMakingInvitation(connection, message) {
 		if (this.rooms)
 		{
-			/*👉	iterate through all the rooms to confirm 
+			/*
+			👉	iterate through all the rooms to confirm 
 				that none of the requested players in message.players
-				have ACCEPTED other rooms already*/
+				have ACCEPTED other rooms already
+			👉	if someone already occupied, send FAILURE to connection
+				and exit the matchmaking
+			*/
+			
 			// for (let room of this.rooms) {
 			// 	if 
 			// }
@@ -47,8 +52,6 @@ class MatchMakingService {
 
 		/*👉 send invitations to players 
 			except connection (the one who invited) and AI opponents*/
-
-		
 	}
 	/* <><><><><><><><><><><><><><><><><><><><><><><><> */
 }

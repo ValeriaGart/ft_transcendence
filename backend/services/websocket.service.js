@@ -30,22 +30,39 @@ class WebsocketService {
 			try {
 				const parsedMessage = JSON.parse(message);
 
+				// Validate required fields
+				if (!parsedMessage.type || typeof parsedMessage.type !== 'number') {
+					throw new Error ("Invalid message: 'type' field is missing or not a number");
+				}
+
 				if (parsedMessage.type === 1) {
-					console.log("[handleMessage] type 1")
+					console.log("[handleMessage] type 1: message")
+					if (!parsedMessage.message) {
+						throw new Error ("Invalid message: 'message' field is missing or empty");
+					}
 					this.broadcast({
 						sender: `${connection.userId}`,
 						message: `${parsedMessage.message}`
 					}, connection);
 				}
 				else if (parsedMessage.type === 2) {
-					console.log("[handleMessage] type 2");
+					console.log("[handleMessage] type 2: online friend status");
 					this.onlineFriends(connection);
+				}
+				else if (parsedMessage.type === 3) {
+					console.log("[handleMessage] type 3: match invitation");
+					// this.onlineFriends(connection);
+
 				}
 				else {
 					console.log("[handleMessage] unknown type");
 				}
 			} catch (error) {
 				console.error("Failed to parse message: ", error.message);
+				this.broadcast({
+					sender: "__server",
+					message: `Failed to parse message: ${error.message}`
+				});
 			}
 		});
 	}

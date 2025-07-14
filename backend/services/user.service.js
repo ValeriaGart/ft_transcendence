@@ -176,6 +176,7 @@ class UserService {
   }
 
   static async deleteUser(id) {
+    //TODO from Yen: I think we need to check whether the user exists in db first and also delete the profile and all the user's data
     const result = await dbRun('DELETE FROM users WHERE id = ?', [id]);
     
     if (result.changes === 0) {

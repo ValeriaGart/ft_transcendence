@@ -75,6 +75,8 @@ class AuthService {
 
   static async createPasswordUser(userData) {
     try {
+      await dbRun('BEGIN TRANSACTION');
+
       // Hash password
       const passwordHash = await bcrypt.hash(userData.password, AUTH_CONFIG.PASSWORD.SALT_ROUNDS);
 
@@ -87,13 +89,6 @@ class AuthService {
       // Always create a corresponding profile entry (with default values)
       const nickname = userData.name || userData.email.split('@')[0];
       
-      console.log('Creating profile with data:', {
-        userId: result.lastID,
-        nickname: nickname,
-        profilePictureUrl: 'profile_no.svg',
-        bio: null
-      });
-      
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
         [
@@ -103,11 +98,16 @@ class AuthService {
           null 
         ]
       );
-      
-      console.log('Profile created successfully');
+
+      await dbRun('COMMIT');
 
       return await this.findUserById(result.lastID);
     } catch (error) {
+      try {
+        await dbRun('ROLLBACK');
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+      }
       console.error('Error creating password user:', error);
       throw error;
     }

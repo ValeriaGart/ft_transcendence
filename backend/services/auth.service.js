@@ -41,6 +41,8 @@ class AuthService {
 
   static async createGoogleUser(userData) {
     try {
+      await dbRun('BEGIN TRANSACTION');
+
       const result = await dbRun(
         `INSERT INTO users (email, googleId, emailVerified, lastLoginAt)
          VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
@@ -57,8 +59,15 @@ class AuthService {
         [result.lastID, userData.name, 'profile_no.svg', null]
       );
 
+      await dbRun('COMMIT');
+      
       return await this.findUserById(result.lastID);
     } catch (error) {
+      try {
+        await dbRun('ROLLBACK');
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+      }
       console.error('Error creating Google user:', error);
       throw error;
     }

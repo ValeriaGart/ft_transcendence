@@ -134,7 +134,7 @@ class AuthService {
   /**
    * Register a new user
    */
-  public async register(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+  public async register(email: string, password: string): Promise<{ success: boolean; error?: string; message?: string }> {
     try {
       console.log('AuthService: Attempting registration for email:', email);
       
@@ -155,8 +155,9 @@ class AuthService {
       console.log('AuthService: Registration response data:', data);
 
       if (response.ok && data.success) {
-        console.log('AuthService: Registration successful');
-        return { success: true };
+        console.log('AuthService: Registration successful - account created but not logged in');
+      
+        return { success: true, message: data.message };
       } else {
         console.log('AuthService: Registration failed:', data.error);
         return { success: false, error: data.error || 'Registration failed' };
@@ -219,11 +220,11 @@ class AuthService {
   }
 
   /**
-   * Login user with Google credential
+   * Sign up user with Google credential
    */
-  public async googleLogin(googleCredential: string): Promise<{ success: boolean; error?: string }> {
+  public async googleSignup(googleCredential: string): Promise<{ success: boolean; error?: string; message?: string }> {
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.GOOGLE_AUTH), {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.GOOGLE_SIGNUP), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -234,17 +235,49 @@ class AuthService {
         }),
       });
 
-      console.log('AuthService: Google login response status:', response.status);
+      console.log('AuthService: Google signup response status:', response.status);
       const data = await response.json();
-      console.log('AuthService: Google login response data:', data);
-      console.log('AuthService: response.ok:', response.ok);
-      console.log('AuthService: data.success:', data.success);
+      console.log('AuthService: Google signup response data:', data);
+
+      if (response.ok && data.success) {
+        console.log('AuthService: Google signup successful - account created but not logged in');
+        
+        return { success: true, message: data.message };
+      } else {
+        console.log('AuthService: Google signup failed:', data.error);
+        return { success: false, error: data.error || 'Google signup failed' };
+      }
+    } catch (error) {
+      console.error('AuthService: Google signup error:', error);
+      return { success: false, error: 'Network error' };
+    }
+  }
+
+  /**
+   * Sign in user with Google credential
+   */
+  public async googleSignin(googleCredential: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.GOOGLE_SIGNIN), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          credential: googleCredential
+        }),
+      });
+
+      console.log('AuthService: Google signin response status:', response.status);
+      const data = await response.json();
+      console.log('AuthService: Google signin response data:', data);
 
       if (response.ok && data.success) {
         const user = data.user;
         const token = data.token;
 
-        console.log('AuthService: Google login successful, storing user:', user);
+        console.log('AuthService: Google signin successful, storing user:', user);
 
         this.state = {
           isAuthenticated: true,
@@ -254,17 +287,19 @@ class AuthService {
 
         this.saveToStorage();
         this.notifyListeners();
-        console.log('AuthService: Google login complete, state updated');
+        console.log('AuthService: Google signin complete, state updated');
         return { success: true };
       } else {
-        console.log('AuthService: Google login failed:', data.error);
-        return { success: false, error: data.error || 'Google login failed' };
+        console.log('AuthService: Google signin failed:', data.error);
+        return { success: false, error: data.error || 'Google signin failed' };
       }
     } catch (error) {
-      console.error('AuthService: Google login error:', error);
+      console.error('AuthService: Google signin error:', error);
       return { success: false, error: 'Network error' };
     }
   }
+
+
 
   /**
    * Logout user

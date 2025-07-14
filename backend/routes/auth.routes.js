@@ -7,7 +7,17 @@ import {
 } from '../schemas/auth.schemas.js';
 
 async function authRoutes(fastify, options) {
-  fastify.post('/auth/google', {
+  fastify.post('/auth/google/signup', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '15 minutes'
+      }
+    },
+    schema: { body: googleAuthSchema }
+  }, AuthController.googleSignup);
+
+  fastify.post('/auth/google/signin', {
     config: {
       rateLimit: {
         max: 10,
@@ -15,7 +25,9 @@ async function authRoutes(fastify, options) {
       }
     },
     schema: { body: googleAuthSchema }
-  }, AuthController.googleAuth);
+  }, AuthController.googleSignin);
+
+
 
   fastify.post('/auth/register', {
     config: {

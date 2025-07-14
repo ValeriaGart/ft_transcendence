@@ -53,10 +53,11 @@ class AuthService {
         ]
       );
 
-      // Create corresponding profile entry with Google data
+      const nickname = userData.email.split('@')[0];
+      
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
-        [result.lastID, userData.name, 'profile_no.svg', null]
+        [result.lastID, nickname, 'profile_no.svg', null]
       );
 
       await dbRun('COMMIT');
@@ -109,18 +110,6 @@ class AuthService {
         console.error('Rollback failed:', rollbackError);
       }
       console.error('Error creating password user:', error);
-      throw error;
-    }
-  }
-
-  static async updateUserGoogleId(userId, googleId) {
-    try {
-      await dbRun(
-        'UPDATE users SET googleId = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-        [googleId, userId]
-      );
-    } catch (error) {
-      console.error('Error updating user Google ID:', error);
       throw error;
     }
   }

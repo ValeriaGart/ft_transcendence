@@ -57,6 +57,7 @@ class MatchMakingService {
 	async matchMakingInit(connection, message) {
 		if (this.rooms)
 		{
+			console.log("room exists :)");
 			/*
 			👉	iterate through all the rooms to confirm 
 				that none of the requested players in message.players

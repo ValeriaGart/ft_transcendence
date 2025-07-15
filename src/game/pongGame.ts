@@ -39,8 +39,8 @@ export class PongGame {
 		this._p2.setSide('right');
 		this._round = round || this._round;
 
-		console.log('game running in mode: ', this._mode);
-		console.log(this._oppMode);
+		console.log('game running in mode: ', this._mode, " : ", this._oppMode);
+		// console.log(this._oppMode);
 
 		// const randomDirection = getRandomDirection();
 		// const randomAngle = getRandomAngle()

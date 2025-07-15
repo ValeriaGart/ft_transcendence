@@ -1,4 +1,4 @@
-import { GameMode, OpponentMode } from './types.ts';
+import { GameMode, GameState, OpponentMode } from './types.ts';
 import { GameStateMachine } from './gameStateMachine.ts';
 import { SelectScreen } from './selectScreen.ts';
 import { StartScreen } from './startScreen.ts';
@@ -105,12 +105,57 @@ export class GameEngine {
 		}
 	}
 	
-	public startGameLoop(): void {
+	public startGameLoop(opp: string, game: string): void {
 		this._inputHandler.setupEventListeners();
 		console.log("game loop started")
 		const setIntervalId = setInterval(() => { this.update(); }, 16);
 		//roughly 60fps
 		
+		// if (opp == null || game == null) {
+		// 	return;
+		// }
+
+		var omode: OpponentMode = OpponentMode.SINGLE;
+		var gmode: GameMode = GameMode.INFINITE;
+
+		switch (opp) {
+			case 'single':
+				omode = OpponentMode.SINGLE;
+				break;
+			case 'multi':
+				omode = OpponentMode.MULTI;
+				break;
+			case 'online':
+				omode = OpponentMode.ONLINE;
+				break;
+			default:
+				opp = "default";
+				break;
+		}
+		switch (game) {
+			case 'infinite':
+				gmode = GameMode.INFINITE;
+				break;
+			case 'bestof':
+				gmode = GameMode.BEST_OF;
+				break;
+			case 'tournament':
+				gmode = GameMode.TOURNAMENT;
+				break;
+			default:
+				game = "default";
+				break;
+		}
+		if (opp == "default") {
+			return;
+		}
+		if (game == "default") {
+			this._inputHandler._oppMode = omode;
+			this._gameStateMachine.transition(GameState.SELECT);
+			return;
+		}
+		this._gameStateMachine.transition(GameState.GAME);
+		this.startGame(gmode, omode);
 	}
 
 	private update(): void {

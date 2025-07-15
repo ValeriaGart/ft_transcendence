@@ -196,12 +196,17 @@ export class SignUpPage extends Component<SignUpPageState> {
         try {
             console.log('Google credential response received for signup');
 
-            const result = await authService.googleLogin(response.credential);
+            const result = await authService.googleSignup(response.credential);
             console.log('Google signup result:', result);
 
             if (result.success) {
                 console.log('Google signup successful');
                 this.setState({ isGoogleLoading: false });
+                
+                if (result.message) {
+                    console.log('Signup success message:', result.message);
+                }
+                
                 Router.getInstance().navigate("/greatsuccess");
             } else {
                 console.error('Google signup failed:', result.error);
@@ -276,7 +281,6 @@ export class SignUpPage extends Component<SignUpPageState> {
                     });
                 }
                 
-                // Clean up the temporary container
                 setTimeout(() => {
                     if (document.body.contains(tempContainer)) {
                         document.body.removeChild(tempContainer);
@@ -317,7 +321,6 @@ export class SignUpPage extends Component<SignUpPageState> {
             
             if (result.success) {
                 console.log('Registration successful');
-                // Registration successful, navigate to success page
                 Router.getInstance().navigate("/greatsuccess");
             } else {
                 console.error('Registration failed:', result.error);

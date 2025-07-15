@@ -54,7 +54,7 @@ class MatchMakingService {
 	*/
 
 
-	async matchMakingInvitation(connection, message) {
+	async matchMakingInit(connection, message) {
 		if (this.rooms)
 		{
 			/*
@@ -71,6 +71,12 @@ class MatchMakingService {
 		}
 
 		/*👉 createRoom(); */
+
+		/* 
+		Promise.race([matchInvitationTimeout, matchInvitationAccepted]).then((result) => {
+			console.log(result);
+			});
+			*/
 
 		/*👉 send invitations to players 
 			except connection (the one who invited) and AI opponents*/

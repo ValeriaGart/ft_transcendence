@@ -59,7 +59,7 @@ class WebsocketService {
 					if (!parsedMessage.players || !parsedMessage.matchType) {
 						throw new Error ("Invalid message: 'players' or 'matchType' field is missing or empty");
 					}
-					MatchMakingService.matchMakingInvitation(connection, parsedMessage);
+					MatchMakingService.matchMakingInit(connection, parsedMessage);
 				}
 				else {
 					console.log("[handleMessage] unknown type");

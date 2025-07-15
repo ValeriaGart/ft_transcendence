@@ -30,7 +30,7 @@ export class GamePage extends Component {
     private initializeGame(): void {
         try {
             this.gameEngine = new GameEngine('gameCanvas');
-            this.gameEngine.startGameLoop();
+            this.gameEngine.startGameLoop('single', 'infinite');
             console.log('Game engine initialized successfully');
         } catch (error) {
             console.error('Failed to initialize game engine:', error);

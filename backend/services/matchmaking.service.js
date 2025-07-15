@@ -82,17 +82,10 @@ class MatchMakingService {
 			console.log("room exists :)");
 			if (playersBusy(message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
-				//👉 cancel match invitation
+				// 👉	if someone already occupied, send FAILURE to connection
+				// 	and exit the matchmaking
 				return ;
 			}
-			/*
-			👉	if someone already occupied, send FAILURE to connection
-				and exit the matchmaking
-			*/
-			
-			// for (let room of this.rooms) {
-			// 	if 
-			// }
 		}
 
 		/*👉 createRoom(); */

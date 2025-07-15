@@ -1,5 +1,3 @@
-
-
 class MatchMakingService {
     constructor() {
 		this.rooms = [];
@@ -10,10 +8,12 @@ class MatchMakingService {
 		"players": 
 			[
 				{
+				"id": 1,
 				"nick": "luca",
 				"status": "accepted"
 				},
 				{
+				"id": 2,
 				"nick": "yen",
 				"status": "pending"
 				}
@@ -53,15 +53,39 @@ class MatchMakingService {
 	👉	async startMatch() {}
 	*/
 
+	getAllAcceptedPlayerIdsRoom(room) {
+		const playerIdsRoom = [];
+		for (let player of room.players) {
+			if (player.accepted === true)
+			{
+				playerIdsRoom.push(player.id);
+			}
+		}
+		return (playerIdsRoom);
+	}
+
+	playersBusy(players) {
+		for (let room of this.rooms) {
+			const playerIds = this.getAllAcceptedPlayerIdsRoom(room);
+			for (let player of players) {
+				if (playerIds.includes(player.id)) {
+					return true; // Player is busy
+				}
+			}
+		}
+		return false; // No players are busy
+	}
 
 	async matchMakingInit(connection, message) {
 		if (this.rooms)
 		{
 			console.log("room exists :)");
+			if (playersBusy(message.players) === true) {
+				console.log("[matchMakingInit] some of the players are busy, cancelling match");
+				//👉 cancel match invitation
+				return ;
+			}
 			/*
-			👉	iterate through all the rooms to confirm 
-				that none of the requested players in message.players
-				have ACCEPTED other rooms already
 			👉	if someone already occupied, send FAILURE to connection
 				and exit the matchmaking
 			*/

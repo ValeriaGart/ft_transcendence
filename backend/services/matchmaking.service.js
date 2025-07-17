@@ -1,6 +1,10 @@
+import EmojiService from "./emoji.service.js";
+
 class MatchMakingService {
     constructor() {
 		this.rooms = [];
+		this.EmojiService = new EmojiService();
+		console.log("matchmaking constructor");
     }
 	/* just information what room should contain
 		{
@@ -28,6 +32,7 @@ class MatchMakingService {
 	async createRoom(connection, message) {
 		// 👉 insert needed info into new room object
 		const room = {
+			id: this.EmojiService.generateEmojiId(),
 			gameMode: message.matchType,
 			players: message.players
 		};
@@ -35,6 +40,7 @@ class MatchMakingService {
 		this.rooms.push(room);
 		console.log("room created");
 		console.log(this.rooms);
+		return (room);
 	// 👉 use setTimeout function with a promise to 
 	// 	destroyRoom if fulfilled
 	}
@@ -95,7 +101,9 @@ class MatchMakingService {
 			}
 		}
 
-		this.createRoom(connection, message);
+		const newRoom = this.createRoom(connection, message);
+		// (await newRoom).gameMode = "newmode";
+		// console.log(this.rooms);
 		// sendInvitation()
 
 		/* 

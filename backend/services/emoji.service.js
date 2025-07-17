@@ -24,6 +24,7 @@ class EmojiService {
         let id = '';
         for (let i = 0; i < length; i++) {
             id += this.getRandomEmoji();
+			id += ' ';
         }
         return id;
     }

@@ -1,4 +1,5 @@
 import EmojiService from "./emoji.service.js";
+import WebsocketService from "./websocket.service.js";
 
 class MatchMakingService {
     constructor() {
@@ -61,15 +62,21 @@ class MatchMakingService {
 			gameMode: message.matchType,
 			players: message.players
 		};
-		// 	push it into this.rooms;
+
+		// 👉 add accepted status to all players
+		// 		accepted for OP, pending for players, accepted for AI opponent
+
 		this.rooms.push(room);
 		console.log("room created");
-		console.log(this.rooms);
+		console.log(JSON.stringify(this.rooms, null, 2));
 		return (room);
 	// 👉 use setTimeout function with a promise to 
 	// 	destroyRoom if fulfilled
 	}
 	
+	async sendInvitation() {
+		return ;
+	}
 
 	/* 
 	👉 async destroyRoom() {
@@ -106,6 +113,8 @@ class MatchMakingService {
 		for (let room of this.rooms) {
 			const playerIds = this.getAllAcceptedPlayerIdsRoom(room);
 			for (let player of players) {
+				//👉 if (player.id === aiPlayer)
+				//	continue ;
 				if (playerIds.includes(player.id)) {
 					return true; // Player is busy
 				}
@@ -120,6 +129,10 @@ class MatchMakingService {
 		{
 			if (this.playersBusy(message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
+				WebsocketService.sendMessageToClient(connection, {
+					sender: "__server",
+					message: "Error creating Match: Players are busy"
+				});
 				// 👉	if someone already occupied, send FAILURE to connection
 				// 	and exit the matchmaking
 				return ;
@@ -130,11 +143,11 @@ class MatchMakingService {
 			const newRoom = await this.createRoom(connection, message);
 		} catch (error) {
 			console.error("Error: ", error.message);
+			//return error message to connection
 			return ;
 		}
-		// (await newRoom).gameMode = "newmode";
-		// console.log(this.rooms);
-		// sendInvitation()
+
+		await this.sendInvitation()
 
 		/* 
 		Promise.race([matchInvitationTimeout, matchInvitationAccepted]).then((result) => {

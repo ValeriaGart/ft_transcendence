@@ -66,7 +66,7 @@ class WebsocketService {
 				}
 			} catch (error) {
 				console.error("Failed to parse message: ", error.message);
-				this.broadcast({
+				this.sendMessageToClient(connection, {
 					sender: "__server",
 					message: `Failed to parse message: ${error.message}`
 				});
@@ -113,6 +113,15 @@ class WebsocketService {
 	}
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
+
+	sendMessageToClient(client, message) {
+		client.send(JSON.stringify(message));
+		// for (let client of this.websocketServer.clients) {
+		// 	if (client.readyState === 1 && client === deliverto) {
+		// 	}
+		// }
+
+	}
 
 	broadcast(message, excludeConnection = null) {
         for (let client of this.websocketServer.clients) {

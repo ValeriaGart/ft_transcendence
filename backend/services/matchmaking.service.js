@@ -1,5 +1,7 @@
 import EmojiService from "./emoji.service.js";
 import WebsocketService from "./websocket.service.js";
+import UserService from "./user.service.js";
+import ProfileService from "./profile.service.js";
 
 class MatchMakingService {
     constructor() {
@@ -63,6 +65,11 @@ class MatchMakingService {
 			players: message.players
 		};
 
+		for (let p of room.players) {
+			const dbResult = await ProfileService.getIdByNick(p.nick);
+			p.id = dbResult.userId;
+			p.accepted = "pending";
+		}
 		// 👉 add accepted status to all players
 		// 		accepted for OP, pending for players, accepted for AI opponent
 

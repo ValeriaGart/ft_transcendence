@@ -26,13 +26,38 @@ class MatchMakingService {
 		}
 	 */
 
-
+	createUniqueId() {
+		let id;
+		let isUnique = true;
+		let count = 0;
+		while (1) {
+			id = this.EmojiService.generateEmojiId();
+			if (this.rooms.length === 0) {
+				break ;
+			}
+			for (let r of this.rooms) {
+				if (id === r.id) {
+					console.log("duplicate, renewing id");
+					isUnique = false ;
+					count++;
+					break ;
+				}
+			}
+			if (isUnique === true) {
+				break ;
+			}
+			if (count > 15) {
+				throw new Error ('[createUniqueId] no unique room ID can be created, aborting');
+			}
+		}
+		return (id);
+	}
 		
 	
 	async createRoom(connection, message) {
 		// 👉 insert needed info into new room object
 		const room = {
-			id: this.EmojiService.generateEmojiId(),
+			id: this.createUniqueId(),
 			gameMode: message.matchType,
 			players: message.players
 		};
@@ -101,7 +126,12 @@ class MatchMakingService {
 			}
 		}
 
-		const newRoom = this.createRoom(connection, message);
+		try {
+			const newRoom = await this.createRoom(connection, message);
+		} catch (error) {
+			console.error("Error: ", error.message);
+			return ;
+		}
 		// (await newRoom).gameMode = "newmode";
 		// console.log(this.rooms);
 		// sendInvitation()

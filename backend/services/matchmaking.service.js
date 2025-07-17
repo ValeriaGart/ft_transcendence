@@ -43,7 +43,7 @@ class MatchMakingService {
 					break ;
 				}
 			}
-			if (isUnique === true) {
+			if (id && isUnique === true) {
 				break ;
 			}
 			if (count > 15) {

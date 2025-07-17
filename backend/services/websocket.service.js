@@ -37,13 +37,13 @@ class WebsocketService {
 
 				// Validate required fields
 				if (!parsedMessage.type || typeof parsedMessage.type !== 'number') {
-					throw new Error ("Invalid message: 'type' field is missing or not a number");
+					throw new Error ("Parsing: Invalid message: 'type' field is missing or not a number");
 				}
 
 				if (parsedMessage.type === 1) {
 					console.log("[handleMessage] type 1: message")
 					if (!parsedMessage.message) {
-						throw new Error ("Invalid message: 'message' field is missing or empty");
+						throw new Error ("Parsing: Invalid message: 'message' field is missing or empty");
 					}
 					this.broadcast({
 						sender: `${connection.userId}`,
@@ -57,7 +57,7 @@ class WebsocketService {
 				else if (parsedMessage.type === 3) {
 					console.log("[handleMessage] type 3: match invitation");
 					if (!parsedMessage.players || !parsedMessage.matchType) {
-						throw new Error ("Invalid message: 'players' or 'matchType' field is missing or empty");
+						throw new Error ("Parsing: Invalid message: 'players' or 'matchType' field is missing or empty");
 					}
 					this.matchMakingService.matchMakingInit(connection, parsedMessage);
 				}
@@ -65,10 +65,10 @@ class WebsocketService {
 					console.log("[handleMessage] unknown type");
 				}
 			} catch (error) {
-				console.error("Failed to parse message: ", error.message);
+				console.error("Error occurring in WebsocketService: ", error.message);
 				this.sendMessageToClient(connection, {
 					sender: "__server",
-					message: `Failed to parse message: ${error.message}`
+					message: `Error occurring in WebsocketService: ${error.message}`
 				});
 			}
 		});

@@ -24,14 +24,20 @@ class MatchMakingService {
 
 
 		
-	/*
-	👉 async createRoom() {
-		insert needed info into new room object
-		push it into this.rooms;
-	👉 use setTimeout function with a promise to 
-		destroyRoom if fulfilled
+	
+	async createRoom(connection, message) {
+		const room = {
+			gameMode: message.matchType,
+			players: message.players
+		};
+		this.rooms.push(room);
+		console.log("room created");
+	// 👉 insert needed info into new room object
+	// 	push it into this.rooms;
+	// 👉 use setTimeout function with a promise to 
+	// 	destroyRoom if fulfilled
 	}
-	*/
+	
 
 	/* 
 	👉 async destroyRoom() {
@@ -77,9 +83,9 @@ class MatchMakingService {
 	}
 
 	async matchMakingInit(connection, message) {
-		if (this.rooms)
+		console.log("[matchMakingInit] start");
+		if (this.rooms.length > 0)
 		{
-			console.log("room exists :)");
 			if (playersBusy(message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
 				// 👉	if someone already occupied, send FAILURE to connection
@@ -88,7 +94,7 @@ class MatchMakingService {
 			}
 		}
 
-		/*👉 createRoom(); */
+		createRoom(connection, message);
 
 		/* 
 		Promise.race([matchInvitationTimeout, matchInvitationAccepted]).then((result) => {

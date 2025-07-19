@@ -12,6 +12,9 @@ interface GamePageProps {
 }
 
 export class GamePage extends Component<GamePageProps, GamePageState> {
+    // Singleton instance to prevent multiple instances
+    private static isMounted: boolean = false;
+    
     private gameEngine: GameEngine | null = null;
 
     protected static state: GamePageState = {
@@ -87,7 +90,23 @@ export class GamePage extends Component<GamePageProps, GamePageState> {
         }
     }
 
+    protected onMount(): void {
+        console.log('GamePage onMount called, isMounted:', GamePage.isMounted);
+        
+        // Prevent multiple onMount calls
+        if (GamePage.isMounted) {
+            console.log('GamePage already mounted, skipping onMount');
+            return;
+        }
+        
+        GamePage.isMounted = true;
+        console.log('GamePage mounted');
+    }
+
     protected onUnmount(): void {
+        console.log('GamePage onUnmount called');
+        GamePage.isMounted = false;
+        
         if (this.gameEngine) {
             // Add any cleanup logic here if needed
             console.log('GamePage component unmounted');

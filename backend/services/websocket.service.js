@@ -114,6 +114,15 @@ class WebsocketService {
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
 
+	async getWsClientById(id) {
+		for (let client of this.websocketServer.clients) {
+			if (client.userId === id) {
+				return (client);
+			}
+		}
+		return (null);
+	}
+
 	sendMessageToClient(client, message) {
 		client.send(JSON.stringify(message));
 		// for (let client of this.websocketServer.clients) {

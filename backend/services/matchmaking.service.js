@@ -128,7 +128,7 @@ class MatchMakingService {
 		});
 		const message = {
 			sender: "__server",
-			text: "Your match will start now.",
+			message: "Your match will start now.",
 			roomId: room.id,
 			players: sanitizedPlayers,
 			gameMode: room.gameMode,

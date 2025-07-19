@@ -66,6 +66,7 @@ class MatchMakingService {
 		const room = {
 			id: this.createUniqueId(),
 			gameMode: message.gameMode,
+			oppMode: message.oppMode,
 			players: message.players
 		};
 

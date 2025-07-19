@@ -56,8 +56,8 @@ class WebsocketService {
 				}
 				else if (parsedMessage.type === 3) {
 					console.log("[handleMessage] type 3: match invitation");
-					if (!parsedMessage.players || !parsedMessage.matchType) {
-						throw new Error ("Parsing: Invalid message: 'players' or 'matchType' field is missing or empty");
+					if (!parsedMessage.players || !parsedMessage.gameMode || !parsedMessage.oppMode) {
+						throw new Error ("Parsing: Invalid message: 'players', 'matchType' or 'oppMode' field is missing or empty");
 					}
 					this.matchMakingService.matchMakingInit(connection, parsedMessage);
 				}

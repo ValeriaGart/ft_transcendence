@@ -11,18 +11,20 @@ class MatchMakingService {
     }
 	/* just information what room should contain
 		{
-		"matchType": "1v1",
+		"gameMode": "1v1",
 		"players": 
 			[
 				{
 				"id": 1,
 				"nick": "luca",
-				"status": "accepted"
+				"status": "accepted",
+				"ai": false
 				},
 				{
-				"id": 2,
-				"nick": "yen",
-				"status": "pending"
+					"id": 2,
+					"nick": "yen",
+					"status": "pending",
+					"ai": false
 				}
 			],
 		"timeoutAt": "timestamp + 30 seconds"
@@ -61,14 +63,25 @@ class MatchMakingService {
 		// 👉 insert needed info into new room object
 		const room = {
 			id: this.createUniqueId(),
-			gameMode: message.matchType,
+			gameMode: message.gameMode,
 			players: message.players
 		};
 
 		for (let p of room.players) {
-			const dbResult = await ProfileService.getIdByNick(p.nick);
-			p.id = dbResult.userId;
-			p.accepted = "pending";
+			if (p.ai != true) {
+				const dbResult = await ProfileService.getIdByNick(p.nick);
+				p.id = dbResult.userId;
+				if (p.id === connection.userId) {
+					p.accepted = "accepted";
+				}
+				else {
+					p.accepted = "pending";
+				}
+
+			}
+			else {
+				p.accepted = "accepted";
+			}
 		}
 		// 👉 add accepted status to all players
 		// 		accepted for OP, pending for players, accepted for AI opponent

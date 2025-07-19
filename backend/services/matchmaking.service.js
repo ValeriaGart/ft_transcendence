@@ -4,9 +4,11 @@ import UserService from "./user.service.js";
 import ProfileService from "./profile.service.js";
 
 class MatchMakingService {
-    constructor() {
+    constructor(websocketService) {
 		this.rooms = [];
 		this.EmojiService = new EmojiService();
+		this.WebsocketService = websocketService;
+
 		console.log("matchmaking constructor");
     }
 	/* just information what room should contain
@@ -71,7 +73,7 @@ class MatchMakingService {
 			if (p.ai != true) {
 				const dbResult = await ProfileService.getIdByNick(p.nick);
 				p.id = dbResult.userId;
-				// p.wsclient = await WebsocketService.getWsClientById(p.id);
+				p.wsclient = await this.WebsocketService.getWsClientById(p.id);
 				if (p.id === connection.userId) {
 					p.accepted = "accepted";
 				}
@@ -89,7 +91,10 @@ class MatchMakingService {
 
 		this.rooms.push(room);
 		console.log("room created");
-		console.log(JSON.stringify(this.rooms, null, 2));
+		console.log(JSON.stringify(this.rooms, (key, value) => {
+			if (key === "wsclient") return undefined; // Exclude wsclient
+			return value;
+		}, 2));
 		return (room);
 	// 👉 use setTimeout function with a promise to 
 	// 	destroyRoom if fulfilled
@@ -115,13 +120,35 @@ class MatchMakingService {
 		// }
 	}
 
-	
+	createStartMatchMessage(room) {
+		const sanitizedPlayers = room.players.map(player => {
+			const { wsclient, ...rest } = player; // Exclude wsclient
+			return rest;
+		});
+		const message = {
+			sender: "__server",
+			text: "Your match will start now.",
+			roomId: room.id,
+			players: sanitizedPlayers,
+			gameMode: room.gameMode,
+			oppMode: room.oppMode
+		}
+		return message;
+	}
+
 	async startMatch(room) {
 		/* checks for accepted status should NOT happen in here, but before */
 		/* 👉 send info to all real players */
 		for (let player of room.players) {
-			if (player.id) {
-				// WebsocketService.sendMessageToClient(player.id)
+			if (player.id && player.wsclient) {
+				console.log("[startMatch] player: ", player.nick);
+
+				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room));
+
+				// await this.WebsocketService.sendMessageToClient(player.wsclient, {
+				// 	sender: "__server",
+				// 	message: `Your match will start now: ${room.id}`
+				// })
 			}
 		}
 
@@ -167,7 +194,7 @@ class MatchMakingService {
 		/* 👉👉👉👉 woopsie playersBusy needs to be rearranged so it can access the player IDs that are added in createRoom*/
 			if (this.playersBusy(message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
-				WebsocketService.sendMessageToClient(connection, {
+				this.WebsocketService.sendMessageToClient(connection, {
 					sender: "__server",
 					message: "Error creating Match: Players are busy"
 				});

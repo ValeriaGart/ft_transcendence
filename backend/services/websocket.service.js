@@ -2,13 +2,14 @@
 import FriendService from "./friend.service.js";
 import MatchMakingService from "./matchmaking.service.js";
 
-const _matchMakingService = new MatchMakingService;
+// const _matchMakingService = new MatchMakingService(this);
 
 class WebsocketService {
     constructor(websocketServer) {
         this.websocketServer = websocketServer;
 		// this.rooms = [];
-		this.matchMakingService = _matchMakingService;
+		// this.matchMakingService = _matchMakingService;
+		this.matchMakingService = new MatchMakingService(this);
     }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */

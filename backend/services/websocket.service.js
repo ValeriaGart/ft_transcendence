@@ -1,9 +1,15 @@
-import { dbGet } from "../config/database.js";
+// import { dbGet } from "../config/database.js";
 import FriendService from "./friend.service.js";
+import MatchMakingService from "./matchmaking.service.js";
+
+// const _matchMakingService = new MatchMakingService(this);
 
 class WebsocketService {
     constructor(websocketServer) {
         this.websocketServer = websocketServer;
+		// this.rooms = [];
+		// this.matchMakingService = _matchMakingService;
+		this.matchMakingService = new MatchMakingService(this);
     }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
@@ -30,25 +36,46 @@ class WebsocketService {
 			try {
 				const parsedMessage = JSON.parse(message);
 
+				// Validate required fields
+				if (!parsedMessage.type || typeof parsedMessage.type !== 'number') {
+					throw new Error ("Parsing: Invalid message: 'type' field is missing or not a number");
+				}
+
 				if (parsedMessage.type === 1) {
-					console.log("[handleMessage] type 1")
+					console.log("[handleMessage] type 1: message")
+					if (!parsedMessage.message) {
+						throw new Error ("Parsing: Invalid message: 'message' field is missing or empty");
+					}
 					this.broadcast({
 						sender: `${connection.userId}`,
 						message: `${parsedMessage.message}`
 					}, connection);
 				}
 				else if (parsedMessage.type === 2) {
-					console.log("[handleMessage] type 2");
+					console.log("[handleMessage] type 2: online friend status");
 					this.onlineFriends(connection);
+				}
+				else if (parsedMessage.type === 3) {
+					console.log("[handleMessage] type 3: match invitation");
+					if (!parsedMessage.players || !parsedMessage.gameMode || !parsedMessage.oppMode) {
+						throw new Error ("Parsing: Invalid message: 'players', 'matchType' or 'oppMode' field is missing or empty");
+					}
+					this.matchMakingService.matchMakingInit(connection, parsedMessage);
 				}
 				else {
 					console.log("[handleMessage] unknown type");
 				}
 			} catch (error) {
-				console.error("Failed to parse message: ", error.message);
+				console.error("Error occurring in WebsocketService: ", error.message);
+				this.sendMessageToClient(connection, {
+					sender: "__server",
+					message: `Error occurring in WebsocketService: ${error.message}`
+				});
 			}
 		});
 	}
+
+
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
 
@@ -84,6 +111,26 @@ class WebsocketService {
 			}
 		}
 		connection.send(JSON.stringify({ onlineFriends }));
+	}
+
+/* <><><><><><><><><><><><><><><><><><><><><><><><> */
+
+	async getWsClientById(id) {
+		for (let client of this.websocketServer.clients) {
+			if (client.userId === id) {
+				return (client);
+			}
+		}
+		return (null);
+	}
+
+	sendMessageToClient(client, message) {
+		client.send(JSON.stringify(message));
+		// for (let client of this.websocketServer.clients) {
+		// 	if (client.readyState === 1 && client === deliverto) {
+		// 	}
+		// }
+
 	}
 
 	broadcast(message, excludeConnection = null) {

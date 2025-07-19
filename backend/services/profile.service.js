@@ -6,6 +6,19 @@ class ProfileService {
     return profiles;
   }
 
+
+  static async getIdByNick(nick) {
+    const id = await dbGet(
+      'SELECT userId FROM profiles WHERE nickname = ?',
+      [nick]
+    );
+    if (!id) {
+      throw new Error (`[ProfileService] No such user with nickname ${nick} found`)
+    }
+    return id;
+  }
+
+
   static async getProfileById(id) {
     const profile = await dbGet('SELECT * FROM profiles WHERE id = ?', [id]);
     return profile;

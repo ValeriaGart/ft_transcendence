@@ -156,31 +156,31 @@ class MatchMakingService {
 	}
 	
 
-	getAllAcceptedPlayerIdsRoom(room) {
-		const playerIdsRoom = [];
+	getAllAcceptedPlayerNicksRoom(room) {
+		const playerNicksRoom = [];
 		for (let player of room.players) {
-			console.log("[getAllAcceptedPlayerIdsRoom] player: ", player);
-			if (player.accepted === "accepted")
+			// console.log("[getAllAcceptedPlayerNicksRoom] player: ", player.nick);
+			if (player.ai == false && player.accepted === "accepted")
 				{
-					playerIdsRoom.push(player.id);
+					playerNicksRoom.push(player.nick);
 				}
 		}
-		console.log("[getAllAcceptedPlayerIdsRoom] playerIdsRoom: ", playerIdsRoom);
-		return (playerIdsRoom);
+		// console.log("[getAllAcceptedPlayerNicksRoom] playerNicksRoom: ", playerNicksRoom);
+		return (playerNicksRoom);
 	}
 
 
 
 	playersBusy(players) {
 		for (let room of this.rooms) {
-			const playerIds = this.getAllAcceptedPlayerIdsRoom(room);
-			console.log("[playersBusy] accepted playerIds: ", playerIds);
+			const playerNicks = this.getAllAcceptedPlayerNicksRoom(room);
+			// console.log("[playersBusy] accepted playerNicks: ", playerNicks);
 			for (let player of players) {
 				//👉 if (player.id === aiPlayer)
 				//	continue ;
-				console.log("[playersBusy] checking player: ", player);
-				if (playerIds.includes(player.id)) {
-					console.log("someone is busy: ", player.id);
+				console.log("[playersBusy] checking player: ", player.nick);
+				if (playerNicks.includes(player.nick)) {
+					console.log("someone is busy: ", player.nick);
 					return true; // Player is busy
 				}
 			}

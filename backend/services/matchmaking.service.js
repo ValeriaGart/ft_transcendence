@@ -71,6 +71,7 @@ class MatchMakingService {
 			if (p.ai != true) {
 				const dbResult = await ProfileService.getIdByNick(p.nick);
 				p.id = dbResult.userId;
+				// p.wsclient = await WebsocketService.getWsClientById(p.id);
 				if (p.id === connection.userId) {
 					p.accepted = "accepted";
 				}
@@ -84,7 +85,7 @@ class MatchMakingService {
 			}
 		}
 		// 👉 add accepted status to all players
-		// 		accepted for OP, pending for players, accepted for AI opponent
+		// 		👉accepted for OP, pending for players, accepted for AI opponent
 
 		this.rooms.push(room);
 		console.log("room created");
@@ -106,36 +107,52 @@ class MatchMakingService {
 		}
 	 */
 
-	/* 
-	👉 async matchMakingAcceptInvitation() {
-		set status to accepted for player
-		check if all accepted
-			if yes, then startMatch()
-		}
-	*/
+	
+	async matchMakingAcceptInvitation() {
+		//👉 set status to accepted for player
+		//👉 check if all accepted
+		// 👉	if yes, then startMatch()
+		// }
+	}
 
-	/* 
-	👉	async startMatch() {}
-	*/
+	
+	async startMatch(room) {
+		/* checks for accepted status should NOT happen in here, but before */
+		/* 👉 send info to all real players */
+		for (let player of room.players) {
+			if (player.id) {
+				// WebsocketService.sendMessageToClient(player.id)
+			}
+		}
+
+	}
+	
 
 	getAllAcceptedPlayerIdsRoom(room) {
 		const playerIdsRoom = [];
 		for (let player of room.players) {
-			if (player.accepted === true)
-			{
-				playerIdsRoom.push(player.id);
-			}
+			console.log("[getAllAcceptedPlayerIdsRoom] player: ", player);
+			if (player.accepted === "accepted")
+				{
+					playerIdsRoom.push(player.id);
+				}
 		}
+		console.log("[getAllAcceptedPlayerIdsRoom] playerIdsRoom: ", playerIdsRoom);
 		return (playerIdsRoom);
 	}
+
+
 
 	playersBusy(players) {
 		for (let room of this.rooms) {
 			const playerIds = this.getAllAcceptedPlayerIdsRoom(room);
+			console.log("[playersBusy] accepted playerIds: ", playerIds);
 			for (let player of players) {
 				//👉 if (player.id === aiPlayer)
 				//	continue ;
+				console.log("[playersBusy] checking player: ", player);
 				if (playerIds.includes(player.id)) {
+					console.log("someone is busy: ", player.id);
 					return true; // Player is busy
 				}
 			}
@@ -147,6 +164,7 @@ class MatchMakingService {
 		console.log("[matchMakingInit] start");
 		if (this.rooms.length > 0)
 		{
+		/* 👉👉👉👉 woopsie playersBusy needs to be rearranged so it can access the player IDs that are added in createRoom*/
 			if (this.playersBusy(message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
 				WebsocketService.sendMessageToClient(connection, {
@@ -161,13 +179,22 @@ class MatchMakingService {
 
 		try {
 			const newRoom = await this.createRoom(connection, message);
+			/*👉 send invitations to players 
+				except connection (the one who invited) and AI opponents*/
+			await this.sendInvitation()
+
+
+
+			/* 👉 send message to all players informing them that the match will start */
+			this.startMatch(newRoom);
 		} catch (error) {
 			console.error("Error: ", error.message);
 			//return error message to connection
 			return ;
 		}
 
-		await this.sendInvitation()
+
+
 
 		/* 
 		Promise.race([matchInvitationTimeout, matchInvitationAccepted]).then((result) => {
@@ -175,8 +202,6 @@ class MatchMakingService {
 			});
 			*/
 
-		/*👉 send invitations to players 
-			except connection (the one who invited) and AI opponents*/
 	}
 	/* <><><><><><><><><><><><><><><><><><><><><><><><> */
 }

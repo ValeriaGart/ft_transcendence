@@ -23,8 +23,6 @@ console.log('Stored user:', localStorage.getItem('auth_user') ? 'exists' : 'none
 console.log('AuthService state:', authService.getAuthState());
 console.log('=== END DEBUG ===');
 
-console.log('Setting up global ErrorBoundary...');
-
 // Create global ErrorBoundary
 const globalErrorBoundary = new ErrorBoundary({
     onError: (error, errorInfo) => {
@@ -38,6 +36,10 @@ console.log('Global ErrorBoundary created:', globalErrorBoundary);
 globalErrorBoundary.mount(document.body);
 
 console.log('Global ErrorBoundary mounted to document.body');
+
+window.addEventListener('beforeunload', () => {
+    globalErrorBoundary.unmount();
+});
 
 
 const app = document.querySelector<HTMLDivElement>("#blitz");

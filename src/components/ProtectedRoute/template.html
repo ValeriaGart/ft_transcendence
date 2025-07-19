@@ -1,1 +1,13 @@
-<blitz-slot></blitz-slot> 
+<div blitz-if="showLoading">
+  <div class="flex items-center justify-center h-screen">
+    <div class="text-2xl text-[#B0D5D5] font-['Irish_Grover']">Loading...</div>
+  </div>
+</div>
+<div blitz-if="showUnauthenticated">
+  <div class="flex items-center justify-center h-screen">
+    <div class="text-2xl text-[#B0D5D5] font-['Irish_Grover']">Redirecting to login...</div>
+  </div>
+</div>
+<div blitz-if="showAuthenticated">
+  <blitz-slot></blitz-slot>
+</div> 

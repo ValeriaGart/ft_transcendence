@@ -107,11 +107,8 @@ export function parseTemplate(template: string, state: Record<string, any>): str
         if (condition) {
           // This is a blitz-if
           const trimmedCondition = condition.trim();
-          console.log('Processing blitz-if condition:', trimmedCondition, 'with state:', state);
           const value = state[trimmedCondition];
-          console.log('Resolved condition value:', value);
           currentCondition = Boolean(value);
-          console.log('Boolean condition result:', currentCondition);
           skipContent = !currentCondition;
           
           if (!skipContent) {

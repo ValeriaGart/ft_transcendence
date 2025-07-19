@@ -41,6 +41,8 @@ export class Router {
   private currentParams: Record<string, string> = {};
   private rootElement: HTMLElement;
   private initialized: boolean = false;
+  private componentCache: Map<string, any> = new Map();
+  private isNavigating: boolean = false;
 
   /**
    * Private constructor to enforce singleton pattern
@@ -80,12 +82,27 @@ export class Router {
     if (this.initialized) return;
     
     // Handle browser back/forward buttons
-    window.addEventListener('popstate', () => {
-      this.handleRoute(window.location.pathname);
+    window.addEventListener('popstate', () => {   
+      // Prevent unwanted navigation if we're in the middle of navigating
+      if (this.isNavigating) {
+        console.log('Router: Navigation in progress, ignoring popstate');
+        return;
+      }
+      
+
+      
+      // Check if this is a legitimate back button navigation
+      // If we're going from /game to /user, this is likely a legitimate back button press
+      if (window.location.pathname === '/user' && this.currentRoute?.path === '/game') {
+        console.log('Router: Back button pressed from game to user, allowing navigation');
+        // Allow the navigation to proceed
+      }
+      
+      this.handleRoute(window.location.pathname + window.location.search);
     });
 
     // Handle initial route
-    this.handleRoute(window.location.pathname);
+    this.handleRoute(window.location.pathname + window.location.search);
     this.initialized = true;
   }
 
@@ -95,8 +112,24 @@ export class Router {
    * @param path - The path to navigate to
    */
   public navigate(path: string): void {
+    
+    this.isNavigating = true;
     window.history.pushState({}, '', path);
     this.handleRoute(path);
+    
+    // Delay clearing the navigation flag to prevent popstate interference
+    setTimeout(() => {
+      this.isNavigating = false;
+      console.log('Router: Navigation flag cleared');
+    }, 100);
+  }
+
+  /**
+   * Clears the component cache
+   * Useful when navigating to a completely different route type
+   */
+  public clearCache(): void {
+    this.componentCache.clear();
   }
 
   /**
@@ -186,6 +219,9 @@ export class Router {
               
               console.log('Router: Found matching child route:', childRoute.path);
               console.log('Router: But returning parent route for nested rendering');
+              // Add the current path to params so the parent component knows which child to render
+              params.currentPath = path;
+              console.log('Router: Added currentPath to params:', params);
               return { route: route, params }; // Return parent route, not child route
             }
           }
@@ -202,11 +238,12 @@ export class Router {
    */
   private handleRoute(path: string): void {
     console.log('Router: Handling route for path:', path);
-    const { route, params } = this.findRoute(path, this.routes);
-
-    console.log('Router: Found route:', route ? route.path : 'none');
-    console.log('Router: Route component:', route ? route.component.name : 'none');
-    console.log('Router: Route params:', params);
+    
+    // Strip query parameters from the path for route matching
+    const pathWithoutQuery = path.split('?')[0];
+    console.log('Router: Path without query parameters:', pathWithoutQuery);
+    
+    const { route, params } = this.findRoute(pathWithoutQuery, this.routes);
 
     if (route) {
       // Check authentication status
@@ -216,10 +253,16 @@ export class Router {
       const authenticatedUserRedirectRoutes = ['/auth', '/signup', '/signin', '/greatsuccess'];
       
       // If user is authenticated and trying to access a redirect route, redirect to /user
-      if (isAuthenticated && authenticatedUserRedirectRoutes.includes(path)) {
+      if (isAuthenticated && authenticatedUserRedirectRoutes.includes(pathWithoutQuery)) {
         console.log('Router: Authenticated user accessing restricted route, redirecting to /user');
         this.navigate('/user');
         return;
+      }
+      
+      // Clear cache if navigating to a different route type
+      if (this.currentRoute && this.currentRoute.component !== route.component) {
+        console.log('Router: Different route type detected, clearing cache');
+        this.clearCache();
       }
       
       this.currentRoute = route;
@@ -227,7 +270,7 @@ export class Router {
       this.render();
     } else {
       // Handle 404
-      console.error(`No route found for path: ${path}`);
+      console.error(`No route found for path: ${pathWithoutQuery}`);
     }
   }
 
@@ -253,29 +296,76 @@ export class Router {
   private render(): void {
     if (this.currentRoute) {
       console.log('Router: Rendering component:', this.currentRoute.component.name);
-      console.log('Router: Root element:', this.rootElement);
       
       // Clear the root element
       this.rootElement.innerHTML = '';
       
       // Check if this is a child route that needs to be rendered through its parent
+      // OR if this is a parent route with children that needs to handle child routing
       const parentRoute = this.findParentRoute(this.currentRoute);
-      if (parentRoute && parentRoute.children) {
-        console.log('Router: This is a child route, rendering parent route');
+      const isParentRouteWithChildren = this.currentRoute.children && this.currentParams.currentPath;
+      const isChildRoute = parentRoute && parentRoute.children;
+      
+      if (isChildRoute || isParentRouteWithChildren) {
+        console.log('Router: This is a route that needs parent handling');
+        console.log('Router: Current route:', this.currentRoute.path);
         
-        // Just render the parent route - it will handle rendering its children
-        const parentComponent = new parentRoute.component(this.currentParams);
-        console.log('Router: Created parent component:', parentComponent);
+        // For child routes, we should render the parent route and let it handle the child
+        // The parent route will determine which child to render based on the current path
+        const routeToRender = parentRoute || this.currentRoute;
+        const cacheKey = `parent_${routeToRender.component.name}`;
+        let parentComponent = this.componentCache.get(cacheKey);
         
-        // Mount the parent component
-        parentComponent.mount(this.rootElement);
-        console.log('Router: Parent component mounted');
+        if (!parentComponent) {
+          parentComponent = new routeToRender.component(this.currentParams);
+          this.componentCache.set(cacheKey, parentComponent);
+          console.log('Router: Created new parent component:', parentComponent);
+          console.log('Router: Parent component params:', this.currentParams);
+          // Mount the parent component
+          parentComponent.mount(this.rootElement);
+          console.log('Router: Parent component mounted');
+        } else {
+          console.log('Router: Reusing cached parent component:', parentComponent);
+          // Check if the parameters have changed
+          const currentProps = parentComponent.props || {};
+          const hasParamChanges = Object.keys(this.currentParams).some(key => 
+            currentProps[key] !== this.currentParams[key]
+          );
+          
+          if (hasParamChanges) {
+            console.log('Router: Parameters changed, clearing cache and creating new component');
+            this.componentCache.delete(cacheKey);
+            parentComponent = new routeToRender.component(this.currentParams);
+            this.componentCache.set(cacheKey, parentComponent);
+            console.log('Router: Created new parent component with updated params:', this.currentParams);
+          } else {
+            console.log('Router: No parameter changes, reusing cached component');
+          }
+          
+          // Mount the component
+          parentComponent.mount(this.rootElement);
+          console.log('Router: Parent component mounted');
+        }
       } else {
         // Create and mount the component with parameters
-        const component = new this.currentRoute.component(this.currentParams);
-        console.log('Router: Created component instance:', component);
-        component.mount(this.rootElement);
-        console.log('Router: Component mounted successfully');
+        const cacheKey = `component_${this.currentRoute.component.name}`;
+        let component = this.componentCache.get(cacheKey);
+        
+        if (!component) {
+          component = new this.currentRoute.component(this.currentParams);
+          this.componentCache.set(cacheKey, component);
+          console.log('Router: Created new component instance:', component);
+          component.mount(this.rootElement);
+          console.log('Router: Component mounted successfully');
+        } else {
+          console.log('Router: Reusing cached component instance:', component);
+          // Update the cached component with new parameters
+          if (component.props) {
+            component.props = { ...component.props, ...this.currentParams };
+          }
+          component.mount(this.rootElement);
+          console.log('Router: Cached component remounted with updated params');
+        }
       }
     }
   }

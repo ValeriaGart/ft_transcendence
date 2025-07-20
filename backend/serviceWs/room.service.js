@@ -55,6 +55,9 @@ class RoomService {
 				const dbResult = await ProfileService.getIdByNick(p.nick);
 				p.id = dbResult.userId;
 				p.wsclient = await this.WebsocketService.getWsClientById(p.id);
+				if (!p.wsclient) {
+					throw new Error ("[RoomService] No connected user found for invited players, cancelling match.");
+				}
 				if (p.id === connection.userId) {
 					p.accepted = "accepted";
 				}

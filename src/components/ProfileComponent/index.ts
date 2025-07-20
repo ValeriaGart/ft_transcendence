@@ -208,7 +208,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
 
       const profileData = await response.json();
       
-      // Handle profile picture URL - external URLs should fallback to default
+      // Extract just the filename from the full URL for display
       let profilePictureUrl = 'profile_no.svg';
       if (profileData.profilePictureUrl) {
         console.log('ProfileComponent: Processing profilePictureUrl:', profileData.profilePictureUrl);
@@ -217,7 +217,6 @@ export class ProfileComponent extends Component<ProfileComponentState> {
           console.log('ProfileComponent: External URL detected, using default profile picture');
           profilePictureUrl = 'profile_no.svg';
         } else {
-          // Local filename - extract just the filename from the path
           const urlParts = profileData.profilePictureUrl.split('/');
           profilePictureUrl = urlParts[urlParts.length - 1];
           console.log('ProfileComponent: Using local filename:', profilePictureUrl);

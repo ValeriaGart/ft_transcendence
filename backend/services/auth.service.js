@@ -41,6 +41,8 @@ class AuthService {
 
   static async createGoogleUser(userData) {
     try {
+      await dbRun('BEGIN TRANSACTION');
+
       const result = await dbRun(
         `INSERT INTO users (email, googleId, emailVerified, lastLoginAt)
          VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
@@ -51,14 +53,22 @@ class AuthService {
         ]
       );
 
-      // Create corresponding profile entry with Google data
+      const nickname = userData.email.split('@')[0];
+      
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
-        [result.lastID, userData.name, 'profile_no.svg', null]
+        [result.lastID, nickname, 'profile_no.svg', null]
       );
 
+      await dbRun('COMMIT');
+      
       return await this.findUserById(result.lastID);
     } catch (error) {
+      try {
+        await dbRun('ROLLBACK');
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+      }
       console.error('Error creating Google user:', error);
       throw error;
     }
@@ -66,6 +76,8 @@ class AuthService {
 
   static async createPasswordUser(userData) {
     try {
+      await dbRun('BEGIN TRANSACTION');
+
       // Hash password
       const passwordHash = await bcrypt.hash(userData.password, AUTH_CONFIG.PASSWORD.SALT_ROUNDS);
 
@@ -78,13 +90,6 @@ class AuthService {
       // Always create a corresponding profile entry (with default values)
       const nickname = userData.name || userData.email.split('@')[0];
       
-      console.log('Creating profile with data:', {
-        userId: result.lastID,
-        nickname: nickname,
-        profilePictureUrl: 'profile_no.svg',
-        bio: null
-      });
-      
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
         [
@@ -94,24 +99,17 @@ class AuthService {
           null 
         ]
       );
-      
-      console.log('Profile created successfully');
+
+      await dbRun('COMMIT');
 
       return await this.findUserById(result.lastID);
     } catch (error) {
+      try {
+        await dbRun('ROLLBACK');
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+      }
       console.error('Error creating password user:', error);
-      throw error;
-    }
-  }
-
-  static async updateUserGoogleId(userId, googleId) {
-    try {
-      await dbRun(
-        'UPDATE users SET googleId = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-        [googleId, userId]
-      );
-    } catch (error) {
-      console.error('Error updating user Google ID:', error);
       throw error;
     }
   }

@@ -8,7 +8,7 @@ import {
 } from '../plugins/auth-utils.js';
 
 class AuthController {
-  static async googleAuth(request, reply) {
+  static async googleSignup(request, reply) {
     try {
       const { credential } = request.body;
       
@@ -23,26 +23,67 @@ class AuthController {
         return { error: 'Invalid Google token' };
       }
 
-      let user = await AuthService.findUserByEmail(googleUser.email);
-      
-      if (!user) {
-        // Create new user from Google data
-        user = await AuthService.createGoogleUser({
-          email: googleUser.email,
-          name: googleUser.name,
-          googleId: googleUser.googleId,
-          profilePicture: googleUser.picture,
-          emailVerified: googleUser.emailVerified
-        });
-      } else {
-        // Update existing user with Google ID if not set
-        if (!user.googleId) {
-          await AuthService.updateUserGoogleId(user.id, googleUser.googleId);
-          user.googleId = googleUser.googleId;
-        }
-        
-        await AuthService.updateLastLogin(user.id);
+      // Check if user already exists - if so, reject signup
+      const existingUser = await AuthService.findUserByEmail(googleUser.email);
+      if (existingUser) {
+        reply.code(409);
+        return { error: 'User with this email already exists. Please use Sign In instead.' };
       }
+
+      // Create new user from Google data
+      const user = await AuthService.createGoogleUser({
+        email: googleUser.email,
+        name: googleUser.name,
+        googleId: googleUser.googleId,
+        profilePicture: googleUser.picture,
+        emailVerified: googleUser.emailVerified
+      });
+
+      return {
+        success: true,
+        message: 'Google signup successful! Please sign in to continue.',
+        user: {
+          id: user.id,
+          email: user.email,
+        }
+      };
+
+    } catch (error) { 
+      reply.code(500);
+      return { error: 'Google signup failed', details: error.message };
+    }
+  }
+
+  static async googleSignin(request, reply) {
+    try {
+      const { credential } = request.body;
+      
+      if (!credential) {
+        reply.code(400);
+        return { error: 'Google credential is required' };
+      }
+
+      const googleUser = await verifyGoogleToken(credential);
+      if (!googleUser) {
+        reply.code(401);
+        return { error: 'Invalid Google token' };
+      }
+
+      // Check if user exists - if not, reject signin
+      const user = await AuthService.findUserByEmail(googleUser.email);
+      if (!user) {
+        reply.code(404);
+        return { error: 'No account found with this email. Please sign up first.' };
+      }
+
+      // Verify this is actually a Google user
+      if (!user.googleId) {
+        reply.code(400);
+        return { error: 'This account uses email/password authentication. Please use regular Sign In.' };
+      }
+
+      // Update last login
+      await AuthService.updateLastLogin(user.id);
 
       const token = generateJWT(user);
 
@@ -59,9 +100,11 @@ class AuthController {
 
     } catch (error) { 
       reply.code(500);
-      return { error: 'Authentication failed', details: error.message };
+      return { error: 'Google signin failed', details: error.message };
     }
   }
+
+
 
   static async register(request, reply) {
     try {
@@ -89,18 +132,13 @@ class AuthController {
         password,
         name: name || email.split('@')[0] // Use email prefix as default name
       });
-
-      const token = generateJWT(user);
-
-      reply.setCookie(AUTH_CONFIG.SESSION.COOKIE_NAME, token, AUTH_CONFIG.SESSION.COOKIE_OPTIONS);
-
       return {
         success: true,
+        message: 'Registration successful! Please sign in to continue.',
         user: {
           id: user.id,
           email: user.email,
-        },
-        token
+        }
       };
 
     } catch (error) {

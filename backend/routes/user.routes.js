@@ -12,6 +12,7 @@ async function routes(fastify, options) {
     return { hello: 'world' };
   });
   
+  
   // Public registration with strict rate limiting
   fastify.post('/users', {
 	config: {
@@ -84,6 +85,9 @@ async function routes(fastify, options) {
 	schema: { params: userParamsSchema },
 	preHandler: [fastify.requireOwnership]
   }, UserController.deleteUser);
+
+  // Get all users - for admin or authorized access only
+  fastify.get('/users', UserController.getAllUsers);
 }
 
 export default routes;

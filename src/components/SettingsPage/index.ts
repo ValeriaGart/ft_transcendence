@@ -20,6 +20,7 @@ interface SettingsPageState {
   isLoading: boolean;
   showError: boolean;
   errorMessage: string | null;
+  isGoogleUser: boolean;
 }
 
 export class SettingsPage extends Component<SettingsPageState> {
@@ -31,6 +32,7 @@ export class SettingsPage extends Component<SettingsPageState> {
     isLoading: false,
     showError: false,
     errorMessage: null,
+    isGoogleUser: false,
   }
 
   constructor() {
@@ -76,12 +78,12 @@ export class SettingsPage extends Component<SettingsPageState> {
       const authTypeResult = await authService.getUserAuthType();
       if (authTypeResult.success && authTypeResult.authType) {
         const { authType } = authTypeResult;
-        console.log('Settings: User auth type:', authType);
+        this.setState({ isGoogleUser: authType.isGoogleUser });
         
         // Hide password confirmation elements for Google users
         if (authType.isGoogleUser) {
-          console.log('Settings: Google user detected - hiding password elements');
           this.hidePasswordElements();
+          this.disableEmailInput();
         }
         
         // Hide change password button for Google-only users
@@ -94,6 +96,16 @@ export class SettingsPage extends Component<SettingsPageState> {
       }
     } catch (error) {
       console.error('Error checking user auth type:', error);
+    }
+  }
+
+  private disableEmailInput(): void {
+    const emailInput = this.element.querySelector('#email') as HTMLInputElement;
+    if (emailInput) {
+      emailInput.style.backgroundColor = '#f5f5f5';
+      emailInput.style.color = '#999';
+      emailInput.style.cursor = 'not-allowed';
+      emailInput.title = 'Gmail addresses cannot be changed';
     }
   }
 
@@ -125,21 +137,19 @@ export class SettingsPage extends Component<SettingsPageState> {
   private setupEventListeners(): void {
     this.addEventListener('#next_page', 'click', (e) => {
       e.preventDefault();
-      console.log('Next page clicked');
       this.setState({ currentPage: 'page2' });
       this.updatePageVisibility();
     });
 
     this.addEventListener('#previous_page', 'click', (e) => {
       e.preventDefault();
-      console.log('Previous page clicked');
       this.setState({ currentPage: 'page1' });
       this.updatePageVisibility();
     });
 
     this.addEventListener('#confirm_button_page1', 'click', (e) => {
       e.preventDefault();
-      console.log('Confirm button clicked from page 1, switching to confirm page');
+      e.stopPropagation();
       
       const usernameInput = this.element.querySelector('#username') as HTMLInputElement;
       const emailInput = this.element.querySelector('#email') as HTMLInputElement;
@@ -178,7 +188,6 @@ export class SettingsPage extends Component<SettingsPageState> {
     this.addEventListener('#confirm_button_page2', 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Confirm button clicked from page 2, switching to confirm page');
       
       const bioInput = this.element.querySelector('#bio') as HTMLTextAreaElement;
       const usernameInput = this.element.querySelector('#username') as HTMLInputElement;
@@ -460,6 +469,34 @@ export class SettingsPage extends Component<SettingsPageState> {
         } else {
           this.showError('Failed to change password. Please try again.');
         }
+      }
+    });
+    
+    // Add additional protection for Google users' email input
+    this.addEventListener('#email', 'input', (e) => {
+      if (this.state.isGoogleUser) {
+        const emailInput = e.target as HTMLInputElement;
+        emailInput.value = this.state.originalValues.email || '';
+        this.showError('Ups! Change your gmail\'s address is a naughty move.');
+      }
+    });
+    
+    this.addEventListener('#email', 'keydown', (e) => {
+      if (this.state.isGoogleUser) {
+        const keyboardEvent = e as KeyboardEvent;
+        // Allow navigation keys but prevent typing
+        const allowedKeys = ['Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+        if (!allowedKeys.includes(keyboardEvent.key)) {
+          e.preventDefault();
+          this.showError('Ups! Change your gmail\'s address is a naughty move.');
+        }
+      }
+    });
+    
+    this.addEventListener('#email', 'paste', (e) => {
+      if (this.state.isGoogleUser) {
+        e.preventDefault();
+        this.showError('Ups! Change your gmail\'s address is a naughty move.');
       }
     });
   }

@@ -72,10 +72,13 @@ class RoomService {
 
 		this.rooms.push(room);
 		console.log("[RoomService] new room was created");
-		console.log(JSON.stringify(this.rooms, (key, value) => {
+
+		/* printing rooms for debugging */
+		console.debug(JSON.stringify(this.rooms, (key, value) => {
 			if (key === "wsclient") return undefined; // Exclude wsclient
 			return value;
 		}, 2));
+		
 		return (room);
 	// 👉 use setTimeout function with a promise to 
 	// 	destroyRoom if fulfilled

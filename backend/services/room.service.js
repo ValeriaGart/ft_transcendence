@@ -4,7 +4,7 @@ import ProfileService from "./profile.service.js";
 
 class RoomService {
 	constructor(websocketService, emojiService) {
-		console.log("RoomService constructor");
+		console.log("[RoomService] constructor");
 		this.rooms = [];
 		this.WebsocketService = websocketService;
 		this.EmojiService = emojiService;
@@ -49,6 +49,7 @@ class RoomService {
 			players: message.players
 		};
 
+		/* determine ID of real players and set accepted variable accordingly */
 		for (let p of room.players) {
 			if (p.ai != true) {
 				const dbResult = await ProfileService.getIdByNick(p.nick);
@@ -70,7 +71,7 @@ class RoomService {
 		// 		👉accepted for OP, pending for players, accepted for AI opponent
 
 		this.rooms.push(room);
-		console.log("room created");
+		console.log("[RoomService] new room was created");
 		console.log(JSON.stringify(this.rooms, (key, value) => {
 			if (key === "wsclient") return undefined; // Exclude wsclient
 			return value;

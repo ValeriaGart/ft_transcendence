@@ -11,7 +11,7 @@ class MatchMakingService {
 		this.WebsocketService = websocketService;
 		this.RoomService = new RoomService(this.WebsocketService, this.EmojiService);
 
-		console.log("matchmaking constructor");
+		console.log("[MatchMakingService] constructor");
     }
 	/* just information what room should contain
 		{

@@ -3,6 +3,7 @@ import WebsocketService from "./websocket.service.js";
 import UserService from "../services/user.service.js";
 import ProfileService from "../services/profile.service.js";
 import RoomService from "./room.service.js";
+import InvitationService from "./invitation.service.js";
 
 class MatchMakingService {
     constructor(websocketService) {
@@ -36,19 +37,6 @@ class MatchMakingService {
 	 */
 
 
-	
-	async sendInvitation() {
-		return ;
-	}
-
-
-	
-	async matchMakingAcceptInvitation() {
-		//👉 set status to accepted for player
-		//👉 check if all accepted
-		// 👉	if yes, then startMatch()
-		// }
-	}
 
 	createStartMatchMessage(room) {
 		const sanitizedPlayers = room.players.map(player => {
@@ -140,7 +128,7 @@ class MatchMakingService {
 			const newRoom = await this.RoomService.createRoom(connection, message);
 			/*👉 send invitations to players 
 				except connection (the one who invited) and AI opponents*/
-			await this.sendInvitation()
+			await InvitationService.sendInvitation()
 
 
 

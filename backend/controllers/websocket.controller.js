@@ -1,4 +1,4 @@
-import WebsocketService  from "../services/websocket.service.js";
+import WebsocketService  from "../serviceWs/websocket.service.js";
 
 class WebsocketController {
     constructor(websocketServer) {

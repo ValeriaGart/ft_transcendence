@@ -1,7 +1,7 @@
 import EmojiService from "./emoji.service.js";
 import WebsocketService from "./websocket.service.js";
-import UserService from "./user.service.js";
-import ProfileService from "./profile.service.js";
+import UserService from "../services/user.service.js";
+import ProfileService from "../services/profile.service.js";
 import RoomService from "./room.service.js";
 
 class MatchMakingService {

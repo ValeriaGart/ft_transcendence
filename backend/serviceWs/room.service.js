@@ -1,5 +1,5 @@
 
-import ProfileService from "./profile.service.js";
+import ProfileService from "../services/profile.service.js";
 
 
 class RoomService {

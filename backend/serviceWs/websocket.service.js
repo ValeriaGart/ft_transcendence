@@ -1,5 +1,5 @@
 // import { dbGet } from "../config/database.js";
-import FriendService from "./friend.service.js";
+import FriendService from "../services/friend.service.js";
 import MatchMakingService from "./matchmaking.service.js";
 
 // const _matchMakingService = new MatchMakingService(this);

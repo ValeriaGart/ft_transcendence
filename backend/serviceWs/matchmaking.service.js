@@ -94,14 +94,14 @@ class MatchMakingService {
 			const newRoom = await this.RoomService.createRoom(connection, message);
 			/*👉 send invitations to players 
 				except connection (the one who invited) and AI opponents*/
-			await InvitationService.sendInvitation(newRoom);
-
+			await InvitationService.sendInvitation(this.WebsocketService, newRoom);
 
 
 			/* 👉 send message to all players informing them that the match will start */
 			this.startMatch(newRoom);
 		} catch (error) {
 			console.error("Error: ", error.message);
+			/* 👉 todo: if room exists, destroy room, send cancel message to players */
 			//return error message to connection
 			return ;
 		}

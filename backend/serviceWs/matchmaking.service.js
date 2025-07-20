@@ -1,6 +1,7 @@
 import EmojiService from "./emoji.service.js";
 import RoomService from "./room.service.js";
 import InvitationService from "./invitation.service.js";
+import RoomUtilsService from "./roomutils.service.js";
 
 class MatchMakingService {
     constructor(websocketService) {
@@ -70,44 +71,14 @@ class MatchMakingService {
 	}
 	
 
-	getAllAcceptedPlayerNicksRoom(room) {
-		const playerNicksRoom = [];
-		for (let player of room.players) {
-			// console.log("[getAllAcceptedPlayerNicksRoom] player: ", player.nick);
-			if (player.ai == false && player.accepted === "accepted")
-				{
-					playerNicksRoom.push(player.nick);
-				}
-		}
-		// console.log("[getAllAcceptedPlayerNicksRoom] playerNicksRoom: ", playerNicksRoom);
-		return (playerNicksRoom);
-	}
 
-
-
-	playersBusy(rooms, players) {
-		for (let room of rooms) {
-			const playerNicks = this.getAllAcceptedPlayerNicksRoom(room);
-			// console.log("[playersBusy] accepted playerNicks: ", playerNicks);
-			for (let player of players) {
-				//👉 if (player.id === aiPlayer)
-				//	continue ;
-				console.log("[playersBusy] checking player: ", player.nick);
-				if (playerNicks.includes(player.nick)) {
-					console.log("someone is busy: ", player.nick);
-					return true; // Player is busy
-				}
-			}
-		}
-		return false; // No players are busy
-	}
 
 	async matchMakingInit(connection, message) {
 		console.log("[matchMakingInit] start");
 		if (this.RoomService.rooms.length > 0)
 		{
 		/* 👉👉👉👉 woopsie playersBusy needs to be rearranged so it can access the player IDs that are added in createRoom*/
-			if (this.playersBusy(this.RoomService.rooms, message.players) === true) {
+			if (RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
 				this.WebsocketService.sendMessageToClient(connection, {
 					sender: "__server",
@@ -123,7 +94,7 @@ class MatchMakingService {
 			const newRoom = await this.RoomService.createRoom(connection, message);
 			/*👉 send invitations to players 
 				except connection (the one who invited) and AI opponents*/
-			await InvitationService.sendInvitation()
+			await InvitationService.sendInvitation(newRoom);
 
 
 

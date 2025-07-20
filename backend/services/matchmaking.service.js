@@ -2,12 +2,14 @@ import EmojiService from "./emoji.service.js";
 import WebsocketService from "./websocket.service.js";
 import UserService from "./user.service.js";
 import ProfileService from "./profile.service.js";
+import RoomService from "./room.service.js";
 
 class MatchMakingService {
     constructor(websocketService) {
 		this.rooms = [];
 		this.EmojiService = new EmojiService();
 		this.WebsocketService = websocketService;
+		this.RoomService = new RoomService(this.WebsocketService, this.EmojiService);
 
 		console.log("matchmaking constructor");
     }
@@ -33,85 +35,12 @@ class MatchMakingService {
 		}
 	 */
 
-	createUniqueId() {
-		let id;
-		let isUnique = true;
-		let count = 0;
-		while (1) {
-			id = this.EmojiService.generateEmojiId();
-			if (this.rooms.length === 0) {
-				break ;
-			}
-			for (let r of this.rooms) {
-				if (id === r.id) {
-					console.log("duplicate, renewing id");
-					isUnique = false ;
-					count++;
-					break ;
-				}
-			}
-			if (id && isUnique === true) {
-				break ;
-			}
-			if (count > 15) {
-				throw new Error ('[createUniqueId] no unique room ID can be created, aborting');
-			}
-		}
-		return (id);
-	}
-		
-	
-	async createRoom(connection, message) {
-		// 👉 insert needed info into new room object
-		const room = {
-			id: this.createUniqueId(),
-			gameMode: message.gameMode,
-			oppMode: message.oppMode,
-			players: message.players
-		};
 
-		for (let p of room.players) {
-			if (p.ai != true) {
-				const dbResult = await ProfileService.getIdByNick(p.nick);
-				p.id = dbResult.userId;
-				p.wsclient = await this.WebsocketService.getWsClientById(p.id);
-				if (p.id === connection.userId) {
-					p.accepted = "accepted";
-				}
-				else {
-					p.accepted = "pending";
-				}
-
-			}
-			else {
-				p.accepted = "accepted";
-			}
-		}
-		// 👉 add accepted status to all players
-		// 		👉accepted for OP, pending for players, accepted for AI opponent
-
-		this.rooms.push(room);
-		console.log("room created");
-		console.log(JSON.stringify(this.rooms, (key, value) => {
-			if (key === "wsclient") return undefined; // Exclude wsclient
-			return value;
-		}, 2));
-		return (room);
-	// 👉 use setTimeout function with a promise to 
-	// 	destroyRoom if fulfilled
-	}
 	
 	async sendInvitation() {
 		return ;
 	}
 
-	/* 
-	👉 async destroyRoom() {
-		check if all players have accepted
-		if not send message to all players informing them
-		then destroy
-		}
-	 */
 
 	
 	async matchMakingAcceptInvitation() {
@@ -172,8 +101,8 @@ class MatchMakingService {
 
 
 
-	playersBusy(players) {
-		for (let room of this.rooms) {
+	playersBusy(rooms, players) {
+		for (let room of rooms) {
 			const playerNicks = this.getAllAcceptedPlayerNicksRoom(room);
 			// console.log("[playersBusy] accepted playerNicks: ", playerNicks);
 			for (let player of players) {
@@ -191,10 +120,10 @@ class MatchMakingService {
 
 	async matchMakingInit(connection, message) {
 		console.log("[matchMakingInit] start");
-		if (this.rooms.length > 0)
+		if (this.RoomService.rooms.length > 0)
 		{
 		/* 👉👉👉👉 woopsie playersBusy needs to be rearranged so it can access the player IDs that are added in createRoom*/
-			if (this.playersBusy(message.players) === true) {
+			if (this.playersBusy(this.RoomService.rooms, message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
 				this.WebsocketService.sendMessageToClient(connection, {
 					type: "ERROR",
@@ -208,7 +137,7 @@ class MatchMakingService {
 		}
 
 		try {
-			const newRoom = await this.createRoom(connection, message);
+			const newRoom = await this.RoomService.createRoom(connection, message);
 			/*👉 send invitations to players 
 				except connection (the one who invited) and AI opponents*/
 			await this.sendInvitation()

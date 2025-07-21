@@ -42,6 +42,16 @@ export class MatchComponent extends Component<MatchComponentState> {
   private handleStartAiMatch(): void {
     try {
       console.log('Starting AI match...');
+
+      const ws = new WebSocket('ws://localhost:3000/hello-ws');
+
+      ws.onopen = () => {
+        ws.send('hellp');
+      };
+
+      ws.onmessage = (event) => {
+        console.log('reply', event.data);
+      }
       
       // Navigate to the game page
       const router = Router.getInstance();

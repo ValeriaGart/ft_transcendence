@@ -1,0 +1,10 @@
+# Ignore private keys (contain secrets)
+*.key
+*.pem
+
+# Allow certificates (public, safe to commit)
+!*.crt
+!*.cert
+
+# Keep this directory in git
+!.gitkeep

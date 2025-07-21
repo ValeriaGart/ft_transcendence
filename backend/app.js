@@ -18,6 +18,7 @@ const apm = apmInit.start({
 
 import { config } from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
 // Load environment variables FIRST, before other imports
 config({ path: path.resolve('../.env') });
@@ -36,7 +37,44 @@ import cookie from '@fastify/cookie';
 
 import ws from '@fastify/websocket';
 
-const app = fastify({ logger: true });
+// Simple SSL configuration
+function getSSLOptions() {
+  const sslEnabled = process.env.SSL_ENABLED === 'true';
+  
+  if (!sslEnabled) {
+    return null;
+  }
+  
+  const certPath = path.resolve('../ssl/server.crt');
+  const keyPath = path.resolve('../ssl/server.key');
+  
+  try {
+    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+      return {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+      };
+    } else {
+      console.log('⚠️  SSL enabled but certificates not found. Run: ./scripts/generate-ssl.sh');
+      return null;
+    }
+  } catch (error) {
+    console.log('❌ Failed to load SSL certificates:', error.message);
+    return null;
+  }
+}
+
+const sslOptions = getSSLOptions();
+const fastifyOptions = { logger: true };
+
+if (sslOptions) {
+  fastifyOptions.https = sslOptions;
+  console.log('🔒 SSL enabled');
+} else {
+  console.log('🌐 HTTP only');
+}
+
+const app = fastify(fastifyOptions);
 
 // register websocket
 await app.register(ws)
@@ -77,8 +115,19 @@ await app.register(websocketRoutes);
 async function bootstrap() {
   try {
     await initialize();
-    await app.listen({ port: 3000, host: '0.0.0.0' });
-    app.log.info('Server running on http://localhost:3000');
+    
+    const port = sslOptions ? (process.env.HTTPS_PORT || 3443) : (process.env.HTTP_PORT || 3000);
+    const protocol = sslOptions ? 'https' : 'http';
+    
+    await app.listen({ port, host: '0.0.0.0' });
+    
+    console.log(`🚀 Server running on ${protocol}://localhost:${port}`);
+    
+    if (sslOptions) {
+      console.log('🔐 HTTPS enabled with self-signed certificate');
+      console.log('⚠️  Browsers will show security warnings for development certificates');
+    }
+    
   } catch (err) {
     app.log.error(err);
     process.exit(1);

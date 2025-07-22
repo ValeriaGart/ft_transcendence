@@ -1,5 +1,9 @@
+import { resolve } from "path";
 import RoomUtilsService from "./roomutils.service.js";
-
+import { promise } from "bcrypt/promises.js";
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 class InvitationService {
 
 	static async createInvitationMessage(room) {
@@ -44,19 +48,33 @@ class InvitationService {
 		// }
 	}
 
-
-	//WIP
-/* 	static async allAccepted(room) {
-		allaccepted = false;
-		while (!allaccepted) {
-			for (let p of room.players) {
-				if (p.accepted === "pending") {
-					await new Promise(r => setTimeout(r, 1000));
-					break ;
-				}
+	static async allAccepted(room) {
+		for (let p of room.players) {
+			if (p.accepted === "pending") {
+				return (0) ;
 			}
 		}
-	} */
+		return (1);
+	}
+
+	//WIP
+	static async allAcceptedPromiseHandler(room, timeoutSec) {
+		let count = 0;
+		const promiseAllAccepted = new Promise (async (resolve, reject) => {
+			while (true) {
+				await sleep (1000);
+				count++;
+				console.log(count)
+				if (this.allAccepted(room) === 1) {
+					resolve("[InvitationService] Promise 'All Players Accepted' resolved.");
+				}
+				if (count >= timeoutSec + 1) {
+					reject("[InvitationService] Promise 'All Players Accepted' rejected after 31 seconds.")
+				}
+			}
+		})
+		return (promiseAllAccepted);
+	}
 
 }
 

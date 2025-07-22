@@ -14,7 +14,7 @@ config({ path: resolve(__dirname, '.env') });
 
 // SSL setup: load certs if SSL_ENABLED=true
 const sslEnabled = process.env.SSL_ENABLED === 'true';
-let sslConfig: any = null, httpsAgent;
+let sslConfig: object | null = null, httpsAgent: https.Agent | undefined;
 
 if (sslEnabled) {
 	try {

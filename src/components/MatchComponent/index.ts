@@ -80,9 +80,9 @@ export class MatchComponent extends Component<MatchComponentState> {
   /**
    * Clean up WebSocket event handlers
    */
-  private cleanupWebSocketHandlers(): void {
+  private async cleanupWebSocketHandlers(): Promise<void> {
     try {
-      const webSocketModule = require('../../lib/websocket');
+      const webSocketModule = await import('../../lib/websocket');
       if (webSocketModule.webSocketService) {
         this.webSocketHandlers.forEach(({ eventType, handler }) => {
           webSocketModule.webSocketService.off(eventType, handler);

@@ -1,9 +1,13 @@
-import { io, Socket } from 'socket.io-client';
 import { getApiBaseUrl } from '../config/api';
+import { ErrorManager } from "../components/Error";
 
 export interface WebSocketMessage {
-  type: string;
-  data: any;
+  type: number;
+  data?: any;
+  message?: string;
+  players?: any[];
+  gameMode?: string;
+  oppMode?: string;
 }
 
 export interface FriendRequest {
@@ -19,207 +23,149 @@ export interface UserSearchResult {
   nickname?: string;
 }
 
-class WebSocketService {
-  private socket: Socket | null = null;
-  private isConnected: boolean = false;
+export class WebSocketService {
+  private socket: WebSocket | null = null;
   private messageHandlers: Map<string, ((data: any) => void)[]> = new Map();
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
+  private reconnectDelay: number = 1000;
 
-  constructor() {
-    this.initializeSocket();
-  }
-
-  private initializeSocket(): void {
-    const wsUrl = getApiBaseUrl().replace('http', 'ws');
-    this.socket = io(wsUrl, {
-      transports: ['websocket'],
-      autoConnect: true,
-      withCredentials: true
-    });
-
-    this.socket.on('connect', () => {
-      console.log('WebSocket connected');
-      this.isConnected = true;
-    });
-
-    this.socket.on('disconnect', () => {
-      console.log('WebSocket disconnected');
-      this.isConnected = false;
-    });
-
-    this.socket.on('message', (message: WebSocketMessage) => {
-      console.log('WebSocket message received:', message);
-      this.handleMessage(message);
-    });
-
-    this.socket.on('error', (error) => {
-      console.error('WebSocket error:', error);
-    });
-  }
-
-  private handleMessage(message: WebSocketMessage): void {
-    const handlers = this.messageHandlers.get(message.type);
-    if (handlers) {
-      handlers.forEach(handler => handler(message.data));
+  public on(eventType: string, handler: (data: any) => void): void {
+    if (!this.messageHandlers.has(eventType)) {
+      this.messageHandlers.set(eventType, []);
     }
+    this.messageHandlers.get(eventType)!.push(handler);
   }
 
-  public on(event: string, handler: (data: any) => void): void {
-    if (!this.messageHandlers.has(event)) {
-      this.messageHandlers.set(event, []);
+  public off(eventType: string, handler?: (data: any) => void): void {
+    if (!this.messageHandlers.has(eventType)) {
+      return;
     }
-    this.messageHandlers.get(event)!.push(handler);
-  }
-
-  public off(event: string, handler: (data: any) => void): void {
-    const handlers = this.messageHandlers.get(event);
-    if (handlers) {
+    
+    if (handler) {
+      const handlers = this.messageHandlers.get(eventType)!;
       const index = handlers.indexOf(handler);
       if (index > -1) {
         handlers.splice(index, 1);
       }
-    }
-  }
-
-  public emit(event: string, data: any): void {
-    console.log('WebSocket emit called:', event, data);
-    console.log('Socket connected:', this.isConnected);
-    
-    if (this.socket && this.isConnected) {
-      console.log('Using WebSocket for:', event);
-      this.socket.emit(event, data);
     } else {
-      console.log('WebSocket not connected, falling back to HTTP requests for:', event);
-      this.handleHttpFallback(event, data);
+      this.messageHandlers.delete(eventType);
     }
   }
 
-  private async handleHttpFallback(event: string, data: any): Promise<void> {
-    console.log('HTTP fallback called for event:', event, 'with data:', data);
-    try {
-      switch (event) {
-        case 'add_friend':
-          console.log('Calling addFriendHttp with recipient_id:', data.recipient_id);
-          await this.addFriendHttp(data.recipient_id);
-          break;
-        case 'get_current_user':
-          console.log('Calling getCurrentUserHttp');
-          await this.getCurrentUserHttp();
-          break;
-        default:
-          console.error('Unknown WebSocket event:', event);
-      }
-    } catch (error) {
-      console.error('HTTP fallback error:', error);
+  public send(message: WebSocketMessage): void {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket is not connected. Message not sent:', message);
     }
   }
 
-  private async searchUserHttp(userId: number): Promise<void> {
-    try {
-      console.log('Searching for user with ID:', userId);
-      
-      // Get user by ID
-      const response = await fetch(`${getApiBaseUrl()}/users/${userId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      console.log('User response status:', response.status);
-      console.log('User response URL:', `${getApiBaseUrl()}/users/${userId}`);
-      
-      if (response.ok) {
-        const user = await response.json();
-        console.log('Found user:', user);
-        
-        this.handleMessage({ type: 'user_search_result', data: { success: true, user } });
-      } else {
-        const errorText = await response.text();
-        console.error('User endpoint error:', errorText);
-        console.error('Response status:', response.status);
-        this.handleMessage({ type: 'user_search_result', data: { success: false, error: 'User not found' } });
-      }
-    } catch (error) {
-      console.error('Search user HTTP error:', error);
-      this.handleMessage({ type: 'user_search_result', data: { success: false, error: 'Network error' } });
-    }
-  }
-
-  private async addFriendHttp(recipientId: number): Promise<void> {
-    try {
-      console.log('Sending friend request to:', `${getApiBaseUrl()}/friend/me`);
-      console.log('Request body:', { friend_id: recipientId });
-      
-      const response = await fetch(`${getApiBaseUrl()}/friend/me`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ friend_id: recipientId })
-      });
-
-      console.log('Friend request response status:', response.status);
-      
-      if (response.ok) {
-        console.log('Friend request successful');
-        this.handleMessage({ type: 'friend_request_result', data: { success: true } });
-      } else {
-        const errorText = await response.text();
-        console.error('Friend request error:', errorText);
-        this.handleMessage({ type: 'friend_request_result', data: { success: false, error: errorText } });
-      }
-    } catch (error) {
-      console.error('Friend request network error:', error);
-      this.handleMessage({ type: 'friend_request_result', data: { success: false, error: 'Network error' } });
-    }
-  }
-
-  private async getCurrentUserHttp(): Promise<void> {
-    try {
-      const response = await fetch(`${getApiBaseUrl()}/auth/me`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        this.handleMessage({ type: 'current_user_result', data: { success: true, user: userData.user } });
-      } else {
-        this.handleMessage({ type: 'current_user_result', data: { success: false, error: 'Failed to get current user' } });
-      }
-    } catch (error) {
-      this.handleMessage({ type: 'current_user_result', data: { success: false, error: 'Network error' } });
-    }
-  }
-
-  // Note: User search is disabled since we can't access other users' data
-  // public searchUser(userId: number): void {
-  //   this.emit('search_user', { userId });
-  // }
-
-  public addFriend(recipientId: number): void {
-    this.emit('add_friend', { recipient_id: recipientId });
-  }
-
-  public getCurrentUser(): void {
-    this.emit('get_current_user', {});
+  public isConnected(): boolean {
+    return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
   }
 
   public disconnect(): void {
     if (this.socket) {
-      this.socket.disconnect();
+      this.socket.close(1000, 'Manual disconnect');
+      this.socket = null;
     }
   }
 
-  public isSocketConnected(): boolean {
-    return this.isConnected;
+  public initializeSocket(): void {
+    console.log('WebSocketService.initializeSocket() called');
+    console.log('Current socket state:', this.socket ? this.socket.readyState : 'null');
+    
+    // Prevent multiple initializations
+    if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
+      console.log('WebSocket already connected or connecting, skipping initialization');
+      return;
+    }
+    
+    // Get the auth token from localStorage
+    const token = localStorage.getItem('auth_token');
+    let wsUrl = getApiBaseUrl().replace('http', 'ws') + '/hello-ws';
+    
+    // Add token to URL if available
+    if (token) {
+      wsUrl += `?token=${encodeURIComponent(token)}`;
+    }
+    
+    console.log('Attempting to connect to WebSocket:', wsUrl);
+    
+    this.socket = new WebSocket(wsUrl);
+
+    this.socket.onopen = () => {
+      console.log('WebSocket connected successfully');
+      this.reconnectAttempts = 0;
+    };
+
+    this.socket.onclose = (event) => {
+      console.log('WebSocket disconnected:', event.code, event.reason);
+      console.log('WebSocket close event details:', {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+        reconnectAttempts: this.reconnectAttempts
+      });
+      
+      // Attempt to reconnect if not a normal closure
+      if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnectAttempts++;
+        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+        setTimeout(() => this.initializeSocket(), this.reconnectDelay * this.reconnectAttempts);
+      } else if (event.code !== 1000 && this.reconnectAttempts >= this.maxReconnectAttempts) {
+        // Show error when max reconnection attempts are reached
+        this.showWebSocketError('Connection lost and unable to reconnect. Please refresh the page to try again.');
+      }
+    };
+
+    this.socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        console.log('WebSocket message received:', message);
+        this.handleMessage(message);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    this.socket.onerror = (error) => {
+      console.error('WebSocket connection error:', error);
+      console.log('WebSocket URL was:', wsUrl);
+      this.showWebSocketError('Failed to connect to the server. Please check your connection and try again.');
+    };
+  }
+
+  private handleMessage(message: any): void {
+    // Handle different message formats from the backend
+    if (message.sender && message.message) {
+      // Server broadcast message format
+      const handlers = this.messageHandlers.get('server_message');
+      if (handlers) {
+        handlers.forEach(handler => handler({ sender: message.sender, message: message.message }));
+      }
+    } else if (message.onlineFriends) {
+      // Online friends update format
+      const handlers = this.messageHandlers.get('online_friends');
+      if (handlers) {
+        handlers.forEach(handler => handler(message.onlineFriends));
+      }
+    } else if (message.type !== undefined) {
+      // Numeric type message format
+      const handlers = this.messageHandlers.get(`type_${message.type}`);
+      if (handlers) {
+        handlers.forEach(handler => handler(message));
+      }
+    }
+  }
+
+  private showWebSocketError(message: string): void {
+    // Find a suitable parent element to mount the error component
+    const parentElement = document.body;
+    ErrorManager.showError(message, parentElement);
   }
 }
 
 // Create a singleton instance
-export const webSocketService = new WebSocketService(); 
+export const webSocketService = new WebSocketService();

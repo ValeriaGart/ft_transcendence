@@ -1,4 +1,5 @@
 import { getApiUrl, API_CONFIG } from '../config/api';
+import { webSocketService } from './websocket';
 
 /**
  * Authentication service for managing user tokens and login state
@@ -27,8 +28,13 @@ class AuthService {
   private constructor() {
     // Initialize with stored data immediately, then verify with backend
     this.loadFromStorageSync();
-    // Verify auth asynchronously
-    this.verifyStoredAuth();
+    // Verify auth asynchronously and initialize WebSocket after verification
+    this.verifyStoredAuth().then(() => {
+      if (this.state.isAuthenticated && this.state.token) {
+        console.log('AuthService: Initializing WebSocket after token verification');
+        webSocketService.initializeSocket();
+      }
+    });
   }
 
   public static getInstance(): AuthService {
@@ -207,6 +213,11 @@ class AuthService {
 
         this.saveToStorage();
         this.notifyListeners();
+        
+        // Initialize WebSocket connection after successful login
+        console.log('AuthService: Initializing WebSocket from login method');
+        webSocketService.initializeSocket();
+        
         console.log('AuthService: Login complete, state updated');
         return { success: true };
       } else {
@@ -287,6 +298,11 @@ class AuthService {
 
         this.saveToStorage();
         this.notifyListeners();
+        
+        // Initialize WebSocket connection after successful login
+        console.log('AuthService: Initializing WebSocket from googleSignin method');
+        webSocketService.initializeSocket();
+        
         console.log('AuthService: Google signin complete, state updated');
         return { success: true };
       } else {
@@ -326,6 +342,9 @@ class AuthService {
       console.error('AuthService: Logout error:', error);
     }
 
+    // Disconnect WebSocket before clearing auth
+    webSocketService.disconnect();
+    
     // Always clear local auth state regardless of backend response
     this.clearAuth();
     this.notifyListeners();

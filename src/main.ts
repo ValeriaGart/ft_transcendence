@@ -86,7 +86,7 @@ if (app) {
 			{
 				path: "/settings",
 				component: SettingsPage,
-			},
+			}
 		]
 	})
 

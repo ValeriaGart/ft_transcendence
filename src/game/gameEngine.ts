@@ -21,6 +21,7 @@ export class GameEngine {
 	public _pongGame: PongGame;
 	private _inputHandler: InputHandler;
 	private _tournament: Tournament | undefined = undefined;
+	private _gameLoopInterval: NodeJS.Timeout | null = null;
 
 	constructor(canvasID: string) {
 		this._canvas = document.getElementById(canvasID) as HTMLCanvasElement;
@@ -108,9 +109,18 @@ export class GameEngine {
 	public startGameLoop(): void {
 		this._inputHandler.setupEventListeners();
 		console.log("game loop started")
-		const setIntervalId = setInterval(() => { this.update(); }, 16);
+		this._gameLoopInterval = setInterval(() => { this.update(); }, 16);
 		//roughly 60fps
 		
+	}
+
+	public stopGameLoop(): void {
+		if (this._gameLoopInterval !== null) {
+			clearInterval(this._gameLoopInterval);
+			this._gameLoopInterval = null;
+			console.log("game loop stopped");
+		}
+		this._inputHandler.cleanupEventListeners();
 	}
 
 	private update(): void {

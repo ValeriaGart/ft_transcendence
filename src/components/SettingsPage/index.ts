@@ -706,7 +706,8 @@ export class SettingsPage extends Component<SettingsPageState> {
     
   protected onUnmount(): void {
     console.log('SettingsPage onUnmount called');
-    // Cleanup any subscriptions or timers here
+    // Remove any error components
+    ErrorManager.removeError();
   }
 
   render() {}

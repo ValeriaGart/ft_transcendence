@@ -19,9 +19,14 @@ const apm = apmInit.start({
 import { config } from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables FIRST, before other imports
-config({ path: '/workspaces/transcendence/.env' });
+config({ path: path.resolve(__dirname, '../.env') });
 
 import fastify from 'fastify';
 import { initialize } from './config/database.js';
@@ -45,8 +50,8 @@ function getSSLOptions() {
     return null;
   }
   
-  const certPath = '/workspaces/transcendence/ssl/server.crt';
-  const keyPath = '/workspaces/transcendence/ssl/server.key';
+  const certPath = path.resolve(__dirname, '../ssl/server.crt');
+  const keyPath = path.resolve(__dirname, '../ssl/server.key');
   
   try {
     // Read files directly - if they don't exist, fs.readFileSync will throw

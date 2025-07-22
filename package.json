@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:backend": "node backend/app.js",
-    "dev:both": "concurrently \"npm run dev\" \"npm run dev:backend\"",
+    "dev:both": "concurrently --kill-others-on-fail \"npm run dev\" \"npm run dev:backend\"",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

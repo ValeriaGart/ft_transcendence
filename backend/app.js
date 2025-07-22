@@ -21,7 +21,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Load environment variables FIRST, before other imports
-config({ path: path.resolve('../.env') });
+config({ path: '/workspaces/transcendence/.env' });
 
 import fastify from 'fastify';
 import { initialize } from './config/database.js';
@@ -45,8 +45,8 @@ function getSSLOptions() {
     return null;
   }
   
-  const certPath = path.resolve('../ssl/server.crt');
-  const keyPath = path.resolve('../ssl/server.key');
+  const certPath = '/workspaces/transcendence/ssl/server.crt';
+  const keyPath = '/workspaces/transcendence/ssl/server.key';
   
   try {
     // Read files directly - if they don't exist, fs.readFileSync will throw
@@ -56,11 +56,10 @@ function getSSLOptions() {
     return { key, cert };
   } catch (error) {
     if (error.code === 'ENOENT') {
-      console.log('❌ SSL enabled but certificates not found!');
-      console.log('   Run: ../scripts/generate-ssl.sh');
+      console.log('\n❌ SSL certificates not found! Run: ./scripts/generate-ssl.sh\n');
       console.log('   Or set SSL_ENABLED=false in .env for HTTP mode');
     } else {
-      console.log('❌ Failed to load SSL certificates:', error.message);
+      console.log('\n❌ SSL error:', error.message);
     }
     process.exit(1);
   }

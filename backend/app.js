@@ -49,18 +49,20 @@ function getSSLOptions() {
   const keyPath = path.resolve('../ssl/server.key');
   
   try {
-    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-      return {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath)
-      };
-    } else {
-      console.log('⚠️  SSL enabled but certificates not found. Run: ../scripts/generate-ssl.sh');
-      return null;
-    }
+    // Read files directly - if they don't exist, fs.readFileSync will throw
+    const key = fs.readFileSync(keyPath);
+    const cert = fs.readFileSync(certPath);
+    
+    return { key, cert };
   } catch (error) {
-    console.log('❌ Failed to load SSL certificates:', error.message);
-    return null;
+    if (error.code === 'ENOENT') {
+      console.log('❌ SSL enabled but certificates not found!');
+      console.log('   Run: ../scripts/generate-ssl.sh');
+      console.log('   Or set SSL_ENABLED=false in .env for HTTP mode');
+    } else {
+      console.log('❌ Failed to load SSL certificates:', error.message);
+    }
+    process.exit(1);
   }
 }
 

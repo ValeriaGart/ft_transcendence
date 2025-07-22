@@ -44,6 +44,20 @@ class InvitationService {
 		// }
 	}
 
+
+	//WIP
+/* 	static async allAccepted(room) {
+		allaccepted = false;
+		while (!allaccepted) {
+			for (let p of room.players) {
+				if (p.accepted === "pending") {
+					await new Promise(r => setTimeout(r, 1000));
+					break ;
+				}
+			}
+		}
+	} */
+
 }
 
 export default InvitationService;

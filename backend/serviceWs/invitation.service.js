@@ -5,6 +5,12 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 class InvitationService {
+	constructor(websocketService) {
+		this.websocketService = websocketService;
+		this.matchMakingService = websocketService.matchMakingService;
+		this.roomService = this.matchMakingService.RoomService;
+		console.log("[InvitationService] constructor");
+	}
 
 	static async createInvitationMessage(room) {
 		const sanitizedPlayers = room.players.map(player => {
@@ -41,11 +47,24 @@ class InvitationService {
 
 
 	
-	static async matchMakingAcceptInvitation() {
-		//👉 set status to accepted for player
-		//👉 check if all accepted
-		// 👉	if yes, then startMatch()
-		// }
+	async matchMakingAcceptInvitation(connection, message) {
+		console.log("[InvitationService] accept invitation");
+		if (this.roomService.rooms) {
+			console.log("roooooms");
+		}
+		else {
+			console.log("no rooms :(");
+		}
+
+		// 👉 check if room exists by using message.roomId
+			// if not, send err message to connection
+			// if yes, save room from rooms[] for further use
+
+
+		// 👉 check if in room.players the connection.userId is one of the players
+			// if not, send err message to connection
+			// if yes
+				// 👉 set status to accepted for player
 	}
 
 	static async allAccepted(room) {

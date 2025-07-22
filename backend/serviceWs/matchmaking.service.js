@@ -11,11 +11,11 @@ function sleep(ms) {
 
 class MatchMakingService {
     constructor(websocketService) {
-		this.rooms = [];
+		// this.rooms = [];
 		this.EmojiService = new EmojiService();
 		this.WebsocketService = websocketService;
 		this.RoomService = new RoomService(this.WebsocketService, this.EmojiService);
-
+		
 		console.log("[MatchMakingService] constructor");
     }
 	/* just information what room should contain

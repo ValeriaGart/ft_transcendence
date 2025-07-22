@@ -17,7 +17,15 @@ async function authPlugin(fastify, options) {
     try {
       // Check if token is in cookie, if so, add it to authorization header
       if (!request.headers.authorization && request.cookies && request.cookies['auth-token']) {
+        console.log("[auth.js] auth-token");
         request.headers.authorization = `Bearer ${request.cookies['auth-token']}`;
+      }
+      else if (!request.headers.authorization && request.cookies && request.cookies['authToken']) {
+        console.log("[auth.js] authToken");
+        request.headers.authorization = `Bearer ${request.cookies['authToken']}`;
+      }
+      else {
+        console.log("[auth.js] NO COOKIE");
       }
       
       await request.jwtVerify();

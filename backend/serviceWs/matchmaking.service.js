@@ -3,6 +3,10 @@ import RoomService from "./room.service.js";
 import InvitationService from "./invitation.service.js";
 import RoomUtilsService from "./roomutils.service.js";
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 class MatchMakingService {
     constructor(websocketService) {
 		this.rooms = [];
@@ -96,6 +100,20 @@ class MatchMakingService {
 				except connection (the one who invited) and AI opponents*/
 			await InvitationService.sendInvitation(this.WebsocketService, newRoom);
 
+//experiment
+/* 				const promiseAllAccepted = new Promise(async (resolve, reject) => {
+					await sleep(5000); // 5 seconds
+					resolve("Promise 1 resolved after 5 seconds");
+				});
+				const promiseAllAccepted2 = new Promise(async (resolve, reject) => {
+					await sleep(7000); // 7 seconds
+					resolve("Promise 2 resolved after 7 seconds");
+				});
+				
+				Promise.race([promiseAllAccepted, promiseAllAccepted2]).then((result) => {
+					console.log(result);
+					}); */
+					
 
 			/* 👉 send message to all players informing them that the match will start */
 			this.startMatch(newRoom);
@@ -109,11 +127,6 @@ class MatchMakingService {
 
 
 
-		/* 
-		Promise.race([matchInvitationTimeout, matchInvitationAccepted]).then((result) => {
-			console.log(result);
-			});
-			*/
 
 	}
 	/* <><><><><><><><><><><><><><><><><><><><><><><><> */

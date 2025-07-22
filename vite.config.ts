@@ -3,6 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { htmlTemplatePlugin } from "./src/lib/blitz-ts/plugins/html-template";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
+import https from "https";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,7 +20,11 @@ export default defineConfig({
 			'/api': {
 				target: 'https://localhost:3443',
 				changeOrigin: true,
-				secure: false, // Accept self-signed certificates
+				// Use custom HTTPS agent with self-signed certificate validation
+				agent: new https.Agent({
+					ca: fs.existsSync('./ssl/server.crt') ? fs.readFileSync('./ssl/server.crt') : undefined,
+					checkServerIdentity: () => undefined // Skip hostname validation for localhost
+				}),
 				rewrite: (path) => path.replace(/^\/api/, '')
 			}
 		}

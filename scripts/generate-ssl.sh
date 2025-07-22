@@ -31,7 +31,7 @@ fi
 echo "🔐 Generating development SSL certificates..."
 
 # Generate self-signed certificate
-openssl req -x509 -newkey rsa:2048 -keyout "$SSL_DIR/server.key" -out "$SSL_DIR/server.crt" \
+openssl req -x509 -newkey rsa:4096 -keyout "$SSL_DIR/server.key" -out "$SSL_DIR/server.crt" \
     -days 365 -nodes \
     -subj "/C=US/ST=Development/L=Local/O=Transcendence/OU=Dev/CN=localhost" 2>/dev/null || {
     echo "❌ Error: Certificate generation failed"

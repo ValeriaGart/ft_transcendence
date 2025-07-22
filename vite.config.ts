@@ -19,6 +19,7 @@ let sslConfig: object | null = null, httpsAgent: https.Agent | undefined;
 if (sslEnabled) {
 	try {
 		const certContent = fs.readFileSync('./ssl/server.crt');
+		// Validate that the server key file exists and is readable
 		fs.readFileSync('./ssl/server.key');
 		
 		sslConfig = { key: './ssl/server.key', cert: './ssl/server.crt' };

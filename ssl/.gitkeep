@@ -1,3 +1,0 @@
-# This directory contains SSL certificates for development
-# Private keys are ignored by .gitignore for security
-# Run ../scripts/generate-ssl.sh to create certificates

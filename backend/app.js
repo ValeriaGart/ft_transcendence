@@ -55,7 +55,7 @@ function getSSLOptions() {
         cert: fs.readFileSync(certPath)
       };
     } else {
-      console.log('⚠️  SSL enabled but certificates not found. Run: ./scripts/generate-ssl.sh');
+      console.log('⚠️  SSL enabled but certificates not found. Run: ../scripts/generate-ssl.sh');
       return null;
     }
   } catch (error) {

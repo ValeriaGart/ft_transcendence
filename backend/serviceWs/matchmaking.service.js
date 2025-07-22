@@ -3,6 +3,8 @@ import RoomService from "./room.service.js";
 import InvitationService from "./invitation.service.js";
 import RoomUtilsService from "./roomutils.service.js";
 
+const timeoutSec = 30;
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -101,18 +103,18 @@ class MatchMakingService {
 			await InvitationService.sendInvitation(this.WebsocketService, newRoom);
 
 //experiment
-/* 				const promiseAllAccepted = new Promise(async (resolve, reject) => {
+				const promiseAllAccepted = new Promise(async (resolve, reject) => {
 					await sleep(5000); // 5 seconds
 					resolve("Promise 1 resolved after 5 seconds");
 				});
-				const promiseAllAccepted2 = new Promise(async (resolve, reject) => {
-					await sleep(7000); // 7 seconds
-					resolve("Promise 2 resolved after 7 seconds");
+				const timeoutPromise = new Promise(async (resolve, reject) => {
+					await sleep(timeoutSec * 1000); // 7 seconds
+					resolve("Promise 2 resolved after 30 seconds");
 				});
 				
-				Promise.race([promiseAllAccepted, promiseAllAccepted2]).then((result) => {
+				Promise.race([InvitationService.allAcceptedPromiseHandler(newRoom, timeoutSec), timeoutPromise]).then((result) => {
 					console.log(result);
-					}); */
+					});
 					
 
 			/* 👉 send message to all players informing them that the match will start */

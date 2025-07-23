@@ -5,6 +5,14 @@ import { WebSocketService } from "./../../lib/webSocket";
 export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
 
+    private roomID;
+    private p1Nick;
+    private p2Nick;
+    private p1AI;
+    private p2AI;
+    private gameMode;
+    private oppMode;
+
     constructor() {
         super();
     }
@@ -24,12 +32,12 @@ export class GamePage extends Component {
         // ws.onmessage = (event) => {
         //     console.log('reply', event.data);
         // }
-
         this.waitForMessage(ws.ws)
             .then((message) => {
-                console.log("message: ", message);
+                console.log("message: ", message.data);
+                this.parseMessage(message);
             });
-        
+
         const element = this.getElement();
         if (element) {
             element.innerHTML = '';
@@ -44,9 +52,18 @@ export class GamePage extends Component {
     private waitForMessage(ws: WebSocket): Promise<MessageEvent> {
         return new Promise((resolve) => {
             ws.onmessage = (event) => {
-                resolve(event.data);
+                resolve(event);
             }
         });
+    }
+
+    private parseMessage(message: MessageEvent) {
+        var msg
+        msg = JSON.parse(message.data);
+
+        this.roomID = msg.roomId;
+        console.log('id: ', this.roomID);
+
     }
 
     private initializeGame(): void {

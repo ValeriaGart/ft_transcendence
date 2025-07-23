@@ -16,16 +16,16 @@ export class GamePage extends Component {
         canvas.style.maxWidth = '1600px';
         canvas.style.maxHeight = '900px';
 
-        const ws = new WebSocket('ws://localhost:3000/hello-ws');
+        // const ws = new WebSocket('ws://localhost:3000/hello-ws');
 
         // ws.onmessage = (event) => {
         //     console.log('reply', event.data);
         // }
 
-        this.waitForMessage(ws)
-            .then((message) => {
-                console.log("message: ", message);
-            });
+        // this.waitForMessage(ws)
+        //     .then((message) => {
+        //         console.log("message: ", message);
+        //     });
         
         const element = this.getElement();
         if (element) {

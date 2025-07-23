@@ -1,6 +1,6 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts";
-import { WebSocketService } from "./../../lib/webSocket.ts";
+import { WebSocketService } from "./../../lib/webSocket";
 
 interface MatchComponentState {
   error: string | null;

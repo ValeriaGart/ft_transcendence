@@ -1,6 +1,6 @@
 export class WebSocketService {
   private static instance: WebSocketService;
-  private ws!: WebSocket;
+  public ws!: WebSocket;
 
   private constructor() {}
 

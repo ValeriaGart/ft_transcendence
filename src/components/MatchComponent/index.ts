@@ -55,7 +55,7 @@ export class MatchComponent extends Component<MatchComponentState> {
       const msg = {
         "type": 3,
         "players": [
-          {"nick": "1ioicjqzo", "ai": false},
+          {"nick": "gio", "ai": false},
           {"nick": "CPU", "ai": true},
         ],
         "gameMode": "bestof",

@@ -1,5 +1,6 @@
 import { Component } from "@blitz-ts";
 import { GameEngine } from "../../game/gameEngine";
+import { WebSocketService } from "./../../lib/webSocket";
 
 export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
@@ -17,15 +18,17 @@ export class GamePage extends Component {
         canvas.style.maxHeight = '900px';
 
         // const ws = new WebSocket('ws://localhost:3000/hello-ws');
+        const ws = WebSocketService.getInstance();
+        ws.connect('ws://localhost:3000/hello-ws')
 
         // ws.onmessage = (event) => {
         //     console.log('reply', event.data);
         // }
 
-        // this.waitForMessage(ws)
-        //     .then((message) => {
-        //         console.log("message: ", message);
-        //     });
+        this.waitForMessage(ws.ws)
+            .then((message) => {
+                console.log("message: ", message);
+            });
         
         const element = this.getElement();
         if (element) {

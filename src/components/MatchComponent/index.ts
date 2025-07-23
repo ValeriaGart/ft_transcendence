@@ -1,5 +1,6 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts";
+import { WebSocketService } from "./../../lib/webSocket.ts";
 
 interface MatchComponentState {
   error: string | null;
@@ -43,15 +44,31 @@ export class MatchComponent extends Component<MatchComponentState> {
     try {
       console.log('Starting AI match...');
 
-      const ws = new WebSocket('ws://localhost:3000/hello-ws');
+      const ws = WebSocketService.getInstance();
+      ws.connect('ws://localhost:3000/hello-ws');
 
-      ws.onopen = () => {
-        ws.send('hellp');
-      };
+      // const ws = new WebSocket('ws://localhost:3000/hello-ws');
 
-      ws.onmessage = (event) => {
-        console.log('reply', event.data);
-      }
+
+      // ws.onopen = () => {
+      //   // const name = g
+      const msg = {
+        "type": 3,
+        "players": [
+          {"nick": "1ioicjqzo", "ai": false},
+          {"nick": "CPU", "ai": true},
+        ],
+        "gameMode": "bestof",
+        "oppMode": "single"
+        };
+
+      ws.sendMessage(JSON.stringify(msg));
+      //   ws.send(JSON.stringify(msg));
+      // };
+
+      // ws.onmessage = (event) => {
+      //   console.log('reply', event.data);
+      // }
       
       // Navigate to the game page
       const router = Router.getInstance();

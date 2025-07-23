@@ -15,6 +15,17 @@ export class GamePage extends Component {
         canvas.style.height = '100%';
         canvas.style.maxWidth = '1600px';
         canvas.style.maxHeight = '900px';
+
+        const ws = new WebSocket('ws://localhost:3000/hello-ws');
+
+        // ws.onmessage = (event) => {
+        //     console.log('reply', event.data);
+        // }
+
+        this.waitForMessage(ws)
+            .then((message) => {
+                console.log("message: ", message);
+            });
         
         const element = this.getElement();
         if (element) {
@@ -25,6 +36,14 @@ export class GamePage extends Component {
                 this.initializeGame();
             }, 0);
         }
+    }
+
+    private waitForMessage(ws: WebSocket): Promise<MessageEvent> {
+        return new Promise((resolve) => {
+            ws.onmessage = (event) => {
+                resolve(event.data);
+            }
+        });
     }
 
     private initializeGame(): void {

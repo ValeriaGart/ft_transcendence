@@ -154,6 +154,17 @@ class WebsocketService {
             }
         }
     }
+
+
+	createErrorMessage(message) {
+		const msg = {
+			type: "ERROR",
+			sender: "__server",
+			message: `${message}`
+		};
+		return msg;
+	}
+
 }
 
 export default WebsocketService;

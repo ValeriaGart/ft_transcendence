@@ -112,9 +112,16 @@ class MatchMakingService {
 					resolve("Promise 2 resolved after 30 seconds");
 				});
 				
-				Promise.race([await InvitationService.allAcceptedPromiseHandler(newRoom, timeoutSec), timeoutPromise]).then((result) => {
-					console.log(result);
+				try {
+
+					Promise.race([await InvitationService.allAcceptedPromiseHandler(newRoom, timeoutSec), timeoutPromise]).then((result) => {
+						console.log("promise race ended");
+						console.log(result);
 					});
+				} catch (error) {
+					console.log("[MatchMakingService] ", error.message);
+					return ;
+				}
 					
 
 			/* 👉 send message to all players informing them that the match will start */

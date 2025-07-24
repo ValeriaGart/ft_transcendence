@@ -71,13 +71,16 @@ class InvitationService {
 		}
 
 		RoomUtilsService.setPlayerAcceptance(room, connection.userId, message.acceptance);
+		console.log(`userId ${connection.userId} replied this to invitation: ${message.acceptance}.`);
 	}
 
 	static async allAccepted(room) {
 		for (let p of room.players) {
+			// console.log(`[allAccepted] ${p.id}_${p.accepted}`);
 			if (p.accepted === "pending") {
 				return (0) ;
 			}
+			// if (p.acceptance)
 		}
 		return (1);
 	}
@@ -90,12 +93,14 @@ class InvitationService {
 				await sleep (1000);
 				count++;
 				// console.log(count) // 👉👉👉👉👉👉👉👉👉👉👉👉👉 dont forget
-				if (this.allAccepted(room) === 1) {
+				let ret = await this.allAccepted(room);
+				if (ret === 1) {
 					resolve("[InvitationService] Promise 'All Players Accepted' resolved.");
 				}
 				if (count >= timeoutSec + 1) {
 					reject("[InvitationService] Promise 'All Players Accepted' rejected after 31 seconds.")
 				}
+
 			}
 		})
 		return (promiseAllAccepted);

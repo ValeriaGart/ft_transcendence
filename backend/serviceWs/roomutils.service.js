@@ -41,6 +41,16 @@ class RoomUtilsService {
 		}
 		return false; // No players are busy
 	}
+
+
+	static async roomExists(rooms, roomId) {
+		for (let r of rooms) {
+			if (r.id == roomId) {
+				return (true);
+			}
+		}
+		return (false);
+	}
 }
 
 export default RoomUtilsService;

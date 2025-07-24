@@ -70,7 +70,7 @@ class RoomUtilsService {
 
 		for (let p of room.players) {
 			if (p.wsclient.userId === playerId) {
-				if (acceptance == "accept") {
+				if (acceptance == "accept" || acceptance == "accepted" || acceptance == "accepts") {
 					p.accepted = "accepted";
 				}
 				else {

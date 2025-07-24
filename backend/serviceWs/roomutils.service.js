@@ -46,11 +46,42 @@ class RoomUtilsService {
 	static async roomExists(rooms, roomId) {
 		for (let r of rooms) {
 			if (r.id == roomId) {
-				return (true);
+				return (r);
 			}
 		}
-		return (false);
+		return (null);
 	}
+
+	static async isPlayerInvited(room, connection) {
+		let areUEvenInvitedBro = false;
+		for (let p of room.players) {
+			if (p.ai == true) {
+				continue ;
+			}
+			if (p.wsclient.userId == connection.userId) {
+				areUEvenInvitedBro = true;
+				break;
+			}
+		}
+		return (areUEvenInvitedBro);
+	}
+
+	static async setPlayerAcceptance(room, playerId, acceptance) {
+
+		for (let p of room.players) {
+			if (p.wsclient.userId === playerId) {
+				if (acceptance == "accept") {
+					p.acceptance = "accepted";
+				}
+				else {
+					p.acceptance = "declined";
+				}
+			}
+		}
+	}
+
+
+
 }
 
 export default RoomUtilsService;

@@ -2,7 +2,7 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
-import { webSocketService } from "../../lib/websocket";
+// import { webSocketService } from "../../lib/websocket";
 
 interface Friendship {
   id: number;
@@ -54,7 +54,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     
     this.setupStartAiMatchButton();
     this.setupToggleButtons();
-    this.setupWebSocketHandlers();
+    // this.setupWebSocketHandlers();
     this.fetchFriendships();
     this.updatePageVisibility();
   }
@@ -80,25 +80,25 @@ export class MatchComponent extends Component<MatchComponentState> {
   /**
    * Setup WebSocket event handlers
    */
-  private setupWebSocketHandlers(): void {
-    // Handle friend request results
-    webSocketService.on('friend_request_result', (data: { success: boolean; error?: string }) => {
-      if (data.success) {
-        this.handleFriendRequestSuccess();
-      } else {
-        this.showError(data.error || 'Failed to add friend');
-      }
-    });
+  // private setupWebSocketHandlers(): void {
+  //   // Handle friend request results
+  //   webSocketService.on('friend_request_result', (data: { success: boolean; error?: string }) => {
+  //     if (data.success) {
+  //       this.handleFriendRequestSuccess();
+  //     } else {
+  //       this.showError(data.error || 'Failed to add friend');
+  //     }
+  //   });
 
     // Handle current user info
-    webSocketService.on('current_user_result', (data: { success: boolean; user?: any; error?: string }) => {
-      if (data.success && data.user) {
-        console.log('hello My user ID:', data.user.id);
-      } else {
-        console.log('hello Could not fetch current user ID');
-      }
-    });
-  }
+  //   webSocketService.on('current_user_result', (data: { success: boolean; user?: any; error?: string }) => {
+  //     if (data.success && data.user) {
+  //       console.log('hello My user ID:', data.user.id);
+  //     } else {
+  //       console.log('hello Could not fetch current user ID');
+  //     }
+  //   });
+  // }
 
   /**
    * Setup toggle buttons for switching between friends list and add friend form
@@ -234,16 +234,16 @@ export class MatchComponent extends Component<MatchComponentState> {
     }
 
     console.log('Adding friend with user ID:', userId);
-    console.log('WebSocket service available:', !!webSocketService);
-    console.log('WebSocket service methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(webSocketService)));
+    // console.log('WebSocket service available:', !!webSocketService);
+    // console.log('WebSocket service methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(webSocketService)));
 
     // Get current user info via WebSocket
     console.log('Calling getCurrentUser...');
-    webSocketService.getCurrentUser();
+    // webSocketService.getCurrentUser();
 
     // Send friend request directly (skip user search since we can't access other users)
     console.log('Calling addFriend...');
-    webSocketService.addFriend(userId);
+    // webSocketService.addFriend(userId);
   }
 
 

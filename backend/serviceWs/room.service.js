@@ -87,13 +87,14 @@ class RoomService {
 	// 	destroyRoom if fulfilled
 	}
 
-		/* 
-	👉 async destroyRoom() {
-		check if all players have accepted
-		if not send message to all players informing them
-		then destroy
+		
+	async destroyRoom(todelete) {
+		// loop through room in rooms[]
+		// when todelete found
+
+		//👉  destroy
 		}
-	 */
+	
 
 
 }

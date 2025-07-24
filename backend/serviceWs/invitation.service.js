@@ -1,6 +1,7 @@
 import { resolve } from "path";
 import RoomUtilsService from "./roomutils.service.js";
 import { promise } from "bcrypt/promises.js";
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -49,13 +50,15 @@ class InvitationService {
 	
 	async matchMakingAcceptInvitation(connection, message) {
 		console.log("[InvitationService] accept invitation");
-		if (this.roomService.rooms) {
-			console.log("roooooms");
+		if (await RoomUtilsService.roomExists(this.roomService.rooms, message.roomId) == false) {
+			console.log("[InvitationService] room doesn't exist");
+			this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to doesn't exist.`));
+			return ;
 		}
 		else {
-			console.log("no rooms :(");
-		}
+			console.log("[InvitationService] room exists");
 
+		}
 		// 👉 check if room exists by using message.roomId
 			// if not, send err message to connection
 			// if yes, save room from rooms[] for further use

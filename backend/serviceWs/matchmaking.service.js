@@ -112,7 +112,7 @@ class MatchMakingService {
 					resolve("Promise 2 resolved after 30 seconds");
 				});
 				
-				Promise.race([InvitationService.allAcceptedPromiseHandler(newRoom, timeoutSec), timeoutPromise]).then((result) => {
+				Promise.race([await InvitationService.allAcceptedPromiseHandler(newRoom, timeoutSec), timeoutPromise]).then((result) => {
 					console.log(result);
 					});
 					

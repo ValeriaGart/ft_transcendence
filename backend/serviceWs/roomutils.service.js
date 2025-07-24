@@ -27,7 +27,7 @@ class RoomUtilsService {
 
 	static async playersBusy(rooms, players) {
 		for (let room of rooms) {
-			const playerNicks = this.getAllAcceptedPlayerNicksRoom(room);
+			const playerNicks = await this.getAllAcceptedPlayerNicksRoom(room);
 			// console.log("[playersBusy] accepted playerNicks: ", playerNicks);
 			for (let player of players) {
 				//👉 if (player.id === aiPlayer)
@@ -71,10 +71,10 @@ class RoomUtilsService {
 		for (let p of room.players) {
 			if (p.wsclient.userId === playerId) {
 				if (acceptance == "accept") {
-					p.acceptance = "accepted";
+					p.accepted = "accepted";
 				}
 				else {
-					p.acceptance = "declined";
+					p.accepted = "declined";
 				}
 			}
 		}

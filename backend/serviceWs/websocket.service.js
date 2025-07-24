@@ -73,7 +73,7 @@ class WebsocketService {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'acceptance' field is missing or empty");
 					}
 					// this.matchMakingService.matchMakingInit(connection, parsedMessage);
-					this.invitationService.matchMakingAcceptInvitation(connection, message);
+					this.invitationService.matchMakingAcceptInvitation(connection, parsedMessage);
 				}
 				else {
 					console.log("[handleMessage] unknown type");

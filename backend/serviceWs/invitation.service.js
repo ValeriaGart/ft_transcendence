@@ -50,24 +50,27 @@ class InvitationService {
 	
 	async matchMakingAcceptInvitation(connection, message) {
 		console.log("[InvitationService] accept invitation");
-		if (await RoomUtilsService.roomExists(this.roomService.rooms, message.roomId) == false) {
+		let room = await RoomUtilsService.roomExists(this.roomService.rooms, message.roomId);
+		if (!room) {
 			console.log("[InvitationService] room doesn't exist");
 			this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to doesn't exist.`));
 			return ;
 		}
 		else {
 			console.log("[InvitationService] room exists");
-
 		}
-		// 👉 check if room exists by using message.roomId
-			// if not, send err message to connection
-			// if yes, save room from rooms[] for further use
+		
+ 		let areUEvenInvitedBro = await RoomUtilsService.isPlayerInvited(room, connection);
+		if (areUEvenInvitedBro == false) {
+			console.log("[InvitationService] bro wasn't even invited");
+			this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to did not invite you.`));
+			return ;
+		}
+		else {
+			console.log("[InvitationService] bro was invited");
+		}
 
-
-		// 👉 check if in room.players the connection.userId is one of the players
-			// if not, send err message to connection
-			// if yes
-				// 👉 set status to accepted for player
+		RoomUtilsService.setPlayerAcceptance(room, connection.userId, message.acceptance);
 	}
 
 	static async allAccepted(room) {
@@ -86,7 +89,7 @@ class InvitationService {
 			while (true) {
 				await sleep (1000);
 				count++;
-				console.log(count)
+				// console.log(count) // 👉👉👉👉👉👉👉👉👉👉👉👉👉 dont forget
 				if (this.allAccepted(room) === 1) {
 					resolve("[InvitationService] Promise 'All Players Accepted' resolved.");
 				}

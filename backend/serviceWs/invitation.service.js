@@ -80,7 +80,9 @@ class InvitationService {
 			if (p.accepted === "pending") {
 				return (0) ;
 			}
-			// if (p.acceptance)
+			if (p.accepted === "declined") {
+				return (-1) ;
+			}
 		}
 		return (1);
 	}
@@ -96,13 +98,19 @@ class InvitationService {
 				let ret = await this.allAccepted(room);
 				if (ret === 1) {
 					resolve("[InvitationService] Promise 'All Players Accepted' resolved.");
+					break ;
+				}
+				if (ret === -1) {
+					reject(new Error ("[InvitationService] Promise 'All Players Accepted' rejected, invitation declined."));
+					break ;
 				}
 				if (count >= timeoutSec + 1) {
 					reject("[InvitationService] Promise 'All Players Accepted' rejected after 31 seconds.")
+					break ;
 				}
 
 			}
-		})
+		});
 		return (promiseAllAccepted);
 	}
 

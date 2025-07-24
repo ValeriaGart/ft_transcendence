@@ -1,7 +1,6 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
-import { ErrorManager } from "../Error";
 
 interface ProfileComponentState {
   nickname: string;
@@ -23,30 +22,52 @@ export class ProfileComponent extends Component<ProfileComponentState> {
     profilePictureUrl: 'profile_no.svg',
     isLoading: true,
     showError: false,
-    errorMessage: null,
-  }
+    errorMessage: null
+  };
+
+  private hasLoadedData: boolean = false; // Track if we've already loaded data
 
   constructor() {
     super();
+    console.log('ProfileComponent constructor called');
   }
 
   private showError(message: string) {
     this.setState({
-        showError: true,
-        errorMessage: message
+      showError: true,
+      errorMessage: message
     });
-
-    ErrorManager.showError(message, this.element, () => {
-        this.setState({
-            showError: false,
-            errorMessage: null
-        });
-    });
+    
+    // Auto-hide error after 5 seconds
+    setTimeout(() => {
+      this.setState({
+        showError: false,
+        errorMessage: null
+      });
+    }, 5000);
   }
 
   protected onMount(): void {
-    this.loadProfileData();
+    // Only load data if we haven't loaded it before or if we're in a loading state
+    if (!this.hasLoadedData || this.state.isLoading) {
+      console.log('ProfileComponent: Loading profile data');
+      this.loadProfileData();
+    } else {
+      console.log('ProfileComponent: Skipping data load, already loaded');
+    }
     this.setupEventListeners();
+  }
+
+  protected onUnmount(): void {
+    // Don't reset the flag when unmounting to prevent reloading on remount
+    // Only reset if we're actually changing users or there's an error
+    console.log('ProfileComponent: onUnmount called');
+  }
+
+  // Method to reset the data load flag (call this when user changes)
+  public resetDataLoad(): void {
+    this.hasLoadedData = false;
+    console.log('ProfileComponent: Data load flag reset');
   }
 
   private truncateEmail(email: string): string {
@@ -171,15 +192,17 @@ export class ProfileComponent extends Component<ProfileComponentState> {
           Router.getInstance().navigate('/');
           return;
         }
-        this.setState({
-          nickname: 'Unknown',
-          email: email,
-          truncatedEmail: truncatedEmail,
-          bio: 'No bio available',
-          profilePictureUrl: 'profile_no.svg',
-          isLoading: false,
-          error: null
-        });
+              this.setState({
+        nickname: 'Unknown',
+        email: email,
+        truncatedEmail: truncatedEmail,
+        bio: 'No bio available',
+        profilePictureUrl: 'profile_no.svg',
+        isLoading: false,
+        error: null
+      });
+      
+      this.hasLoadedData = true; // Mark that we've loaded the data even in error case
         return;
       }
 
@@ -209,6 +232,8 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         isLoading: false,
         error: null
       });
+      
+      this.hasLoadedData = true; // Mark that we've loaded the data
 
     } catch (error) {
       console.error('Error loading profile data:', error);
@@ -231,6 +256,8 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         isLoading: false,
         error: null
       });
+      
+      this.hasLoadedData = true; // Mark that we've loaded the data even in error case
     }
   }
     

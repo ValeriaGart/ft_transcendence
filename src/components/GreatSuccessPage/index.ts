@@ -6,8 +6,6 @@ interface GreatSuccessPageState {
 }
 
 export class GreatSuccessPage extends Component<GreatSuccessPageState> {
-    private redirectTimer: number | null = null;
-
     protected static state: GreatSuccessPageState = {
         timeRemaining: 3,
     };
@@ -32,20 +30,14 @@ export class GreatSuccessPage extends Component<GreatSuccessPageState> {
             }
         }, 100);
 
-        // Store the interval ID for cleanup
-        this.redirectTimer = intervalId;
+        this.addCleanup(() => {
+            clearInterval(intervalId);
+        });
     }
 
     private redirectToUserPage(): void {
         console.log('Redirecting to user page...');
         Router.getInstance().navigate("/user");
-    }
-
-    protected onUnmount(): void {
-        if (this.redirectTimer) {
-            clearInterval(this.redirectTimer);
-            this.redirectTimer = null;
-        }
     }
 
     render() {}

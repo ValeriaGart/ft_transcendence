@@ -95,14 +95,10 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
       throw new Error(`Template not found for component: ${componentName}`);
     }
 
-    console.log('Processing template with state:', this.state);
     tempDiv.innerHTML = this.processTemplate(template);
-    console.log('Processed template result:', tempDiv.innerHTML);
     
     // Check if the template starts with a component tag (blitz-*) ai start with blitz-
     const firstChild = tempDiv.firstElementChild;
-    console.log('First child of template:', firstChild);
-    console.log('First child tagName:', firstChild?.tagName);
     
     if (firstChild && firstChild.tagName.toLowerCase().startsWith('blitz-')) {
       // This is a component template, extract the content and create the component structure
@@ -274,10 +270,8 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
       throw new Error(`Template not found for component: ${componentName}`);
     }
 
-    console.log('Processing template with state:', this.state);
     this.element.innerHTML = this.processTemplate(template);
-    console.log('Processed template result:', this.element.innerHTML);
-    
+
     // Find the slot element and replace it with children
     const slot = this.element.querySelector('blitz-slot');
     if (slot && this.children.length > 0) {
@@ -472,23 +466,6 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
    * @param options - Binding options including two-way binding and event type
    */
   protected bind(selector: string, property: string, options: { twoWay?: boolean; event?: string } = {}) {
-    //TODO changed (added)
-    console.log(`Trying to bind ${property} with selector: ${selector}`);
-    console.log(`Component root element:`, this.element);
-    console.log(`Component root element HTML:`, this.element.innerHTML);
-    
-    // Check children of the root element
-    console.log(`Children of root element:`, this.element.children);
-    console.log(`Number of children:`, this.element.children.length);
-    
-    // Log each child
-    for (let i = 0; i < this.element.children.length; i++) {
-      const child = this.element.children[i];
-      console.log(`Child ${i}:`, child);
-      console.log(`Child ${i} tagName:`, child.tagName);
-      console.log(`Child ${i} id:`, child.id);
-      console.log(`Child ${i} innerHTML:`, child.innerHTML);
-    }
     
     // First try to find the element within the component's root element
     let element = this.element.querySelector(selector) as HTMLElement;

@@ -1,0 +1,33 @@
+<div id="match-component" class="flex flex-col items-center justify-center h-full w-full relative gap-y-[10px]" >
+    <div class="flex flex-col items-center justify-center h-[60px] w-[50%] relative bg-[#F0F7F7] border-[#81C3C3] border-3 rounded-3xl mt-[3%]">
+        <h2 class="text-[#F2E278] font-['Irish_Grover'] text-2xl lg:text-3xl">
+            New Game
+        </h2>
+    </div>
+
+    <div id="friends-container" class="flex flex-col items-start justify-start h-[420px] lg:h-[520px] w-full relative bg-[#F0F7F7]">
+        <div class="flex flex-row items-start‚ justify-between h-[30px] w-[100%] px-[5%] bg-[#C3E3E3]">
+            <h2 class="text-[#81C3C3] font-['Irish_Grover'] text-md lg:text-lg ">
+               Add a new friend 
+            </h2>
+            <button id="add-a-friend" class=" ml-[5%] hover:scale-150 transition-transform duration-300 cursor-pointer"> 
+                <img src="/art/user_page/plus_button.svg" alt="Add a friend" class="w-[20px] h-[20px]">
+            </button>
+        </div>
+        <div id="friend-list" class="flex flex-col items-start justify-start h-full w-full mx-[5%]">
+        </div>
+    </div>
+    <form id="add-friends-container" class="flex flex-col items-center justify-center h-[420px] lg:h-[520px] w-full relative bg-[#F0F7F7] gap-y-5" style="display: none;">
+        <button id="close_button" class="absolute top-1 right-1 cursor-pointer">
+            <img src="/art/user_page/plus_button.svg" alt="Close" class="w-[30px] h-[30px] rotate-45">
+        </button>
+        <label for="add-friends-input" class="text-[#81C3C3] font-['Irish_Grover'] text-md lg:text-lg">Enter the user ID of your friend</label>
+        <input type="number" id="add-friends-input" placeholder="123" class="w-[50%] h-[30px] rounded-2xl border-2 border-[#81C3C3]">
+        <button id="add-friends-button" class="w-[50%] h-[30px] rounded-2xl bg-[#F2E278] text-white font-['Irish_Grover'] text-lg cursor-pointer hover:scale-110 transition-transform duration-300">Add Friend</button>
+    </form>
+
+    <!-- AI Match Button -->
+    <button id="start-ai-match" class="px-6 py-3 mt-[10px] bg-[#F2E278] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">
+        Start AI Match!
+    </button>
+</div>

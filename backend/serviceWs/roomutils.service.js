@@ -80,6 +80,17 @@ class RoomUtilsService {
 		}
 	}
 
+	static async sendMessageToAllPlayers(websocketService, room, message) {
+		for (let p in room.players) {
+			if (p.ai == true) {
+				continue ;
+			}
+			if (p.accepted != "declined") {
+				console.log("player: ", p.userId);
+				websocketService.sendMessageToClient(p.wsclient, message);
+			}
+		}
+	}
 
 
 }

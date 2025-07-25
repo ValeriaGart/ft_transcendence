@@ -88,7 +88,19 @@ class RoomService {
 	}
 
 		
-	async destroyRoom(todelete) {
+	async destroyRoom(todeleteId) {
+		let count = 0;
+		console.log("[RoomService] rooms[] length: ", this.rooms.length);
+		for (let r of this.rooms) {
+			if (r.id === todeleteId) {
+				console.log("deleting ", todeleteId);
+				this.rooms.splice(count, 1);
+				continue ;
+			}
+			count++;
+		}
+		console.log("[RoomService] rooms[] length after destroyRoom function: ", this.rooms.length);
+
 		// loop through room in rooms[]
 		// when todelete found
 

@@ -26,8 +26,12 @@ export class GameEngine {
 	private roomID: string | null = null;
 	private p1Nick: string | null = null;
 	private p2Nick: string | null = null;
-	private p1AI: boolean = false;
-	private p2AI: boolean = false;
+	private p3Nick: string | null = null;
+	private p4Nick: string | null = null;
+	private p1AI: boolean = true;
+	private p2AI: boolean = true;
+	private p3AI: boolean = true;
+	private p4AI: boolean = true;
 	private gameMode: string | null = null;
 	private oppMode: string | null = null;
 
@@ -62,19 +66,19 @@ export class GameEngine {
 	
 	private tournamentHandler(mode: GameMode, oppMode: OpponentMode): void {
 		if (oppMode == OpponentMode.SINGLE) {
-			var p1: Player = new Player('Player1', 4, false);
-			var p2: Player = new Player('Bot1', 4, true);
-			var p3: Player = new Player('Bot2', 4, true);
-			var p4: Player = new Player('Bot3', 4, true);
+			var p1: Player = new Player(this.p1Nick ?? 'player', 4, false);
+			var p2: Player = new Player('bot1', 4, true);
+			var p3: Player = new Player('bot2', 4, true);
+			var p4: Player = new Player('bot3', 4, true);
 
 			this._tournament = new Tournament(this, p1, p2, p3, p4, mode, oppMode);
 			this._tournament.battleOne();
 		}
 		if (oppMode == OpponentMode.MULTI) {
-			var p1: Player = new Player('Player1', 4, false);
-			var p2: Player = new Player('Player2', 4, false);
-			var p3: Player = new Player('Player3', 4, false);
-			var p4: Player = new Player('Player4', 4, false);
+			var p1: Player = new Player(this.p1Nick ?? 'player', 4, this.p1AI);
+			var p2: Player = new Player(this.p2Nick ?? 'bot3', 4, this.p2AI);
+			var p3: Player = new Player(this.p3Nick ?? 'bot2', 4, this.p3AI);
+			var p4: Player = new Player(this.p4Nick ?? 'bot1', 4, this.p4AI);
 
 			this._tournament = new Tournament(this, p1, p2, p3, p4, mode, oppMode);
 			this._tournament.battleOne();
@@ -108,8 +112,8 @@ export class GameEngine {
 			this._pongGame = new PongGame(this, mode, oppMode, playerOne, playerTwo);
 		}
 		if (oppMode == OpponentMode.MULTI) {
-			var playerOne: Player = new Player(this.p1Nick ?? 'player_1', 0, false);
-			var playerTwo: Player = new Player(this.p1Nick ?? 'player_2', 0, false);
+			var playerOne: Player = new Player(this.p1Nick ?? 'player1', 0, false);
+			var playerTwo: Player = new Player(this.p2Nick ?? 'player2', 0, false);
 			this._pongGame = new PongGame(this, mode, oppMode, playerOne, playerTwo);
 		}
 	}
@@ -121,8 +125,12 @@ export class GameEngine {
 		this.roomID = msg.roomId;
 		this.p1Nick = msg.players[0].nick;
 		this.p2Nick = msg.players[1].nick;
+		this.p3Nick = msg.players[2]?.nick || null;
+		this.p4Nick = msg.players[3]?.nick || null;
 		this.p1AI = msg.players[0].ai;
 		this.p2AI = msg.players[1].ai;
+		this.p3AI = msg.players[2]?.ai || true;
+		this.p4AI = msg.players[3]?.ai || true;
 		this.gameMode = msg.gameMode;
 		this.oppMode = msg.oppMode;
 		console.log('id: ', this.roomID);

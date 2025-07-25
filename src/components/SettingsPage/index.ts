@@ -637,7 +637,7 @@ export class SettingsPage extends Component<SettingsPageState> {
       }
       
       // Get the user's profile first
-              const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       if (!profileResponse.ok) {
         throw new Error('Failed to get profile data');
       }

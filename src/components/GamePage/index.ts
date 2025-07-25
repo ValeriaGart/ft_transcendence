@@ -5,14 +5,8 @@ import { WebSocketService } from "./../../lib/webSocket";
 export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
 
-    private roomID: string | null = null;
-    private p1Nick: string | null = null;
-    private p2Nick: string | null = null;
-    private p1AI: boolean = false;
-    private p2AI: boolean = false;
-    private gameMode: string | null = null;
-    private oppMode: string | null = null;
     private msg: MessageEvent | null = null;
+    private pmsg: object | null = null;
 
     constructor() {
         super();
@@ -33,33 +27,50 @@ export class GamePage extends Component {
         // ws.onmessage = (event) => {
         //     console.log('reply', event.data);
         // }
-        this.waitForMessage(ws.ws)
-            .then((message) => {
-                console.log("message: ", message.data);
-                if (!this.parseMessage(message)) {
-                    return;
-                }
-                this.msg = message;
-            });
 
-        const element = this.getElement();
-        if (element) {
-            element.innerHTML = '';
-            element.appendChild(canvas);
+        // this.waitForMessage(ws.ws)
+        //     .then((message) => {
+        //         console.log("message: ", message.data);
+        //         if (!this.parseMessage(message)) {
+        //             return;
+        //         }
+        //         console.log('Parsed message successfully');
+        //         this.msg = message;
+        //         this.pmsg = JSON.parse(message.data);
+        //         if (!this.pmsg) {
+        //            console.error('parsing (and saving) message failed.');
+        //         }
+        //         else {
+        //             console.log('Parsed message:', this.pmsg);
+        //         }
+        //     });
 
-            setTimeout(() => {
-                this.initializeGame();
-            }, 0);
+        ws.ws.onmessage = (message) => {
+            console.log("message: ", message.data);
+            if (!this.parseMessage(message)) {
+                return;
+            }
+            this.msg = message;
+
+            const element = this.getElement();
+            if (element) {
+                element.innerHTML = '';
+                element.appendChild(canvas);
+    
+                setTimeout(() => {
+                    this.initializeGame();
+                }, 0);
+            }
         }
     }
 
-    private waitForMessage(ws: WebSocket): Promise<MessageEvent> {
-        return new Promise((resolve) => {
-            ws.onmessage = (event) => {
-                resolve(event);
-            }
-        });
-    }
+    // private async waitForMessage(ws: WebSocket): Promise<MessageEvent> {
+    //     return new Promise((resolve) => {
+    //         ws.onmessage = (event) => {
+    //             resolve(event);
+    //         }
+    //     });
+    // }
 
     private parseMessage(message: MessageEvent): boolean {
         var msg
@@ -69,27 +80,21 @@ export class GamePage extends Component {
             console.error("Unexpected message type:", msg.type);
             return false;
         }
-
-        this.roomID = msg.roomId;
-        this.p1Nick = msg.players[0].nick;
-        this.p2Nick = msg.players[1].nick;
-        this.p1AI = msg.players[0].ai;
-        this.p2AI = msg.players[1].ai;
-        this.gameMode = msg.gameMode;
-        this.oppMode = msg.oppMode;
-        console.log('id: ', this.roomID);
-        console.log('p1: ', this.p1Nick, ' AI: ', this.p1AI);
-        console.log('p2: ', this.p2Nick, ' AI: ', this.p2AI);
-        console.log('game mode: ', this.gameMode);
-        console.log('opponent mode: ', this.oppMode);
         return true;
     }
 
     private initializeGame(): void {
         try {
             this.gameEngine = new GameEngine('gameCanvas');
-            this.gameEngine.startGameLoop(this.msg);
-            console.log('Game engine initialized successfully');
+            if (!this.pmsg) {
+                console.error('No parsed message available to start the game engine.');
+            }
+            if (this.msg) {
+                this.gameEngine.startGameLoop(this.msg);
+                console.log('Game engine initialized successfully');
+            } else {
+                console.error('No message available to start the game loop.');
+            }
         } catch (error) {
             console.error('Failed to initialize game engine:', error);
         }

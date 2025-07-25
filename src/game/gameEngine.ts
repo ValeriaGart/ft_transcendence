@@ -142,6 +142,10 @@ export class GameEngine {
 	}
 	
 	public startGameLoop(msg: MessageEvent): void {
+		if (!msg || !msg.data) {
+			console.error("No message data to start game loop");
+			return;
+		}
 		this._inputHandler.setupEventListeners();
 		console.log("game loop started")
 		const setIntervalId = setInterval(() => { this.update(); }, 16);

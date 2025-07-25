@@ -2,6 +2,7 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
 import { ErrorManager } from "../Error";
+import { getApiUrl } from "../../config/api";
 
 interface ProfileComponentState {
   nickname: string;
@@ -118,7 +119,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       console.log('Selecting profile picture:', pictureName);
       
       // Get current profile data
-      const response = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
+      const response = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       if (!response.ok) {
         throw new Error('Failed to get profile data');
       }
@@ -126,7 +127,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       const profileData = await response.json();
       
       // Update the profile picture using just the filename
-      const updateResponse = await authService.authenticatedFetch(`http://localhost:3000/profiles/${profileData.id}`, {
+              const updateResponse = await authService.authenticatedFetch(getApiUrl(`/profiles/${profileData.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -158,7 +159,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       console.log('ProfileComponent: Auth token exists:', !!authService.getToken());
 
       // Get profile data from API
-      const response = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
+      const response = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       
       console.log('ProfileComponent: Response status:', response.status);
       

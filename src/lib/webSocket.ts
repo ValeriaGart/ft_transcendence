@@ -47,4 +47,8 @@ export class WebSocketService {
       this.ws.close();
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin

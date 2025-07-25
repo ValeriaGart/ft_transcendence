@@ -127,7 +127,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       const profileData = await response.json();
       
       // Update the profile picture using just the filename
-              const updateResponse = await authService.authenticatedFetch(getApiUrl(`/profiles/${profileData.id}`), {
+      const updateResponse = await authService.authenticatedFetch(getApiUrl(`/profiles/${profileData.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

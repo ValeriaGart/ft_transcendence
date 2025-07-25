@@ -654,7 +654,7 @@ export class SettingsPage extends Component<SettingsPageState> {
       }
       
       // Update the profile
-              const updateResponse = await authService.authenticatedFetch(getApiUrl(`/profiles/${profileData.id}`), {
+      const updateResponse = await authService.authenticatedFetch(getApiUrl(`/profiles/${profileData.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

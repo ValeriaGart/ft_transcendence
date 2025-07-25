@@ -5,13 +5,14 @@ import { WebSocketService } from "./../../lib/webSocket";
 export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
 
-    private roomID;
-    private p1Nick;
-    private p2Nick;
-    private p1AI;
-    private p2AI;
-    private gameMode;
-    private oppMode;
+    private roomID: string | null = null;
+    private p1Nick: string | null = null;
+    private p2Nick: string | null = null;
+    private p1AI: boolean = false;
+    private p2AI: boolean = false;
+    private gameMode: string | null = null;
+    private oppMode: string | null = null;
+    private msg: MessageEvent | null = null;
 
     constructor() {
         super();
@@ -35,7 +36,10 @@ export class GamePage extends Component {
         this.waitForMessage(ws.ws)
             .then((message) => {
                 console.log("message: ", message.data);
-                this.parseMessage(message);
+                if (!this.parseMessage(message)) {
+                    return;
+                }
+                this.msg = message;
             });
 
         const element = this.getElement();
@@ -57,19 +61,34 @@ export class GamePage extends Component {
         });
     }
 
-    private parseMessage(message: MessageEvent) {
+    private parseMessage(message: MessageEvent): boolean {
         var msg
         msg = JSON.parse(message.data);
 
-        this.roomID = msg.roomId;
-        console.log('id: ', this.roomID);
+        if (msg.type !== "STARTMATCH") {
+            console.error("Unexpected message type:", msg.type);
+            return false;
+        }
 
+        this.roomID = msg.roomId;
+        this.p1Nick = msg.players[0].nick;
+        this.p2Nick = msg.players[1].nick;
+        this.p1AI = msg.players[0].ai;
+        this.p2AI = msg.players[1].ai;
+        this.gameMode = msg.gameMode;
+        this.oppMode = msg.oppMode;
+        console.log('id: ', this.roomID);
+        console.log('p1: ', this.p1Nick, ' AI: ', this.p1AI);
+        console.log('p2: ', this.p2Nick, ' AI: ', this.p2AI);
+        console.log('game mode: ', this.gameMode);
+        console.log('opponent mode: ', this.oppMode);
+        return true;
     }
 
     private initializeGame(): void {
         try {
             this.gameEngine = new GameEngine('gameCanvas');
-            this.gameEngine.startGameLoop('single', 'infinite');
+            this.gameEngine.startGameLoop(this.msg);
             console.log('Game engine initialized successfully');
         } catch (error) {
             console.error('Failed to initialize game engine:', error);

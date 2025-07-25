@@ -22,6 +22,15 @@ export class GameEngine {
 	private _inputHandler: InputHandler;
 	private _tournament: Tournament | undefined = undefined;
 
+	//game variables
+	private roomID: string | null = null;
+	private p1Nick: string | null = null;
+	private p2Nick: string | null = null;
+	private p1AI: boolean = false;
+	private p2AI: boolean = false;
+	private gameMode: string | null = null;
+	private oppMode: string | null = null;
+
 	constructor(canvasID: string) {
 		this._canvas = document.getElementById(canvasID) as HTMLCanvasElement;
 		this._ctx = this._canvas.getContext('2d')!;
@@ -94,31 +103,48 @@ export class GameEngine {
 	
 	private singleGameHandler(mode: GameMode, oppMode: OpponentMode): void {
 		if (oppMode == OpponentMode.SINGLE) {
-			var playerOne: Player = new Player('Player1', 0, false);
-			var playerTwo: Player = new Player('Bot1', 0, true);
+			var playerOne: Player = new Player(this.p1Nick ?? 'player', 0, false);
+			var playerTwo: Player = new Player(this.p2Nick ?? 'bot', 0, true);
 			this._pongGame = new PongGame(this, mode, oppMode, playerOne, playerTwo);
 		}
 		if (oppMode == OpponentMode.MULTI) {
-			var playerOne: Player = new Player('Player1', 0, false);
-			var playerTwo: Player = new Player('Player2', 0, false);
+			var playerOne: Player = new Player(this.p1Nick ?? 'player_1', 0, false);
+			var playerTwo: Player = new Player(this.p1Nick ?? 'player_2', 0, false);
 			this._pongGame = new PongGame(this, mode, oppMode, playerOne, playerTwo);
 		}
 	}
+
+	private parseMessage(message: MessageEvent): boolean {
+		var msg
+		msg = JSON.parse(message.data);
+
+		this.roomID = msg.roomId;
+		this.p1Nick = msg.players[0].nick;
+		this.p2Nick = msg.players[1].nick;
+		this.p1AI = msg.players[0].ai;
+		this.p2AI = msg.players[1].ai;
+		this.gameMode = msg.gameMode;
+		this.oppMode = msg.oppMode;
+		console.log('id: ', this.roomID);
+		console.log('p1: ', this.p1Nick, ' AI: ', this.p1AI);
+		console.log('p2: ', this.p2Nick, ' AI: ', this.p2AI);
+		console.log('game mode: ', this.gameMode);
+		console.log('opponent mode: ', this.oppMode);
+		return true;
+	}
 	
-	public startGameLoop(opp: string, game: string): void {
+	public startGameLoop(msg: MessageEvent): void {
 		this._inputHandler.setupEventListeners();
 		console.log("game loop started")
 		const setIntervalId = setInterval(() => { this.update(); }, 16);
 		//roughly 60fps
 		
-		// if (opp == null || game == null) {
-		// 	return;
-		// }
+		this.parseMessage(msg);
 
 		var omode: OpponentMode = OpponentMode.SINGLE;
 		var gmode: GameMode = GameMode.INFINITE;
 
-		switch (opp) {
+		switch (this.oppMode) {
 			case 'single':
 				omode = OpponentMode.SINGLE;
 				break;
@@ -129,10 +155,11 @@ export class GameEngine {
 				omode = OpponentMode.ONLINE;
 				break;
 			default:
-				opp = "default";
+				console.error('Invalid opponent mode:', this.oppMode, " defaulting to single");
+				omode = OpponentMode.SINGLE;
 				break;
 		}
-		switch (game) {
+		switch (this.gameMode) {
 			case 'infinite':
 				gmode = GameMode.INFINITE;
 				break;
@@ -143,13 +170,11 @@ export class GameEngine {
 				gmode = GameMode.TOURNAMENT;
 				break;
 			default:
-				game = "default";
+				console.error('Invalid game mode:', this.gameMode, " defaulting to mode select");
+				this.gameMode = "default";
 				break;
 		}
-		if (opp == "default") {
-			return;
-		}
-		if (game == "default") {
+		if (this.gameMode == "default") {
 			this._inputHandler._oppMode = omode;
 			this._gameStateMachine.transition(GameState.SELECT);
 			return;

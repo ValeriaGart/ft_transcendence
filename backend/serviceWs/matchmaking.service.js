@@ -58,6 +58,19 @@ class MatchMakingService {
 		return message;
 	}
 
+	
+	createCancelMatchMessage(room) {
+		const message = {
+			type: "CANCELMATCH",
+			sender: "__server",
+			message: "This match was cancelled.",
+			roomId: room.id
+		}
+		return message;
+	}
+
+
+
 	async startMatch(room) {
 		/* checks for accepted status should NOT happen in here, but before */
 		/* 👉 send info to all real players */
@@ -96,8 +109,10 @@ class MatchMakingService {
 			}
 		}
 
+		let roomStorage;
 		try {
 			const newRoom = await this.RoomService.createRoom(connection, message);
+			roomStorage = newRoom;
 			/*👉 send invitations to players 
 				except connection (the one who invited) and AI opponents*/
 			await InvitationService.sendInvitation(this.WebsocketService, newRoom);
@@ -123,7 +138,9 @@ class MatchMakingService {
 			this.startMatch(newRoom);
 		} catch (error) {
 			console.error("Error: ", error.message);
-			/* 👉 todo: if room exists, destroy room, send cancel message to players */
+			/* 👉 todo: send cancel message to players */
+			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, roomStorage, this.createCancelMatchMessage(roomStorage));
+			this.RoomService.destroyRoom(roomStorage.id);
 			//return error message to connection
 			return ;
 		}

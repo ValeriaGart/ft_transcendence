@@ -135,6 +135,10 @@ class WebsocketService {
 	}
 
 	sendMessageToClient(client, message) {
+		if (!client) {
+			console.error("Don't send undefined clients to sendMessageToClient function :(");
+			return ;
+		}
 		client.send(JSON.stringify(message));
 		// for (let client of this.websocketServer.clients) {
 		// 	if (client.readyState === 1 && client === deliverto) {

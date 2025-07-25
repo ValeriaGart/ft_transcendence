@@ -4,6 +4,7 @@ import { authService } from "../../lib/auth";
 import type { AuthState } from "../../lib/auth";
 import { UserPage } from "../UserPage";
 import { SettingsPage } from "../SettingsPage";
+import { GamePage } from "../GamePage";
 
 interface ProtectedRouteProps {
   children?: HTMLElement[];
@@ -126,6 +127,9 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
     if (currentPath === '/user/settings') {
       console.log('ProtectedRoute: Rendering SettingsPage');
       this.renderSettingsPage();
+    } else if (currentPath === '/user/game') {
+      console.log('ProtectedRoute: Rendering GamePage');
+      this.renderGamePage();
     } else {
       console.log('ProtectedRoute: Rendering UserPage');
       this.renderUserPage();
@@ -197,6 +201,26 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
       this.settingsPageComponent.mount(slot as HTMLElement);
     } else {
       console.error('ProtectedRoute: No slot found for SettingsPage');
+    }
+  }
+
+  private renderGamePage(): void {
+    console.log('ProtectedRoute: renderGamePage called');
+    const slot = this.element.querySelector('blitz-slot');
+    if (slot) {
+      slot.innerHTML = '';
+    }
+
+    // Create and mount GamePage component
+    console.log('ProtectedRoute: Creating new GamePage component');
+    const gamePageComponent = new GamePage();
+
+    // Mount the GamePage component to the slot
+    if (slot) {
+      console.log('ProtectedRoute: Mounting GamePage component');
+      gamePageComponent.mount(slot as HTMLElement);
+    } else {
+      console.error('ProtectedRoute: No slot found for GamePage');
     }
   }
 

@@ -41,17 +41,8 @@ export class MatchComponent extends Component<MatchComponentState> {
    * Sets up event listeners and fetches friendships
    */
   protected onMount(): void {
-    console.log('MatchComponent onMount called, isMounted:', MatchComponent.isMounted);
-    
-    // Prevent multiple onMount calls
-    if (MatchComponent.isMounted) {
-      console.log('MatchComponent already mounted, skipping onMount');
-      return;
-    }
-    
-    MatchComponent.isMounted = true;
-    console.log('MatchComponent mounted');
-    
+    console.log('MatchComponent onMount called, isMounted:');
+  
     this.setupStartAiMatchButton();
     this.setupToggleButtons();
     // this.setupWebSocketHandlers();
@@ -280,15 +271,14 @@ export class MatchComponent extends Component<MatchComponentState> {
         console.log('Already on game page, skipping navigation');
         return;
       }
-      
-      const gameMode = 'ai';
-      const opponentMode = 'single';
+
+
       const router = Router.getInstance();
       if (router) {
-        router.navigate(`/game?mode=${gameMode}&opponent=${opponentMode}`);
+        router.navigate('/user/game');
       } else {
         // Fallback: use window.location if router is not available
-        window.location.href = `/game?mode=${gameMode}&opponent=${opponentMode}`;
+        window.location.href = `/game`;
       }
       
     } catch (error) {
@@ -363,7 +353,6 @@ export class MatchComponent extends Component<MatchComponentState> {
 
   protected onUnmount(): void {
     console.log('MatchComponent onUnmount called');
-    MatchComponent.isMounted = false;
   }
 
   render() {

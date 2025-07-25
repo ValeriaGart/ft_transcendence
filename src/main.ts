@@ -7,6 +7,7 @@ import { SignInPage } from "./components/SignInPage";
 import { GreatSuccessPage } from "./components/GreatSuccessPage";
 import { UserPage } from "./components/UserPage";
 import { SettingsPage } from "./components/SettingsPage";
+import { GamePage } from "./components/GamePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { authService } from "./lib/auth";
@@ -82,6 +83,10 @@ if (app) {
 				path: "/settings",
 				component: SettingsPage,
 			},
+			{
+				path: "/game",
+				component: GamePage,
+			}
 		]
 	})
 

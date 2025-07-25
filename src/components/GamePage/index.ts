@@ -6,7 +6,6 @@ export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
 
     private msg: MessageEvent | null = null;
-    private pmsg: object | null = null;
 
     constructor() {
         super();
@@ -23,27 +22,6 @@ export class GamePage extends Component {
         // const ws = new WebSocket('ws://localhost:3000/hello-ws');
         const ws = WebSocketService.getInstance();
         ws.connect('ws://localhost:3000/hello-ws')
-
-        // ws.onmessage = (event) => {
-        //     console.log('reply', event.data);
-        // }
-
-        // this.waitForMessage(ws.ws)
-        //     .then((message) => {
-        //         console.log("message: ", message.data);
-        //         if (!this.parseMessage(message)) {
-        //             return;
-        //         }
-        //         console.log('Parsed message successfully');
-        //         this.msg = message;
-        //         this.pmsg = JSON.parse(message.data);
-        //         if (!this.pmsg) {
-        //            console.error('parsing (and saving) message failed.');
-        //         }
-        //         else {
-        //             console.log('Parsed message:', this.pmsg);
-        //         }
-        //     });
 
         ws.ws.onmessage = (message) => {
             console.log("message: ", message.data);
@@ -64,14 +42,6 @@ export class GamePage extends Component {
         }
     }
 
-    // private async waitForMessage(ws: WebSocket): Promise<MessageEvent> {
-    //     return new Promise((resolve) => {
-    //         ws.onmessage = (event) => {
-    //             resolve(event);
-    //         }
-    //     });
-    // }
-
     private parseMessage(message: MessageEvent): boolean {
         var msg
         msg = JSON.parse(message.data);
@@ -86,9 +56,6 @@ export class GamePage extends Component {
     private initializeGame(): void {
         try {
             this.gameEngine = new GameEngine('gameCanvas');
-            if (!this.pmsg) {
-                console.error('No parsed message available to start the game engine.');
-            }
             if (this.msg) {
                 this.gameEngine.startGameLoop(this.msg);
                 console.log('Game engine initialized successfully');

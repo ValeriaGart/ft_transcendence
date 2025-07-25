@@ -47,11 +47,6 @@ export class MatchComponent extends Component<MatchComponentState> {
       const ws = WebSocketService.getInstance();
       ws.connect('ws://localhost:3000/hello-ws');
 
-      // const ws = new WebSocket('ws://localhost:3000/hello-ws');
-
-
-      // ws.onopen = () => {
-      //   // const name = g
       const msg = {
         "type": 3,
         "players": [
@@ -63,12 +58,6 @@ export class MatchComponent extends Component<MatchComponentState> {
         };
 
       ws.sendMessage(JSON.stringify(msg));
-      //   ws.send(JSON.stringify(msg));
-      // };
-
-      // ws.onmessage = (event) => {
-      //   console.log('reply', event.data);
-      // }
       
       // Navigate to the game page
       const router = Router.getInstance();

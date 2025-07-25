@@ -118,7 +118,7 @@ export class GameEngine {
 		}
 	}
 
-	private parseMessage(message: MessageEvent): boolean {
+	private parseMessage(message: MessageEvent){
 		var msg
 		msg = JSON.parse(message.data);
 
@@ -138,7 +138,6 @@ export class GameEngine {
 		console.log('p2: ', this.p2Nick, ' AI: ', this.p2AI);
 		console.log('game mode: ', this.gameMode);
 		console.log('opponent mode: ', this.oppMode);
-		return true;
 	}
 	
 	public startGameLoop(msg: MessageEvent): void {

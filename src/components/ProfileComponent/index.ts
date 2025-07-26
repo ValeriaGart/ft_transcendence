@@ -1,7 +1,6 @@
 import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
-import { ErrorManager } from "../Error";
 import { getApiUrl } from "../../config/api";
 
 

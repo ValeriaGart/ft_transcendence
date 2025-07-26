@@ -57,7 +57,7 @@ class InvitationService {
 		}
 		
  		let areUEvenInvitedBro = await RoomUtilsService.isPlayerInvited(room, connection);
-		if (areUEvenInvitedBro == false) {
+		if (areUEvenInvitedBro === false) {
 			console.log("[InvitationService] bro wasn't even invited");
 			this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to did not invite you.`));
 			return ;

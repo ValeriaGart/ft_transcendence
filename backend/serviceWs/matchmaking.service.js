@@ -62,7 +62,7 @@ class MatchMakingService {
 		console.log("[matchMakingInit] start");
 		if (this.RoomService.rooms.length > 0)
 		{
-			if (RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
+			if (await RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
 				this.WebsocketService.sendMessageToClient(connection, {
 					type: "ERROR",

@@ -18,11 +18,11 @@ let sslConfig: object | null = null, httpsAgent: https.Agent | undefined;
 
 if (sslEnabled) {
 	try {
-		const certContent = fs.readFileSync('./ssl/server.crt');
+		const certContent = fs.readFileSync('./backend/ssl/server.crt');
 		// Validate that the server key file exists and is readable
-		fs.readFileSync('./ssl/server.key');
+		fs.readFileSync('./backend/ssl/server.key');
 		
-		sslConfig = { key: './ssl/server.key', cert: './ssl/server.crt' };
+		sslConfig = { key: './backend/ssl/server.key', cert: './backend/ssl/server.crt' };
 		httpsAgent = new https.Agent({
 			ca: certContent,
 			checkServerIdentity: (hostname, cert) => hostname === 'localhost' ? undefined : tls.checkServerIdentity(hostname, cert)
@@ -30,7 +30,7 @@ if (sslEnabled) {
 		console.log('🔒 SSL enabled - using HTTPS');
 	} catch (error: any) {
 		console.log(error.code === 'ENOENT' 
-			? '\n❌ SSL certificates not found! Run: ./scripts/generate-ssl.sh\n'
+			? '\n❌ SSL certificates not found! Run: ./backend/scripts/generate-ssl.sh\n'
 			: `\n❌ SSL error: ${error.message}\n`);
 		process.exit(1);
 	}

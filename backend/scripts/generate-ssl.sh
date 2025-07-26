@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# SSL Certificate Generator for Development with Error Handling
-# This creates self-signed certificates that are safe to commit to git
+# SSL Certificate Generator for Backend Development
+# This creates self-signed certificates for the backend server
 
 set -e
 
@@ -15,7 +15,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SSL_DIR="$SCRIPT_DIR/../ssl"
 
-# Create SSL directory
+# Create SSL directory if it doesn't exist
 mkdir -p "$SSL_DIR" || { echo "❌ Error: Cannot create SSL directory"; exit 1; }
 
 # Check if certificates already exist and are valid
@@ -28,12 +28,12 @@ if [[ -f "$SSL_DIR/server.crt" && -f "$SSL_DIR/server.key" ]]; then
     fi
 fi
 
-echo "🔐 Generating development SSL certificates..."
+echo "🔐 Generating backend SSL certificates..."
 
 # Generate self-signed certificate
 openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -keyout "$SSL_DIR/server.key" -out "$SSL_DIR/server.crt" \
     -days 365 -nodes \
-    -subj "/C=US/ST=Development/L=Local/O=Transcendence/OU=Dev/CN=localhost" 2>/dev/null || {
+    -subj "/C=US/ST=Development/L=Local/O=Transcendence/OU=Backend/CN=localhost" 2>/dev/null || {
     echo "❌ Error: Certificate generation failed"
     rm -f "$SSL_DIR/server.key" "$SSL_DIR/server.crt"
     exit 1
@@ -50,7 +50,7 @@ openssl x509 -in "$SSL_DIR/server.crt" -noout -text &>/dev/null || {
     exit 1
 }
 
-echo "✅ SSL certificates generated successfully!"
+echo "✅ Backend SSL certificates generated successfully!"
 echo "   Certificate: $SSL_DIR/server.crt"
 echo "   Private Key: $SSL_DIR/server.key"
 echo "   Expires: $(openssl x509 -in "$SSL_DIR/server.crt" -noout -enddate | sed 's/notAfter=//')"

@@ -18,7 +18,6 @@ const apm = apmInit.start({
 
 import { config } from 'dotenv';
 import path from 'path';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -30,6 +29,7 @@ config({ path: path.resolve(__dirname, '../.env') });
 
 import fastify from 'fastify';
 import { initialize } from './config/database.js';
+import getSSLOptions from './config/ssl.config.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import friendRoutes from './routes/friend.routes.js';
@@ -39,45 +39,14 @@ import websocketRoutes from './routes/websocket.routes.js';
 import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
-
 import ws from '@fastify/websocket';
 
-// Simple SSL configuration
-function getSSLOptions() {
-  const sslEnabled = process.env.SSL_ENABLED === 'true';
-  
-  if (!sslEnabled) {
-    return null;
-  }
-  
-  const certPath = path.resolve(__dirname, '../ssl/server.crt');
-  const keyPath = path.resolve(__dirname, '../ssl/server.key');
-  
-  try {
-    // Read files directly - if they don't exist, fs.readFileSync will throw
-    const key = fs.readFileSync(keyPath);
-    const cert = fs.readFileSync(certPath);
-    
-    return { key, cert };
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      console.log('\n❌ SSL certificates not found! Run: ./scripts/generate-ssl.sh\n');
-      console.log('   Or set SSL_ENABLED=false in .env for HTTP mode');
-    } else {
-      console.log('\n❌ SSL error:', error.message);
-    }
-    process.exit(1);
-  }
-}
-
+// Initialize SSL configuration
 const sslOptions = getSSLOptions();
 const fastifyOptions = { logger: true };
 
 if (sslOptions) {
   fastifyOptions.https = sslOptions;
-  console.log('🔒 SSL enabled');
-} else {
-  console.log('🌐 HTTP only');
 }
 
 const app = fastify(fastifyOptions);

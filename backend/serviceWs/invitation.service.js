@@ -17,6 +17,7 @@ class InvitationService {
 			return rest;
 		});
 		const message = {
+			type: "INVITATION",
 			sender: "__server",
 			message: "You were invited to this room.",
 			roomId: room.id,

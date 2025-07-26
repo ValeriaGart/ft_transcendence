@@ -17,6 +17,7 @@ class RoomService {
 		let isUnique = true;
 		let count = 0;
 		while (1) {
+			isUnique = true;
 			id = this.EmojiService.generateEmojiId();
 			if (this.rooms.length === 0) {
 				break ;

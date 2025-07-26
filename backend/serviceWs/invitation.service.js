@@ -1,6 +1,4 @@
-import { resolve } from "path";
 import RoomUtilsService from "./roomutils.service.js";
-import { promise } from "bcrypt/promises.js";
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -36,9 +34,7 @@ class InvitationService {
 		for (let p of room.players) {
 			if ((await pendingPlayers).includes(p.nick)) {
 				if (!p.wsclient) {
-					console.log("[RoomUtilsService] can't send invitation to client without websocket connection");
-					/* 👉 todo: throw error */
-					break ;
+					throw new Error ("[RoomUtilsService] can't send invitation to client without websocket connection");
 				}
 				websocketService.sendMessageToClient(p.wsclient, await this.createInvitationMessage(room));
 			}
@@ -76,7 +72,6 @@ class InvitationService {
 
 	static async allAccepted(room) {
 		for (let p of room.players) {
-			// console.log(`[allAccepted] ${p.id}_${p.accepted}`);
 			if (p.accepted === "pending") {
 				return (0) ;
 			}
@@ -87,7 +82,7 @@ class InvitationService {
 		return (1);
 	}
 
-	//WIP
+
 	static async allAcceptedPromiseHandler(room, timeoutSec) {
 		let count = 0;
 		const promiseAllAccepted = new Promise (async (resolve, reject) => {

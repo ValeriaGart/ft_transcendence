@@ -48,6 +48,7 @@ class MatchMakingService {
 			return rest;
 		});
 		const message = {
+			type: "STARTMATCH",
 			sender: "__server",
 			message: "Your match will start now.",
 			roomId: room.id,
@@ -100,6 +101,7 @@ class MatchMakingService {
 			if (RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
 				this.WebsocketService.sendMessageToClient(connection, {
+					type: "ERROR",
 					sender: "__server",
 					message: "Error creating Match: Players are busy"
 				});

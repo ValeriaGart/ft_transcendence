@@ -19,6 +19,7 @@ class WebsocketService {
 	handleJoin(connection, wsid) {
 		connection.userId = wsid;
 		this.broadcast({
+			type: "BROADCAST",
 			sender: '__server',
 			message: `id ${wsid} joined`
 		}, connection);
@@ -27,6 +28,7 @@ class WebsocketService {
 	handleLeave(connection) {
 		connection.on('close', () => {
 			this.broadcast({
+				type: "BROADCAST",
 				sender: '__server',
 				message: `id ${connection.userId} left`
 			});
@@ -49,6 +51,7 @@ class WebsocketService {
 						throw new Error ("Parsing: Invalid message: 'message' field is missing or empty");
 					}
 					this.broadcast({
+						type: "BROADCAST",
 						sender: `${connection.userId}`,
 						message: `${parsedMessage.message}`
 					}, connection);
@@ -78,6 +81,7 @@ class WebsocketService {
 			} catch (error) {
 				console.error("Error occurring in WebsocketService: ", error.message);
 				this.sendMessageToClient(connection, {
+					type: "ERROR",
 					sender: "__server",
 					message: `Error occurring in WebsocketService: ${error.message}`
 				});

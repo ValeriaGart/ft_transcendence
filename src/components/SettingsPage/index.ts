@@ -2,8 +2,8 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
 import { ErrorManager } from "../Error";
-import { ConfirmDialogManager } from "../ConfirmDialog";
 import { getApiUrl } from "../../config/api";
+import { ConfirmDialogManager } from "../ConfirmDialog";
 
 interface SettingsPageState {
   currentPage: 'page1' | 'page2' | 'confirm' | 'password_change';
@@ -389,7 +389,7 @@ export class SettingsPage extends Component<SettingsPageState> {
           throw new Error('No user logged in');
         }
         
-        const verifyResponse = await fetch('http://localhost:3000/users/login', {
+        const verifyResponse = await fetch(getApiUrl('/users/login'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -406,7 +406,7 @@ export class SettingsPage extends Component<SettingsPageState> {
         }
         
         // Current password is valid, now change the password TODO
-        const changePasswordResponse = await authService.authenticatedFetch(`http://localhost:3000/users/${currentUser.id}`, {
+        const changePasswordResponse = await authService.authenticatedFetch(getApiUrl(`/users/${currentUser.id}`), {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -557,7 +557,7 @@ export class SettingsPage extends Component<SettingsPageState> {
 
   private async loadProfileData(): Promise<void> {
     try {
-      const response = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
+      const response = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       if (response.ok) {
         const profileData = await response.json();
         
@@ -605,7 +605,7 @@ export class SettingsPage extends Component<SettingsPageState> {
         throw new Error('No user logged in');
       }
 
-      const userResponse = await authService.authenticatedFetch(`http://localhost:3000/users/${currentUser.id}`, {
+      const userResponse = await authService.authenticatedFetch(getApiUrl(`/users/${currentUser.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -637,7 +637,7 @@ export class SettingsPage extends Component<SettingsPageState> {
       }
       
       // Get the user's profile first
-      const profileResponse = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
+      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       if (!profileResponse.ok) {
         throw new Error('Failed to get profile data');
       }
@@ -654,7 +654,7 @@ export class SettingsPage extends Component<SettingsPageState> {
       }
       
       // Update the profile
-      const updateResponse = await authService.authenticatedFetch(`http://localhost:3000/profiles/${profileData.id}`, {
+      const updateResponse = await authService.authenticatedFetch(getApiUrl(`/profiles/${profileData.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

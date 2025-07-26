@@ -112,11 +112,30 @@ class MatchMakingService {
 		}
 
 		let roomStorage;
+
 		try {
 			const newRoom = await this.RoomService.createRoom(connection, message);
 			roomStorage = newRoom;
-			/*👉 send invitations to players 
-				except connection (the one who invited) and AI opponents*/
+
+		} catch (error) {
+			console.error("Error: ", error.message);
+
+			await this.WebsocketService.sendMessageToClient(connection, {
+				type: "ERROR",
+				sender: "__server",
+				message: "Something went wrong when creating the room."
+			});
+			return ;
+		}
+
+
+		try {
+			const newRoom = roomStorage;
+			this.WebsocketService.sendMessageToClient(connection, {
+				sender: "__server",
+				message: "Your room was created, waiting for players to accept the invitation.",
+				roomId: `${newRoom.id}`
+			});
 			await InvitationService.sendInvitation(this.WebsocketService, newRoom);
 
 //experiment
@@ -136,11 +155,10 @@ class MatchMakingService {
 				});
 					
 
-			/* 👉 send message to all players informing them that the match will start */
 			this.startMatch(newRoom);
 		} catch (error) {
 			console.error("Error: ", error.message);
-			/* 👉 todo: send cancel message to players */
+
 			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, roomStorage, this.createCancelMatchMessage(roomStorage));
 			this.RoomService.destroyRoom(roomStorage.id);
 			//return error message to connection

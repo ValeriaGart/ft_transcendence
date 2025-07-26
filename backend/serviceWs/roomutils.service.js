@@ -81,7 +81,7 @@ class RoomUtilsService {
 	}
 
 	static async sendMessageToAllPlayers(websocketService, room, message) {
-		for (let p in room.players) {
+		for (let p of room.players) {
 			if (p.ai == true) {
 				continue ;
 			}

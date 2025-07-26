@@ -3,7 +3,7 @@ import { GameState, OpponentMode } from './types.ts';
 
 export class InputHandler {
 	private _engine: GameEngine;
-	private _oppMode: OpponentMode = OpponentMode.SINGLE;
+	public _oppMode: OpponentMode = OpponentMode.SINGLE;
 
 	constructor(engine: GameEngine) {
 		this._engine = engine;

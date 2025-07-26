@@ -1,7 +1,7 @@
 import { BotAI } from "./botAI.js";
 
 export class Player {
-	private	_name: string = "default";
+	private	_name: string;
 	private	_position: number = 0;
 	private _isBot: boolean = false;
 	public _side: string;
@@ -9,7 +9,7 @@ export class Player {
 	public _AI: BotAI;
 
 	constructor(name?: string, pos?: number, isBot?: boolean, side?: string) {
-		this._name = name || this._name;
+		this._name = name || 'default';
 		this._position = pos || this._position;
 		this._isBot = isBot || this._isBot;
 		this._side = side || 'default';

@@ -54,7 +54,19 @@ export class SettingsPage extends Component<SettingsPageState> {
   }
 
   protected onMount(): void {
-    console.log('SettingsPage mounted');
+    console.log('SettingsPage onMount called, current URL:', window.location.pathname);
+    
+    // Reset state to initial values when mounting
+    this.setState({
+      currentPage: 'page1',
+      pendingChanges: {},
+      originalValues: {},
+      isLoading: false,
+      showError: false,
+      errorMessage: null,
+    });
+    
+    console.log('SettingsPage mounted, reset to page1');
     this.setupEventListeners();
     this.loadCurrentUserData();
     this.updatePageVisibility();
@@ -138,22 +150,28 @@ export class SettingsPage extends Component<SettingsPageState> {
     this.addEventListener('#confirm_button_page1', 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();
+      console.log('Confirm button clicked from page 1, switching to confirm page');
       
       const usernameInput = this.element.querySelector('#username') as HTMLInputElement;
       const emailInput = this.element.querySelector('#email') as HTMLInputElement;
       
       const pendingChanges: any = {};
-      if (usernameInput && usernameInput.value.trim() !== this.state.originalValues.username) {
-        pendingChanges.username = usernameInput.value.trim();
+      
+      // Compare username changes
+      const currentUsername = usernameInput ? usernameInput.value.trim() : '';
+      const originalUsername = this.state.originalValues.username || '';
+      if (currentUsername !== originalUsername) {
+        pendingChanges.username = currentUsername;
       }
-      if (emailInput && emailInput.value.trim() !== this.state.originalValues.email) {
-        // if user is trying to change only Gmail address
-        if (this.state.isGoogleUser) {
-          this.showError('Ups! Change your gmail\'s address is a naughty move.');
-          return;
-        }
-        pendingChanges.email = emailInput.value.trim();
+      
+      // Compare email changes
+      const currentEmail = emailInput ? emailInput.value.trim() : '';
+      const originalEmail = this.state.originalValues.email || '';
+      if (currentEmail !== originalEmail) {
+        pendingChanges.email = currentEmail;
       }
+
+      console.log('Pending changes:', pendingChanges);
       
       if (Object.keys(pendingChanges).length === 0) {
         Router.getInstance().navigate('/user');
@@ -177,19 +195,26 @@ export class SettingsPage extends Component<SettingsPageState> {
       const emailInput = this.element.querySelector('#email') as HTMLInputElement;
       
       const pendingChanges: any = {};
-      if (usernameInput && usernameInput.value.trim() !== this.state.originalValues.username) {
-        pendingChanges.username = usernameInput.value.trim();
+      
+      // Compare username changes
+      const currentUsername = usernameInput ? usernameInput.value.trim() : '';
+      const originalUsername = this.state.originalValues.username || '';
+      if (currentUsername !== originalUsername) {
+        pendingChanges.username = currentUsername;
       }
-      if (emailInput && emailInput.value.trim() !== this.state.originalValues.email) {
-        // Check if user is trying to change Gmail address
-        if (this.state.isGoogleUser) {
-          this.showError('Ups! Change your gmail\'s address is a naughty move.');
-          return;
-        }
-        pendingChanges.email = emailInput.value.trim();
+      
+      // Compare email changes
+      const currentEmail = emailInput ? emailInput.value.trim() : '';
+      const originalEmail = this.state.originalValues.email || '';
+      if (currentEmail !== originalEmail) {
+        pendingChanges.email = currentEmail;
       }
-      if (bioInput && bioInput.value.trim() !== this.state.originalValues.bio) {
-        pendingChanges.bio = bioInput.value.trim();
+      
+      // Compare bio changes
+      const currentBio = bioInput ? bioInput.value.trim() : '';
+      const originalBio = this.state.originalValues.bio || '';
+      if (currentBio !== originalBio) {
+        pendingChanges.bio = currentBio;
       }
       
       if (Object.keys(pendingChanges).length === 0) {
@@ -537,10 +562,13 @@ export class SettingsPage extends Component<SettingsPageState> {
   private loadCurrentUserData(): void {
 
     const currentUser = authService.getCurrentUser();
-    if (currentUser) {
+    console.log('SettingsPage: Loading current user data:', currentUser);
+    
+    if (currentUser && currentUser.email) {
       const emailInput = this.element.querySelector('#email') as HTMLInputElement;
       if (emailInput) {
         emailInput.value = currentUser.email;
+        console.log('SettingsPage: Set email input to:', currentUser.email);
       }
       
       this.setState({ 
@@ -549,6 +577,9 @@ export class SettingsPage extends Component<SettingsPageState> {
           email: currentUser.email 
         } 
       });
+      console.log('SettingsPage: Set original email to:', currentUser.email);
+    } else {
+      console.log('SettingsPage: No current user or email is undefined/null');
     }
     
     // Load profile data for username and bio
@@ -674,5 +705,10 @@ export class SettingsPage extends Component<SettingsPageState> {
     this.setState({ isLoading: false, pendingChanges: {} });
   }
     
+  protected onUnmount(): void {
+    console.log('SettingsPage onUnmount called');
+    // Cleanup any subscriptions or timers here
+  }
+
   render() {}
 } 

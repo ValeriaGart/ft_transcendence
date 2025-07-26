@@ -7,6 +7,7 @@ import { SignInPage } from "./components/SignInPage";
 import { GreatSuccessPage } from "./components/GreatSuccessPage";
 import { UserPage } from "./components/UserPage";
 import { SettingsPage } from "./components/SettingsPage";
+import { GamePage } from "./components/GamePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { authService } from "./lib/auth";
@@ -23,8 +24,6 @@ console.log('Stored user:', localStorage.getItem('auth_user') ? 'exists' : 'none
 console.log('AuthService state:', authService.getAuthState());
 console.log('=== END DEBUG ===');
 
-console.log('Setting up global ErrorBoundary...');
-
 // Create global ErrorBoundary
 const globalErrorBoundary = new ErrorBoundary({
     onError: (error, errorInfo) => {
@@ -38,6 +37,10 @@ console.log('Global ErrorBoundary created:', globalErrorBoundary);
 globalErrorBoundary.mount(document.body);
 
 console.log('Global ErrorBoundary mounted to document.body');
+
+window.addEventListener('beforeunload', () => {
+    globalErrorBoundary.unmount();
+});
 
 
 const app = document.querySelector<HTMLDivElement>("#blitz");
@@ -80,6 +83,10 @@ if (app) {
 				path: "/settings",
 				component: SettingsPage,
 			},
+			{
+				path: "/game",
+				component: GamePage,
+			}
 		]
 	})
 

@@ -18,30 +18,41 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         errorInfo: null,
     };
 
+    private errorHandler: (event: ErrorEvent) => void;
+    private unhandledRejectionHandler: (event: PromiseRejectionEvent) => void;
+
     constructor(props: ErrorBoundaryProps) {
         super(props);
         this.handleError = this.handleError.bind(this);
-        this.setupErrorListeners();
-    }
 
-    private setupErrorListeners(): void {
-        
-        window.addEventListener('error', (event) => {
+        this.errorHandler = (event) => {
             this.handleError(event.error, {
                 type: 'window.error',
                 filename: event.filename,
                 lineno: event.lineno,
                 colno: event.colno
             });
-        });
+        };
 
-        window.addEventListener('unhandledrejection', (event) => {
+        this.unhandledRejectionHandler = (event) => {
             console.log('ErrorBoundary caught unhandledrejection event:', event);
             this.handleError(new Error(event.reason), {
                 type: 'unhandledrejection',
                 promise: event.promise
             });
-        });
+        };
+        this.setupErrorListeners();
+    }
+
+    protected onUnmount(): void {
+        console.log('ErrorBoundary onUnmount called');
+        window.removeEventListener('error', this.errorHandler);
+        window.removeEventListener('unhandledrejection', this.unhandledRejectionHandler);
+    }
+
+    private setupErrorListeners(): void {
+        window.addEventListener('error', this.errorHandler);
+        window.addEventListener('unhandledrejection', this.unhandledRejectionHandler);
     }
 
     private handleError(error: Error, errorInfo: any) {

@@ -1,5 +1,6 @@
 // import { dbGet } from "../config/database.js";
-import FriendService from "./friend.service.js";
+import FriendService from "../services/friend.service.js";
+import InvitationService from "./invitation.service.js";
 import MatchMakingService from "./matchmaking.service.js";
 
 // const _matchMakingService = new MatchMakingService(this);
@@ -7,9 +8,8 @@ import MatchMakingService from "./matchmaking.service.js";
 class WebsocketService {
     constructor(websocketServer) {
         this.websocketServer = websocketServer;
-		// this.rooms = [];
-		// this.matchMakingService = _matchMakingService;
 		this.matchMakingService = new MatchMakingService(this);
+		this.invitationService = new InvitationService(this);
     }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
@@ -64,6 +64,14 @@ class WebsocketService {
 						throw new Error ("Parsing: Invalid message: 'players', 'matchType' or 'oppMode' field is missing or empty");
 					}
 					this.matchMakingService.matchMakingInit(connection, parsedMessage);
+				}
+				else if (parsedMessage.type === 4) {
+					console.log("[handleMessage] type 4: accept match invitation");
+					if (!parsedMessage.roomId || !parsedMessage.acceptance) {
+						throw new Error ("Parsing: Invalid message: 'roomId' or 'acceptance' field is missing or empty");
+					}
+					// this.matchMakingService.matchMakingInit(connection, parsedMessage);
+					this.invitationService.matchMakingAcceptInvitation(connection, parsedMessage);
 				}
 				else {
 					console.log("[handleMessage] unknown type");
@@ -129,12 +137,11 @@ class WebsocketService {
 	}
 
 	sendMessageToClient(client, message) {
+		if (!client) {
+			console.error("Don't send undefined clients to sendMessageToClient function :(");
+			return ;
+		}
 		client.send(JSON.stringify(message));
-		// for (let client of this.websocketServer.clients) {
-		// 	if (client.readyState === 1 && client === deliverto) {
-		// 	}
-		// }
-
 	}
 
 	broadcast(message, excludeConnection = null) {
@@ -144,6 +151,17 @@ class WebsocketService {
             }
         }
     }
+
+
+	createErrorMessage(message) {
+		const msg = {
+			type: "ERROR",
+			sender: "__server",
+			message: `${message}`
+		};
+		return msg;
+	}
+
 }
 
 export default WebsocketService;

@@ -2,13 +2,11 @@ class RoomUtilsService {
 	static async getAllAcceptedPlayerNicksRoom(room) {
 		const playerNicksRoom = [];
 		for (let player of room.players) {
-			// console.log("[getAllAcceptedPlayerNicksRoom] player: ", player.nick);
 			if (player.ai == false && player.accepted === "accepted")
 				{
 					playerNicksRoom.push(player.nick);
 				}
 		}
-		// console.log("[getAllAcceptedPlayerNicksRoom] playerNicksRoom: ", playerNicksRoom);
 		return (playerNicksRoom);
 	}
 	

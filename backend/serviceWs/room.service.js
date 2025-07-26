@@ -41,7 +41,6 @@ class RoomService {
 		
 	
 	async createRoom(connection, message) {
-		// 👉 insert needed info into new room object
 		const room = {
 			id: this.createUniqueId(),
 			gameMode: message.gameMode,
@@ -70,8 +69,6 @@ class RoomService {
 				p.accepted = "accepted";
 			}
 		}
-		// 👉 add accepted status to all players
-		// 		👉accepted for OP, pending for players, accepted for AI opponent
 
 		this.rooms.push(room);
 		console.log("[RoomService] new room was created");
@@ -83,14 +80,12 @@ class RoomService {
 		}, 2));
 		
 		return (room);
-	// 👉 use setTimeout function with a promise to 
-	// 	destroyRoom if fulfilled
 	}
 
 		
 	async destroyRoom(todeleteId) {
 		let count = 0;
-		console.log("[RoomService] rooms[] length: ", this.rooms.length);
+		console.debug("[RoomService] rooms[] length: ", this.rooms.length);
 		for (let r of this.rooms) {
 			if (r.id === todeleteId) {
 				console.log("deleting ", todeleteId);
@@ -99,12 +94,7 @@ class RoomService {
 			}
 			count++;
 		}
-		console.log("[RoomService] rooms[] length after destroyRoom function: ", this.rooms.length);
-
-		// loop through room in rooms[]
-		// when todelete found
-
-		//👉  destroy
+		console.debug("[RoomService] rooms[] length after destroyRoom function: ", this.rooms.length);
 		}
 	
 

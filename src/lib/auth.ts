@@ -1,4 +1,5 @@
 import { getApiUrl, API_CONFIG } from '../config/api';
+import { WebSocketService } from './webSocket';
 
 /**
  * Authentication service for managing user tokens and login state
@@ -207,6 +208,10 @@ class AuthService {
 
         this.saveToStorage();
         this.notifyListeners();
+
+        console.log('AuthService WebSocket: Initializing WebSocket after successful login');
+        WebSocketService.getInstance().connect(getApiUrl('/hello-ws'));  
+
         console.log('AuthService: Login complete, state updated');
         return { success: true };
       } else {
@@ -287,6 +292,10 @@ class AuthService {
 
         this.saveToStorage();
         this.notifyListeners();
+
+        console.log('AuthService: Initializing WebSocket after successful Google signin');
+        WebSocketService.getInstance().connect(getApiUrl('/hello-ws'));  
+
         console.log('AuthService: Google signin complete, state updated');
         return { success: true };
       } else {
@@ -326,6 +335,7 @@ class AuthService {
       console.error('AuthService: Logout error:', error);
     }
 
+    WebSocketService.getInstance().disconnect();
     // Always clear local auth state regardless of backend response
     this.clearAuth();
     this.notifyListeners();
@@ -377,20 +387,31 @@ class AuthService {
       });
 
       if (response.ok) {
-        const user = await response.json();
+        const responseData = await response.json();
+        // Extract the user object from the response. Changed by V to fix return of specific data
+        const user = responseData.user || responseData;
         // Update user data in case it changed
         this.state.user = user;
         this.saveToStorage();
         this.notifyListeners();
+
+        // Reconnect WebSocket if verification succeeds
+        console.log('AuthService Websocket: Reconnecting WebSocket after successful auth verification');
+        WebSocketService.getInstance().connect(getApiUrl('/hello-ws'));
+
         return true;
       } else {
         // Token is invalid, clear auth
+        console.log('AuthService Websocket: Disconnecting WebSocket after failed auth verification');
+        WebSocketService.getInstance().disconnect();
         this.clearAuth();
         this.notifyListeners();
         return false;
       }
     } catch (error) {
       console.error('AuthService: Auth verification error:', error);
+      console.log('AuthService Websocket: Disconnecting WebSocket after auth verification error');
+      WebSocketService.getInstance().disconnect();
       return false;
     }
   }

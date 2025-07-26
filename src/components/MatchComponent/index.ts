@@ -2,7 +2,8 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
-// import { webSocketService } from "../../lib/websocket";
+import { authService } from "../../lib/auth";
+import { WebSocketService } from "../../lib/webSocket";
 
 interface Friendship {
   id: number;
@@ -20,6 +21,7 @@ interface MatchComponentState {
   friendships: Friendship[];
   loading: boolean;
   showAddFriendForm: boolean;
+  userProfiles: Record<number, { nickname?: string }>;
 }
 
 export class MatchComponent extends Component<MatchComponentState> {
@@ -29,7 +31,8 @@ export class MatchComponent extends Component<MatchComponentState> {
     showError: false,
     friendships: [],
     loading: true,
-    showAddFriendForm: false
+    showAddFriendForm: false,
+    userProfiles: {}
   }
 
   constructor() {
@@ -45,7 +48,6 @@ export class MatchComponent extends Component<MatchComponentState> {
   
     this.setupStartAiMatchButton();
     this.setupToggleButtons();
-    // this.setupWebSocketHandlers();
     this.fetchFriendships();
     this.updatePageVisibility();
   }
@@ -67,29 +69,6 @@ export class MatchComponent extends Component<MatchComponentState> {
       });
     }
   }
-
-  /**
-   * Setup WebSocket event handlers
-   */
-  // private setupWebSocketHandlers(): void {
-  //   // Handle friend request results
-  //   webSocketService.on('friend_request_result', (data: { success: boolean; error?: string }) => {
-  //     if (data.success) {
-  //       this.handleFriendRequestSuccess();
-  //     } else {
-  //       this.showError(data.error || 'Failed to add friend');
-  //     }
-  //   });
-
-    // Handle current user info
-  //   webSocketService.on('current_user_result', (data: { success: boolean; user?: any; error?: string }) => {
-  //     if (data.success && data.user) {
-  //       console.log('hello My user ID:', data.user.id);
-  //     } else {
-  //       console.log('hello Could not fetch current user ID');
-  //     }
-  //   });
-  // }
 
   /**
    * Setup toggle buttons for switching between friends list and add friend form
@@ -114,6 +93,17 @@ export class MatchComponent extends Component<MatchComponentState> {
       e.preventDefault();
       console.log('add-friends-button clicked');
       this.handleAddFriend();
+    });
+
+    // Use event delegation for dynamically created confirm buttons
+
+    this.addEventListener('button.confirm-friend-btn', 'click', (e) => {
+      e.preventDefault();
+      console.log('confirm-friend-btn clicked');
+      const button = e.target as HTMLElement;
+      const initiatorId = button.getAttribute('data-initiator-id');
+      console.log('Initiator ID:', initiatorId);
+      this.handleConfirmFriend(parseInt(initiatorId || '0'));
     });
   }
 
@@ -181,17 +171,45 @@ export class MatchComponent extends Component<MatchComponentState> {
       });
 
       if (response.ok) {
-        const friendships: Friendship[] = await response.json();
-        console.log('Friendships received:', friendships);
+        const allFriendships: Friendship[] = await response.json();
+        console.log('All friendships received:', allFriendships);
+        
+        // Filter friendships to only include the current user's friendships
+        const currentUser = authService.getCurrentUser();
+        const currentUserId = currentUser?.id;
+        
+        if (!currentUserId) {
+          this.showError('Could not get current user ID');
+          return;
+        }
+        
+        const userFriendships = allFriendships.filter(friendship => 
+          friendship.initiator_id === currentUserId || friendship.recipient_id === currentUserId
+        );
+        
+        console.log('Filtered friendships for user', currentUserId, ':', userFriendships);
         
         this.setState({ 
-          friendships: friendships || [],
+          friendships: userFriendships || [],
           loading: false 
         });
+
+        // Fetch user profiles for all unique user IDs in friendships
+        await this.fetchUserProfiles(userFriendships);
       } else {
-        const errorText = await response.text();
-        console.error('API Error response:', errorText);
-        throw new Error(`Failed to fetch friendships: ${response.status} ${errorText}`);
+        const errorData = await response.json();
+        console.error('API Error response:', errorData);
+        
+        // If the error is "No friends found", treat it as an empty list instead of an error
+        if (errorData.details && errorData.details.includes('No friends found')) {
+          console.log('No friendships found, treating as empty list');
+          this.setState({ 
+            friendships: [],
+            loading: false 
+          });
+        } else {
+          throw new Error(`Failed to fetch friendships: ${response.status} ${JSON.stringify(errorData)}`);
+        }
       }
     } catch (error) {
       console.error('Error fetching friendships:', error);
@@ -203,9 +221,93 @@ export class MatchComponent extends Component<MatchComponentState> {
   }
 
   /**
-   * Handle adding a new friend using WebSockets
+   * Fetch user profiles for all unique user IDs in friendships
    */
-  private handleAddFriend(): void {
+  private async fetchUserProfiles(friendships: Friendship[]): Promise<void> {
+    try {
+      // Get all unique user IDs from friendships
+      const userIds = new Set<number>();
+      friendships.forEach(friendship => {
+        userIds.add(friendship.initiator_id);
+        userIds.add(friendship.recipient_id);
+      });
+
+      // Remove current user ID since we don't need their profile
+      const currentUser = authService.getCurrentUser();
+      if (currentUser?.id) {
+        userIds.delete(currentUser.id);
+      }
+
+      console.log('Fetching profiles for user IDs:', Array.from(userIds));
+
+      // Fetch profiles for each user
+      const userProfiles: Record<number, { nickname?: string }> = {};
+      
+      for (const userId of userIds) {
+        try {
+          const response = await fetch(getApiUrl(`/profiles/${userId}`), {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (response.ok) {
+            const profile = await response.json();
+            userProfiles[userId] = profile;
+          } else {
+            console.warn(`Failed to fetch profile for user ${userId}`);
+            userProfiles[userId] = { nickname: undefined };
+          }
+        } catch (error) {
+          console.error(`Error fetching profile for user ${userId}:`, error);
+          userProfiles[userId] = { nickname: undefined };
+        }
+      }
+
+      this.setState({ userProfiles });
+      console.log('User profiles loaded:', userProfiles);
+    } catch (error) {
+      console.error('Error fetching user profiles:', error);
+    }
+  }
+
+  private async handleConfirmFriend(initiatorId: number): Promise<void> {
+    if (!initiatorId) {
+      this.showError('Invalid initiator ID');
+      return;
+    }
+
+    try {
+      const response = await fetch(getApiUrl('/friend/me'), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          friend_id: initiatorId
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Friend request accepted successfully');
+        await this.fetchFriendships();
+        this.renderFriendshipsList();
+        this.updatePageVisibility();
+      } else {
+        const errorData = await response.json();
+        console.error('Accept friend request failed:', errorData);
+        this.showError(errorData.details || 'Failed to accept friend request');
+      }
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      this.showError('Network error while accepting friend request');
+    }
+  }
+
+  private async handleAddFriend(): Promise<void> {
     const inputElement = this.element.querySelector('#add-friends-input') as HTMLInputElement;
     if (!inputElement) {
       this.showError('Input field not found');
@@ -214,7 +316,9 @@ export class MatchComponent extends Component<MatchComponentState> {
 
     const userIdStr = inputElement.value.trim();
     if (!userIdStr) {
+      const storedUser = authService.getCurrentUser();
       this.showError('Please enter a user ID');
+      console.log('Debug - storedUser:', storedUser);
       return;
     }
 
@@ -225,19 +329,41 @@ export class MatchComponent extends Component<MatchComponentState> {
     }
 
     console.log('Adding friend with user ID:', userId);
-    // console.log('WebSocket service available:', !!webSocketService);
-    // console.log('WebSocket service methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(webSocketService)));
 
-    // Get current user info via WebSocket
-    console.log('Calling getCurrentUser...');
-    // webSocketService.getCurrentUser();
+    // Check if trying to add yourself
+    const currentUser = authService.getCurrentUser();
+    console.log('Current user id:', currentUser?.id, 'userId:', userId);
+    if (currentUser?.id === userId) {
+      this.showError('You cannot add yourself as a friend');
+      return;
+    }
 
-    // Send friend request directly (skip user search since we can't access other users)
-    console.log('Calling addFriend...');
-    // webSocketService.addFriend(userId);
+    // Send friend request - backend will validate user existence
+    try {
+      const response = await fetch(getApiUrl('/friend/me'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          friend_id: userId
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Friend request sent successfully');
+        this.handleFriendRequestSuccess();
+      } else {
+        const errorData = await response.json();
+        console.error('Friend request failed:', errorData);
+        this.showError(errorData.details || 'Failed to send friend request');
+      }
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      this.showError('Network error while sending friend request');
+    }
   }
-
-
 
   /**
    * Handle successful friend request
@@ -294,7 +420,7 @@ export class MatchComponent extends Component<MatchComponentState> {
   /**
    * Render friendships list in the friend-list container
    */
-  private renderFriendshipsList(): void {
+  private async renderFriendshipsList(): Promise<void> {
     const friendListContainer = document.getElementById('friend-list');
     if (!friendListContainer) return;
 
@@ -322,33 +448,108 @@ export class MatchComponent extends Component<MatchComponentState> {
       return;
     }
 
-    // Render friendships list
-    const friendshipsHtml = this.state.friendships.map((friendship: Friendship) => `
-      <div class="flex items-center justify-between p-3 mb-2 bg-[#F0F7F7] rounded-lg border border-[#81C3C3]">
-        <div class="flex items-center">
-          <img src="/art/profile/profile_no.svg" alt="Profile" class="w-8 h-8 rounded-full mr-3" />
-          <div>
-            <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg">Friendship ${friendship.id}</div>
-            <div class="text-[#81C3C3] text-sm opacity-75">
-              ${friendship.initiator_id} → ${friendship.recipient_id}
-              ${friendship.accepted ? ' (Accepted)' : ' (Pending)'}
+    const currentUser = authService.getCurrentUser();
+    const currentUserId = currentUser?.id;
+    if (!currentUserId) {
+      console.error('Could not get current user ID for rendering friendships');
+      return;
+    }
+
+         // Sort friendships: accepted first, then pending
+         const sortedFriendships = [...this.state.friendships].sort((a, b) => {
+           const aAccepted = a.accepted === 1;
+           const bAccepted = b.accepted === 1;
+           if (aAccepted && !bAccepted) return -1; // a comes first
+           if (!aAccepted && bAccepted) return 1;  // b comes first
+           return 0; // same status, maintain original order
+         });
+
+         const friendshipsHtml = sortedFriendships.map((friendship: Friendship) => {
+       const isAccepted = friendship.accepted === 1;
+       const isPending = friendship.accepted === null || friendship.accepted === undefined;
+       const isInitiator = friendship.initiator_id === currentUserId;
+       const isRecipient = friendship.recipient_id === currentUserId;
+
+       // Get the other user's nickname
+       const otherUserId = isInitiator ? friendship.recipient_id : friendship.initiator_id;
+       const otherUserProfile = this.state.userProfiles?.[otherUserId];
+       const displayName = otherUserProfile?.nickname || `User ${otherUserId}`;
+
+      let statusText = '';
+      let statusColor = '';
+      let buttonHtml = '';
+    
+      if (isAccepted) {
+        statusText = 'Friend';
+        statusColor = 'text-[#81C3C3]';
+        buttonHtml = '';
+      } else if (isPending) {
+        if (isInitiator) {
+          // User initiated the request - show "Pending..."
+          statusText = 'Pending';
+          statusColor = 'text-yellow-600';
+          buttonHtml = `
+            <div class="px-4 py-2 ml-[30%] text-[#81C3C3] font-['Irish_Grover'] text-sm">
+              Pending...
             </div>
-            <div class="text-[#81C3C3] text-xs opacity-50">
-              Created: ${new Date(friendship.createdAt).toLocaleDateString()}
+          `;
+        } else if (isRecipient) {
+          // User received the request - show "Confirm" button
+          statusText = 'Pending';
+          statusColor = 'text-yellow-600';
+                     const buttonId = `confirm-btn-${friendship.id}`;
+           buttonHtml = `
+             <button id="${buttonId}" class="confirm-friend-btn px-4 py-2 ml-[20%] lg:ml-[30%] bg-[#81C3C3] text-white font-['Irish_Grover'] text-sm rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer" 
+                     data-initiator-id="${friendship.initiator_id}">
+               Confirm
+             </button>
+           `;
+           console.log('Created confirm button for friendship:', friendship.id, 'initiator:', friendship.initiator_id);
+        }
+      }
+
+      return `
+        <div class="flex items-center justify-start p-2 mb-1">
+          <div class="flex items-center">
+            <div>
+              <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg">${displayName}</div>
+              <div class="text-[#81C3C3] text-xs opacity-50">
+                Created: ${new Date(friendship.createdAt).toLocaleDateString()}
+              </div>
+              <div class="text-xs ${statusColor} font-semibold">
+                ${statusText}
+              </div>
             </div>
           </div>
+          ${buttonHtml}
         </div>
-        <button class="px-4 py-2 bg-[#B784F2] text-white font-['Irish_Grover'] text-sm rounded-lg hover:scale-105 transition-transform duration-300">
-          Play
-        </button>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     friendListContainer.innerHTML = `
       <div class="w-full h-full overflow-y-auto">
         ${friendshipsHtml}
       </div>
     `;
+
+    // Add event listeners to confirm buttons after rendering
+    this.state.friendships.forEach((friendship: Friendship) => {
+      const isPending = friendship.accepted === null || friendship.accepted === undefined;
+      const isRecipient = friendship.recipient_id === currentUserId;
+      
+      if (isPending && isRecipient) {
+        const buttonId = `confirm-btn-${friendship.id}`;
+        const button = document.getElementById(buttonId);
+        if (button) {
+          console.log('Adding event listener to button:', buttonId);
+          button.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Direct button click for friendship:', friendship.id);
+            this.handleConfirmFriend(friendship.initiator_id);
+          });
+        }
+      }
+    });
   }
 
   protected onUnmount(): void {

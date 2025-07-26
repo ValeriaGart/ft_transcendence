@@ -10,11 +10,25 @@ export class WebSocketService {
     }
     return WebSocketService.instance;
   }
+  
 
+  public isConnected(): boolean {
+    return this.ws && this.ws.readyState === WebSocket.OPEN;
+  }
+
+  //Added prevention of dup connections
   public connect(url: string): void {
-    if (!this.ws) {
-        this.ws = new WebSocket(url);
+    if (this.isConnected()) {
+      console.log('WebSocketService: Already connected to WebSocket server');
+      return;
     }
+
+    // Close existing connection if it exists but isn't open
+    if (this.ws) {
+      this.ws.close();
+    }
+    
+    this.ws = new WebSocket(url);
     this.setupEventListeners();
   }
 

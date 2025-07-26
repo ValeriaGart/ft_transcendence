@@ -97,7 +97,6 @@ class MatchMakingService {
 		console.log("[matchMakingInit] start");
 		if (this.RoomService.rooms.length > 0)
 		{
-		/* 👉👉👉👉 woopsie playersBusy needs to be rearranged so it can access the player IDs that are added in createRoom*/
 			if (RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
 				this.WebsocketService.sendMessageToClient(connection, {
@@ -105,8 +104,6 @@ class MatchMakingService {
 					sender: "__server",
 					message: "Error creating Match: Players are busy"
 				});
-				// 👉	if someone already occupied, send FAILURE to connection
-				// 	and exit the matchmaking
 				return ;
 			}
 		}
@@ -132,6 +129,7 @@ class MatchMakingService {
 		try {
 			const newRoom = roomStorage;
 			this.WebsocketService.sendMessageToClient(connection, {
+				type: "INFO",
 				sender: "__server",
 				message: "Your room was created, waiting for players to accept the invitation.",
 				roomId: `${newRoom.id}`

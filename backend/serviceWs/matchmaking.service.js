@@ -11,36 +11,12 @@ function sleep(ms) {
 
 class MatchMakingService {
     constructor(websocketService) {
-		// this.rooms = [];
 		this.EmojiService = new EmojiService();
 		this.WebsocketService = websocketService;
 		this.RoomService = new RoomService(this.WebsocketService, this.EmojiService);
 		
 		console.log("[MatchMakingService] constructor");
     }
-	/* just information what room should contain
-		{
-		"gameMode": "1v1",
-		"players": 
-			[
-				{
-				"id": 1,
-				"nick": "luca",
-				"status": "accepted",
-				"ai": false
-				},
-				{
-					"id": 2,
-					"nick": "yen",
-					"status": "pending",
-					"ai": false
-				}
-			],
-		"timeoutAt": "timestamp + 30 seconds"
-		}
-	 */
-
-
 
 	createStartMatchMessage(room) {
 		const sanitizedPlayers = room.players.map(player => {
@@ -71,27 +47,16 @@ class MatchMakingService {
 	}
 
 
-
 	async startMatch(room) {
-		/* checks for accepted status should NOT happen in here, but before */
-		/* 👉 send info to all real players */
 		for (let player of room.players) {
 			if (player.id && player.wsclient) {
 				console.log("[startMatch] player: ", player.nick);
-
 				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room));
-
-				// await this.WebsocketService.sendMessageToClient(player.wsclient, {
-				// 	sender: "__server",
-				// 	message: `Your match will start now: ${room.id}`
-				// })
 			}
 		}
 
 	}
 	
-
-
 
 	async matchMakingInit(connection, message) {
 		console.log("[matchMakingInit] start");
@@ -136,11 +101,11 @@ class MatchMakingService {
 			});
 			await InvitationService.sendInvitation(this.WebsocketService, newRoom);
 
-//experiment
-				const promiseAllAccepted = new Promise(async (resolve, reject) => {
-					await sleep(5000); // 5 seconds
-					resolve("Promise 1 resolved after 5 seconds");
-				});
+		//experiment
+				// const promiseAllAccepted = new Promise(async (resolve, reject) => {
+				// 	await sleep(5000); // 5 seconds
+				// 	resolve("Promise 1 resolved after 5 seconds");
+				// });
 				const timeoutPromise = new Promise(async (resolve, reject) => {
 					await sleep(timeoutSec * 1000); // 7 seconds
 					resolve("Promise 2 resolved after 30 seconds");
@@ -159,16 +124,9 @@ class MatchMakingService {
 
 			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, roomStorage, this.createCancelMatchMessage(roomStorage));
 			this.RoomService.destroyRoom(roomStorage.id);
-			//return error message to connection
 			return ;
 		}
-
-
-
-
-
 	}
-	/* <><><><><><><><><><><><><><><><><><><><><><><><> */
 }
 
 export default MatchMakingService;

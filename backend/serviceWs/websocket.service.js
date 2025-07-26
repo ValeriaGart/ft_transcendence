@@ -8,8 +8,6 @@ import MatchMakingService from "./matchmaking.service.js";
 class WebsocketService {
     constructor(websocketServer) {
         this.websocketServer = websocketServer;
-		// this.rooms = [];
-		// this.matchMakingService = _matchMakingService;
 		this.matchMakingService = new MatchMakingService(this);
 		this.invitationService = new InvitationService(this);
     }
@@ -144,11 +142,6 @@ class WebsocketService {
 			return ;
 		}
 		client.send(JSON.stringify(message));
-		// for (let client of this.websocketServer.clients) {
-		// 	if (client.readyState === 1 && client === deliverto) {
-		// 	}
-		// }
-
 	}
 
 	broadcast(message, excludeConnection = null) {

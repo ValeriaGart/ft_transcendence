@@ -391,20 +391,28 @@ export class MatchComponent extends Component<MatchComponentState> {
   private handleStartAiMatch(): void {
     try {
       console.log('Starting AI match...');
+
+      const ws = WebSocketService.getInstance();
+
+      const msg = {
+        "type": 3,
+        "players": [
+          {"nick": "gio", "ai": false},
+          {"nick": "CPU", "ai": true},
+        ],
+        "gameMode": "bestof",
+        "oppMode": "single"
+        };
+
+      ws.sendMessage(JSON.stringify(msg));
       
-      // Prevent multiple navigation calls
-      if (window.location.pathname === '/game') {
-        console.log('Already on game page, skipping navigation');
-        return;
-      }
-
-
+      // Navigate to the game page
       const router = Router.getInstance();
       if (router) {
         router.navigate('/user/game');
       } else {
         // Fallback: use window.location if router is not available
-        window.location.href = `/game`;
+        window.location.href = '/game';
       }
       
     } catch (error) {

@@ -1,36 +1,73 @@
-import { Component } from "@blitz-ts/Component";
+import { Component } from "@blitz-ts";
 import { GameEngine } from "../../game/gameEngine";
+import { WebSocketService } from "./../../lib/webSocket";
 
 export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
+
+    private msg: MessageEvent | null = null;
 
     constructor() {
         super();
     }
 
-    protected onMount(): void {
-        console.log("GamePage onMount called");
-        this.initializeGame();
+    render() {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'gameCanvas';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.maxWidth = '1600px';
+        canvas.style.maxHeight = '900px';
+
+        // const ws = new WebSocket('ws://localhost:3000/hello-ws');
+        const ws = WebSocketService.getInstance();
+        ws.connect('ws://localhost:3000/hello-ws')
+
+        ws.ws.onmessage = (message) => {
+            console.log("message: ", message.data);
+            if (!this.parseMessage(message)) {
+                return;
+            }
+            this.msg = message;
+
+            const element = this.getElement();
+            if (element) {
+                element.innerHTML = '';
+                element.appendChild(canvas);
+    
+                setTimeout(() => {
+                    this.initializeGame();
+                }, 0);
+            }
+        }
+    }
+
+    private parseMessage(message: MessageEvent): boolean {
+        var msg
+        msg = JSON.parse(message.data);
+
+        if (msg.type !== "STARTMATCH") {
+            console.error("Unexpected message type:", msg.type);
+            return false;
+        }
+        return true;
     }
 
     private initializeGame(): void {
-        const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
-        if (canvas) {
-            console.log("Initializing game engine with canvas:", canvas);
-            this.gameEngine = new GameEngine('game-canvas');
-            this.gameEngine.startGameLoop();
-        } else {
-            console.error("Canvas element 'game-canvas' not found");
+        try {
+            this.gameEngine = new GameEngine('gameCanvas');
+            if (this.msg) {
+                this.gameEngine.startGameLoop(this.msg);
+                console.log('Game engine initialized successfully');
+            } else {
+                console.error('No message available to start the game loop.');
+            }
+        } catch (error) {
+            console.error('Failed to initialize game engine:', error);
         }
     }
 
     protected onUnmount(): void {
-        console.log("GamePage onUnmount called");
-        // Clean up game engine if needed
-        this.gameEngine = null;
-    }
-
-    render() {
-        console.log("GamePage rendered");
+        super.onUnmount();
     }
 }

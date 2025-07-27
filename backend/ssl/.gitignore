@@ -1,0 +1,9 @@
+# SSL Certificate files - DO NOT COMMIT
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
+
+# Keep this .gitignore file
+!.gitignore

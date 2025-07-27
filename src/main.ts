@@ -72,6 +72,10 @@ if (app) {
 		component: GreatSuccessPage,
 	})
 	.addRoute({
+		path: "/game",
+		component: GamePage,
+	})
+	.addRoute({
 		path: "/user",
 		component: ProtectedRoute,
 		children: [

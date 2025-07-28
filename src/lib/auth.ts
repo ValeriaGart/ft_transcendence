@@ -390,6 +390,8 @@ class AuthService {
         const responseData = await response.json();
         // Extract the user object from the response. Changed by V to fix return of specific data
         const user = responseData.user || responseData;
+
+        console.log('AuthService: User:', user);
         // Update user data in case it changed
         this.state.user = user;
         this.saveToStorage();

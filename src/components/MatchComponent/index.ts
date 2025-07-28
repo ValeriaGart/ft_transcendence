@@ -2,7 +2,7 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
-import { authService } from "../../lib/auth";
+import { authService, type User } from "../../lib/auth";
 import { WebSocketService } from "../../lib/webSocket";
 
 interface Friendship {
@@ -22,6 +22,7 @@ interface MatchComponentState {
   loading: boolean;
   showAddFriendForm: boolean;
   userProfiles: Record<number, { nickname?: string }>;
+  user: User | null;
 }
 
 export class MatchComponent extends Component<MatchComponentState> {
@@ -64,8 +65,8 @@ export class MatchComponent extends Component<MatchComponentState> {
       startAiButton.parentNode?.replaceChild(newButton, startAiButton);
       
       // Add the event listener to the new button
-      newButton.addEventListener('click', () => {
-        this.handleStartAiMatch();
+      newButton.addEventListener('click', async () => {
+        await this.handleStartAiMatch();
       });
     }
   }
@@ -388,16 +389,17 @@ export class MatchComponent extends Component<MatchComponentState> {
    * Handle AI match start button click
    * Navigates to AI game page
    */
-  private handleStartAiMatch(): void {
+  private async handleStartAiMatch(): Promise<void> {
     try {
       console.log('Starting AI match...');
 
       const ws = WebSocketService.getInstance();
 
+
       const msg = {
         "type": 3,
         "players": [
-          {"nick": "gio", "ai": false},
+          {"nick": "imvaleriaimvaleria", "ai": false},
           {"nick": "CPU", "ai": true},
         ],
         "gameMode": "bestof",
@@ -408,13 +410,7 @@ export class MatchComponent extends Component<MatchComponentState> {
       
       // Navigate to the game page
       const router = Router.getInstance();
-      if (router) {
-        router.navigate('/user/game');
-      } else {
-        // Fallback: use window.location if router is not available
-        window.location.href = '/game';
-      }
-      
+      router.navigate('/user/game');
     } catch (error) {
       console.error('Error starting AI match:', error);
       this.setState({

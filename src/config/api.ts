@@ -1,6 +1,7 @@
 
 const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || '/api',
+  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:3000',
   
   ENDPOINTS: {
     GOOGLE_SIGNUP: '/auth/google/signup',
@@ -18,6 +19,10 @@ const API_CONFIG = {
 
 export function getApiUrl(endpoint: string): string {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
+}
+
+export function getWebSocketUrl(endpoint: string): string {
+  return `${API_CONFIG.WS_BASE_URL}${endpoint}`;
 }
 
 export function getApiBaseUrl(): string {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 220 214" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-655,-812)">
+        <g id="plus_button">
+            <g transform="matrix(0.768221,0,0,0.811323,153.112,154.222)">
+                <ellipse cx="796.341" cy="942.655" rx="135.746" ry="125.267" style="fill:rgb(240,247,247);stroke:rgb(129,195,195);stroke-width:13.18px;"/>
+            </g>
+            <g transform="matrix(0.0650016,3.64517,-1.17455,0.0209448,1817.63,-1885.27)">
+                <path d="M764.755,889.178L764.755,989.58C764.755,991.689 764.203,993.401 763.523,993.401L761.061,993.401C760.381,993.401 759.83,991.689 759.83,989.58L759.83,889.178C759.83,887.069 760.381,885.357 761.061,885.357L763.523,885.357C764.203,885.357 764.755,887.069 764.755,889.178Z" style="fill:rgb(129,195,195);"/>
+            </g>
+            <g transform="matrix(3.64575,0,0,1.17473,-2014.03,-189.448)">
+                <path d="M764.755,889.178L764.755,989.58C764.755,991.689 764.203,993.401 763.523,993.401L761.061,993.401C760.381,993.401 759.83,991.689 759.83,989.58L759.83,889.178C759.83,887.069 760.381,885.357 761.061,885.357L763.523,885.357C764.203,885.357 764.755,887.069 764.755,889.178Z" style="fill:rgb(129,195,195);"/>
+            </g>
+        </g>
+    </g>
+</svg>

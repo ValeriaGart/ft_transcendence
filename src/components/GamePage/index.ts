@@ -1,6 +1,7 @@
 import { Component } from "@blitz-ts";
 import { GameEngine } from "../../game/gameEngine";
 import { WebSocketService } from "./../../lib/webSocket";
+import { getWebSocketUrl } from "../../config/api";
 
 export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
@@ -21,7 +22,7 @@ export class GamePage extends Component {
 
         // const ws = new WebSocket('ws://localhost:3000/hello-ws');
         const ws = WebSocketService.getInstance();
-        ws.connect('ws://localhost:3000/hello-ws')
+        ws.connect(getWebSocketUrl('/hello-ws'))
 
         ws.ws.onmessage = (message) => {
             console.log("message: ", message.data);

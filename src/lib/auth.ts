@@ -1,4 +1,4 @@
-import { getApiUrl, API_CONFIG } from '../config/api';
+import { getApiUrl, getWebSocketUrl, API_CONFIG } from '../config/api';
 import { WebSocketService } from './webSocket';
 
 /**
@@ -210,7 +210,7 @@ class AuthService {
         this.notifyListeners();
 
         console.log('AuthService WebSocket: Initializing WebSocket after successful login');
-        WebSocketService.getInstance().connect(getApiUrl('/hello-ws'));  
+        WebSocketService.getInstance().connect(getWebSocketUrl('/hello-ws'));  
 
         console.log('AuthService: Login complete, state updated');
         return { success: true };
@@ -294,7 +294,7 @@ class AuthService {
         this.notifyListeners();
 
         console.log('AuthService: Initializing WebSocket after successful Google signin');
-        WebSocketService.getInstance().connect(getApiUrl('/hello-ws'));  
+        WebSocketService.getInstance().connect(getWebSocketUrl('/hello-ws'));  
 
         console.log('AuthService: Google signin complete, state updated');
         return { success: true };
@@ -399,7 +399,7 @@ class AuthService {
 
         // Reconnect WebSocket if verification succeeds
         console.log('AuthService Websocket: Reconnecting WebSocket after successful auth verification');
-        WebSocketService.getInstance().connect(getApiUrl('/hello-ws'));
+        WebSocketService.getInstance().connect(getWebSocketUrl('/hello-ws'));
 
         return true;
       } else {

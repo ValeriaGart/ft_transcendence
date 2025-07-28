@@ -33,7 +33,8 @@ export class MatchComponent extends Component<MatchComponentState> {
     friendships: [],
     loading: true,
     showAddFriendForm: false,
-    userProfiles: {}
+    userProfiles: {},
+    user: null
   }
 
   constructor() {
@@ -393,19 +394,43 @@ export class MatchComponent extends Component<MatchComponentState> {
     try {
       console.log('Starting AI match...');
 
-      const ws = WebSocketService.getInstance();
+      // Get current user's profile to get their nickname
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        this.showError('You must be logged in to start a game');
+        return;
+      }
 
+      // Fetch current user's profile to get nickname
+      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      if (!profileResponse.ok) {
+        this.showError('Failed to get user profile');
+        return;
+      }
+
+      const profileData = await profileResponse.json();
+      const userNickname = profileData.nickname || `User${currentUser.id}`;
+
+      if (!userNickname || userNickname.trim() === '') {
+        this.showError('Please set a nickname in your profile before starting a game');
+        return;
+      }
+
+      console.log('Using nickname for AI match:', userNickname);
+
+      const ws = WebSocketService.getInstance();
 
       const msg = {
         "type": 3,
         "players": [
-          {"nick": "imvaleriaimvaleria", "ai": false},
+          {"nick": userNickname, "ai": false},
           {"nick": "CPU", "ai": true},
         ],
         "gameMode": "bestof",
         "oppMode": "single"
         };
 
+      console.log('Sending AI match request:', JSON.stringify(msg));
       ws.sendMessage(JSON.stringify(msg));
       
       // Navigate to the game page

@@ -36,6 +36,32 @@ async function routes(fastify, options) {
     },
 	preHandler: [fastify.requireProfileOwnership]
   }, ProfileController.patchProfile);
+
+  // Add nickname suggestion endpoint
+  fastify.get('/profiles/suggest-nickname', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          baseNickname: { type: 'string', minLength: 1 }
+        },
+        required: ['baseNickname']
+      }
+    }
+  }, ProfileController.suggestNickname);
+
+  // Add nickname availability check endpoint
+  fastify.get('/profiles/check-nickname', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          nickname: { type: 'string', minLength: 1 }
+        },
+        required: ['nickname']
+      }
+    }
+  }, ProfileController.checkNicknameAvailability);
 }
 
 export default routes;

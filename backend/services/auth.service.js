@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { dbRun, dbGet } from '../config/database.js';
 import { AUTH_CONFIG } from '../config/auth.config.js';
+import { generateNicknameFromUserData, validateNickname } from '../utils/nickname.utils.js';
 
 class AuthService {
   static async findUserByEmail(email) {
@@ -53,7 +54,11 @@ class AuthService {
         ]
       );
 
-      const nickname = userData.email.split('@')[0];
+      const nickname = await generateNicknameFromUserData({
+        name: userData.name,
+        email: userData.email,
+        googleName: userData.name
+      });
       
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
@@ -87,8 +92,11 @@ class AuthService {
         [userData.email, passwordHash]
       );
 
-      // Always create a corresponding profile entry (with default values)
-      const nickname = userData.name || userData.email.split('@')[0];
+      // Generate unique nickname using utilities
+      const nickname = await generateNicknameFromUserData({
+        name: userData.name,
+        email: userData.email
+      });
       
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',

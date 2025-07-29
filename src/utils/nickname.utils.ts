@@ -91,7 +91,8 @@ export class NicknameUtils {
     }
 
     // Add some creative variations
-    const creativeSuffixes = ['_gamer', '_player', '_pro', '_2024', '_x'];
+    const currentYear = new Date().getFullYear();
+    const creativeSuffixes = ['_gamer', '_player', '_pro', `_${currentYear}`, '_x'];
     creativeSuffixes.forEach(suffix => {
       const suggestion = `${cleaned}${suffix}`;
       if (suggestion.length <= this.MAX_LENGTH) {

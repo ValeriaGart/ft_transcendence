@@ -64,7 +64,7 @@ class MatchMakingService {
 		{
 			if (await RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
 				console.log("[matchMakingInit] some of the players are busy, cancelling match");
-				this.WebsocketService.sendMessageToClient(connection, {
+				await this.WebsocketService.sendMessageToClient(connection, {
 					type: "ERROR",
 					sender: "__server",
 					message: "Error creating Match: Players are busy"
@@ -93,7 +93,7 @@ class MatchMakingService {
 
 		try {
 			const newRoom = roomStorage;
-			this.WebsocketService.sendMessageToClient(connection, {
+			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "INFO",
 				sender: "__server",
 				message: "Your room was created, waiting for players to accept the invitation.",
@@ -101,24 +101,9 @@ class MatchMakingService {
 			});
 			await InvitationService.sendInvitation(this.WebsocketService, newRoom);
 
-		//experiment
-				// const promiseAllAccepted = new Promise(async (resolve, reject) => {
-				// 	await sleep(5000); // 5 seconds
-				// 	resolve("Promise 1 resolved after 5 seconds");
-				// });
-				const timeoutPromise = new Promise(async (resolve, reject) => {
-					await sleep(timeoutSec * 1000); // 7 seconds
-					resolve("Promise 2 resolved after 30 seconds");
-				});
-				
+			await InvitationService.allAcceptedPromiseHandler(newRoom, timeoutSec);
 
-				Promise.race([await InvitationService.allAcceptedPromiseHandler(newRoom, timeoutSec), timeoutPromise]).then((result) => {
-					console.log("promise race ended");
-					console.log(result);
-				});
-					
-
-			this.startMatch(newRoom);
+			await this.startMatch(newRoom);
 		} catch (error) {
 			console.error("Error: ", error.message);
 

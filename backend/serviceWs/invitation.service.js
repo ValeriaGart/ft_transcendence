@@ -100,8 +100,8 @@ class InvitationService {
 					reject(new Error ("[InvitationService] Promise 'All Players Accepted' rejected, invitation declined."));
 					break ;
 				}
-				if (count >= timeoutSec + 1) {
-					reject(new Error ("[InvitationService] Promise 'All Players Accepted' rejected after 31 seconds."))
+				if (count >= timeoutSec) {
+					reject(new Error ("[InvitationService] Promise 'All Players Accepted' rejected after 30 seconds."))
 					break ;
 				}
 

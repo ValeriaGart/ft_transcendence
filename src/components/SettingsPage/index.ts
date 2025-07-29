@@ -4,6 +4,7 @@ import { authService } from "../../lib/auth";
 import { ErrorManager } from "../Error";
 import { getApiUrl } from "../../config/api";
 import { ConfirmDialogManager } from "../ConfirmDialog";
+import { NicknameUtils } from "../../utils/nickname.utils";
 
 interface SettingsPageState {
   currentPage: 'page1' | 'page2' | 'confirm' | 'password_change';
@@ -161,6 +162,12 @@ export class SettingsPage extends Component<SettingsPageState> {
       const currentUsername = usernameInput ? usernameInput.value.trim() : '';
       const originalUsername = this.state.originalValues.username || '';
       if (currentUsername !== originalUsername) {
+        // Validate username before adding to pending changes
+        const validation = NicknameUtils.validateNickname(currentUsername);
+        if (!validation.isValid) {
+          this.showError(`Invalid username: ${validation.errors.join(', ')}`);
+          return;
+        }
         pendingChanges.username = currentUsername;
       }
       
@@ -200,6 +207,12 @@ export class SettingsPage extends Component<SettingsPageState> {
       const currentUsername = usernameInput ? usernameInput.value.trim() : '';
       const originalUsername = this.state.originalValues.username || '';
       if (currentUsername !== originalUsername) {
+        // Validate username before adding to pending changes
+        const validation = NicknameUtils.validateNickname(currentUsername);
+        if (!validation.isValid) {
+          this.showError(`Invalid username: ${validation.errors.join(', ')}`);
+          return;
+        }
         pendingChanges.username = currentUsername;
       }
       

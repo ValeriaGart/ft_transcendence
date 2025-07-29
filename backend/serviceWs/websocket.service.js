@@ -34,7 +34,7 @@ class WebsocketService {
 	}
 
 	handleMessage(connection) {
-		connection.on('message', message => {
+		connection.on('message', async message => {
 			try {
 				const parsedMessage = JSON.parse(message);
 
@@ -78,7 +78,7 @@ class WebsocketService {
 				}
 			} catch (error) {
 				console.error("Error occurring in WebsocketService: ", error.message);
-				this.sendMessageToClient(connection, {
+				await this.sendMessageToClient(connection, {
 					type: "ERROR",
 					sender: "__server",
 					message: `Error occurring in WebsocketService: ${error.message}`
@@ -136,9 +136,13 @@ class WebsocketService {
 		return (null);
 	}
 
-	sendMessageToClient(client, message) {
+	async sendMessageToClient(client, message) {
 		if (!client) {
 			console.error("Don't send undefined clients to sendMessageToClient function :(");
+			return ;
+		}
+		if (!message) {
+			console.error("Don't send undefined message to sendMessageToClient function :(");
 			return ;
 		}
 		client.send(JSON.stringify(message));

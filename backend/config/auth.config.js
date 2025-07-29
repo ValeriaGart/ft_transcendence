@@ -26,7 +26,7 @@ export const AUTH_CONFIG = {
     COOKIE_NAME: 'auth-token',
     COOKIE_OPTIONS: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.SSL_ENABLED === 'true',
       sameSite: 'lax',
       maxAge: 60 * 60 * 1000, // 1 hour
       path: '/' // Accessible across the entire domain

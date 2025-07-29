@@ -37,7 +37,7 @@ class InvitationService {
 				if (!p.wsclient) {
 					throw new Error ("[RoomUtilsService] can't send invitation to client without websocket connection");
 				}
-				websocketService.sendMessageToClient(p.wsclient, await this.createInvitationMessage(room));
+				await websocketService.sendMessageToClient(p.wsclient, await this.createInvitationMessage(room));
 			}
 		}
 		return ;
@@ -50,7 +50,7 @@ class InvitationService {
 		let room = await RoomUtilsService.roomExists(this.roomService.rooms, message.roomId);
 		if (!room) {
 			console.log("[InvitationService] room doesn't exist");
-			this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to doesn't exist.`));
+			await this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to doesn't exist.`));
 			return ;
 		}
 		else {
@@ -60,7 +60,7 @@ class InvitationService {
  		let areUEvenInvitedBro = await RoomUtilsService.isPlayerInvited(room, connection);
 		if (areUEvenInvitedBro === false) {
 			console.log("[InvitationService] bro wasn't even invited");
-			this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to did not invite you.`));
+			await this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to did not invite you.`));
 			return ;
 		}
 		else {
@@ -101,7 +101,7 @@ class InvitationService {
 					break ;
 				}
 				if (count >= timeoutSec + 1) {
-					reject("[InvitationService] Promise 'All Players Accepted' rejected after 31 seconds.")
+					reject(new Error ("[InvitationService] Promise 'All Players Accepted' rejected after 31 seconds."))
 					break ;
 				}
 

@@ -84,8 +84,7 @@ class RoomUtilsService {
 				continue ;
 			}
 			if (p.accepted != "declined") {
-				console.log("player: ", p.userId);
-				websocketService.sendMessageToClient(p.wsclient, message);
+				await websocketService.sendMessageToClient(p.wsclient, message);
 			}
 		}
 	}

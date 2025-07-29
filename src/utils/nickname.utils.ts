@@ -156,30 +156,6 @@ export class NicknameUtils {
   }
 
   /**
-   * Generate nickname from user data
-   */
-  static generateFromUserData(userData: {
-    name?: string;
-    email?: string;
-    googleName?: string;
-  }): string {
-    let baseNickname = '';
-
-    // Priority order: provided name > Google name > email prefix
-    if (userData.name && userData.name.trim()) {
-      baseNickname = userData.name.trim();
-    } else if (userData.googleName && userData.googleName.trim()) {
-      baseNickname = userData.googleName.trim();
-    } else if (userData.email) {
-      baseNickname = userData.email.split('@')[0];
-    } else {
-      baseNickname = 'user';
-    }
-
-    return this.cleanNickname(baseNickname);
-  }
-
-  /**
    * Debounced nickname validation for real-time feedback
    */
   static createDebouncedValidator(delay: number = 500) {

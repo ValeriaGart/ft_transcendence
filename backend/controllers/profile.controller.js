@@ -74,7 +74,7 @@ class ProfileController {
       const { nickname, profilePictureUrl, bio } = request.body;
 
       const updateFields = {};
-      if (nickname !== undefined) updateFields.nickname = nickname;
+      if (nickname !== undefined && nickname !== null) updateFields.nickname = nickname;
       if (profilePictureUrl !== undefined) updateFields.profilePictureUrl = profilePictureUrl;
       if (bio !== undefined) updateFields.bio = bio;
 
@@ -83,15 +83,15 @@ class ProfileController {
         return { error: 'At least one field (nickname, profilePictureUrl, or bio) is required' };
       }
 
-      // Pre-validate nickname if provided
-      if (nickname !== undefined) {
+      // Pre-validate nickname if provided (including empty strings)
+      if (nickname !== undefined && nickname !== null) {
         const validation = validateNickname(nickname);
         if (!validation.isValid) {
           reply.code(400);
           return { 
             error: 'Invalid nickname format', 
             details: validation.errors,
-            suggestions: await ProfileController.generateNicknameSuggestions(nickname)
+            suggestions: await ProfileController.generateNicknameSuggestions(nickname || 'user')
           };
         }
       }

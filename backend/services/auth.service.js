@@ -54,12 +54,8 @@ class AuthService {
         ]
       );
 
-      const nickname = await generateNicknameFromUserData({
-        name: userData.name,
-        email: userData.email,
-        googleName: userData.name
-      });
-      
+      const nickname = userData.email.split('@')[0];
+
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
         [result.lastID, nickname, 'profile_no.svg', null]
@@ -92,11 +88,7 @@ class AuthService {
         [userData.email, passwordHash]
       );
 
-      // Generate unique nickname using utilities
-      const nickname = await generateNicknameFromUserData({
-        name: userData.name,
-        email: userData.email
-      });
+      const nickname = userData.name || userData.email.split('@')[0];
       
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',

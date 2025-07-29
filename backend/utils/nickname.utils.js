@@ -14,7 +14,7 @@ export async function nicknameExists(nickname) {
     return !!result;
   } catch (error) {
     console.error('Error checking nickname existence:', error);
-    return false;
+    throw new Error('Database error while checking nickname existence');
   }
 }
 

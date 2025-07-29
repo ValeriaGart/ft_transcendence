@@ -112,7 +112,7 @@ class ProfileController {
         reply.code(409);
         return { 
           error: 'Nickname already taken', 
-          suggestions: await this.generateNicknameSuggestions(request.body.nickname)
+          suggestions: await ProfileController.generateNicknameSuggestions(request.body.nickname)
         };
       }
       

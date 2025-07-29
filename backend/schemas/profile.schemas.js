@@ -47,7 +47,7 @@ export const nicknameSuggestionSchema = {
   properties: {
     baseNickname: { 
       type: 'string', 
-      minLength: 1,
+      minLength: 2,
       maxLength: 20,
       description: 'Base nickname to generate suggestions from'
     }

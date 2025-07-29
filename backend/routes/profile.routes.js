@@ -43,7 +43,7 @@ async function routes(fastify, options) {
       querystring: {
         type: 'object',
         properties: {
-          baseNickname: { type: 'string', minLength: 1 }
+          baseNickname: { type: 'string', minLength: 2 }
         },
         required: ['baseNickname']
       }
@@ -56,7 +56,7 @@ async function routes(fastify, options) {
       querystring: {
         type: 'object',
         properties: {
-          nickname: { type: 'string', minLength: 1 }
+          nickname: { type: 'string', minLength: 2 }
         },
         required: ['nickname']
       }

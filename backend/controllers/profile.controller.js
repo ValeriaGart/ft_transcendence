@@ -1,5 +1,5 @@
 import ProfileService from '../services/profile.service.js';
-import { validateNickname, cleanNickname } from '../utils/nickname.utils.js';
+import { validateNickname, cleanNickname, nicknameExists } from '../utils/nickname.utils.js';
 import { dbGet } from '../config/database.js';
 
 class ProfileController {
@@ -157,19 +157,18 @@ class ProfileController {
       const suggestions = [];
       const cleaned = cleanNickname(baseNickname);
       
-      // Generate 3 suggestions
-      for (let i = 1; i <= 3; i++) {
-        try {
-          const suggestion = await ProfileService.suggestNickname(`${cleaned}${i}`);
+      // Generate 5 simple numbered suggestions (e.g., "john_1", "john_2", etc.)
+      for (let i = 1; i <= 5; i++) {
+        const suggestion = `${cleaned}_${i}`;
+        const isAvailable = !(await nicknameExists(suggestion));
+        if (isAvailable) {
           suggestions.push(suggestion);
-        } catch (error) {
-          // Skip if this suggestion fails
-          continue;
         }
       }
       
       return suggestions;
     } catch (error) {
+      console.error('Error generating nickname suggestions:', error);
       return [];
     }
   }

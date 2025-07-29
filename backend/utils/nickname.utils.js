@@ -19,7 +19,7 @@ export async function nicknameExists(nickname) {
 }
 
 /**
- * Generate a unique nickname by adding a number suffix if needed
+ * Generate a unique nickname by adding an underscore and number
  * @param {string} baseNickname - The base nickname to make unique
  * @returns {Promise<string>} - A unique nickname
  */
@@ -30,12 +30,12 @@ export async function generateUniqueNickname(baseNickname) {
   let counter = 1;
   
   while (await nicknameExists(nickname)) {
-    nickname = `${cleanedBase}${counter}`;
+    nickname = `${cleanedBase}_${counter}`;
     counter++;
     
     // Prevent infinite loops (max 1000 attempts)
     if (counter > 1000) {
-      throw new Error('Unable to generate unique nickname after 1000 attempts');
+      throw new Error('Unable to generate unique nickname after 1000 attempts. Too many users with similar nicknames.');
     }
   }
   

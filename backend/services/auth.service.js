@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { dbRun, dbGet } from '../config/database.js';
 import { AUTH_CONFIG } from '../config/auth.config.js';
-import { generateNicknameFromUserData, validateNickname } from '../utils/nickname.utils.js';
+import { generateNicknameFromUserData, validateNickname, generateUniqueNickname } from '../utils/nickname.utils.js';
 
 class AuthService {
   static async findUserByEmail(email) {
@@ -54,11 +54,13 @@ class AuthService {
         ]
       );
 
-      const nickname = userData.email.split('@')[0];
+      // Generate unique nickname from email prefix
+      const baseNickname = userData.email.split('@')[0];
+      const uniqueNickname = await generateUniqueNickname(baseNickname);
 
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
-        [result.lastID, nickname, 'profile_no.svg', null]
+        [result.lastID, uniqueNickname, 'profile_no.svg', null]
       );
 
       await dbRun('COMMIT');
@@ -88,13 +90,15 @@ class AuthService {
         [userData.email, passwordHash]
       );
 
-      const nickname = userData.name || userData.email.split('@')[0];
+      // Generate unique nickname using the utility function
+      const baseNickname = userData.name || userData.email.split('@')[0];
+      const uniqueNickname = await generateUniqueNickname(baseNickname);
       
       await dbRun(
         'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
         [
           result.lastID, 
-          nickname,
+          uniqueNickname,
           'profile_no.svg', 
           null 
         ]

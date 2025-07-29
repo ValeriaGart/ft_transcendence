@@ -82,9 +82,9 @@ export class NicknameUtils {
     const cleaned = this.cleanNickname(baseNickname);
     const suggestions: string[] = [];
 
-    // Generate variations
+    // Generate variations with underscore and number
     for (let i = 1; i <= 5; i++) {
-      const suggestion = `${cleaned}${i}`;
+      const suggestion = `${cleaned}_${i}`;
       if (suggestion.length <= this.MAX_LENGTH) {
         suggestions.push(suggestion);
       }

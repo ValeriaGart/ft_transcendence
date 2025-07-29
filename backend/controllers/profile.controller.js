@@ -91,7 +91,7 @@ class ProfileController {
           return { 
             error: 'Invalid nickname format', 
             details: validation.errors,
-            suggestions: await this.generateNicknameSuggestions(nickname)
+            suggestions: await ProfileController.generateNicknameSuggestions(nickname)
           };
         }
       }

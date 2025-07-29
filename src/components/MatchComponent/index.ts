@@ -538,11 +538,11 @@ export class MatchComponent extends Component<MatchComponentState> {
       }
 
       return `
-        <div class="flex items-center justify-start p-2 mb-1">
-          <div class="flex items-center">
+        <div class="flex items-center justify-start p-2 mb-1 ">
+          <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg">${displayName}</div>
-              <div class="text-[#81C3C3] text-xs opacity-50">
+              <div class="text-[#81C3C3] text-xs opacity-50 ">
                 Created: ${new Date(friendship.createdAt).toLocaleDateString()}
               </div>
               <div class="text-xs ${statusColor} font-semibold">
@@ -556,7 +556,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     }).join('');
 
     friendListContainer.innerHTML = `
-      <div class="w-full h-full overflow-y-auto">
+      <div class="w-full h-[95%] lg:h-full overflow-y-auto -ml-[5%]">
         ${friendshipsHtml}
       </div>
     `;

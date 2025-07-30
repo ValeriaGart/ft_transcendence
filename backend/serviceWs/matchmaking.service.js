@@ -131,7 +131,7 @@ class MatchMakingService {
 				
 			}
 			else if (message.status === "finish" || message.status === "finished") {
-				// is this needed? won't all players know anyways when the match is finished?
+				await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, {message: "match was finished!"});
 			}
 			await this.RoomService.destroyRoom(room.id);
 		} catch (error) {
@@ -186,11 +186,7 @@ class MatchMakingService {
 			const scores = message.players.map(player => player.score);
 			const [p1_score, p2_score] = scores;
 			
-			// let match_id = await MatchService.initiateMatch(player1.wsclient.userId, player2.wsclient.userId, room.gameMode);
-			// await MatchService.finishMatch(p1_score, p2_score, match_id);
 			await MatchService.insertMatch(player1.wsclient.userId, player2.wsclient.userId, p1_score, p2_score, room.gameMode);
-		
-		
 		
 		} catch (error) {
 			console.error(error.message);

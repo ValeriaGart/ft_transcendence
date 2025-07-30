@@ -79,7 +79,6 @@ class WebsocketService {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'status' field is missing or empty");
 					}
 					this.matchMakingService.cancelMatch(connection, parsedMessage);
-					//
 				}
 				else if (parsedMessage.type === 6) {
 					console.log("[handleMessage] type 6: finish match, saving to database");
@@ -87,7 +86,6 @@ class WebsocketService {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'players' field is missing or empty");
 					}
 					this.matchMakingService.saveFinishMatch(connection, parsedMessage);
-					//
 				}
 				else {
 					console.log("[handleMessage] unknown type");

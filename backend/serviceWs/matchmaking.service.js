@@ -151,10 +151,10 @@ class MatchMakingService {
 
 			room = await RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
 			if (!room) {
-				throw new Error(`[cancelMatch] room with this id not found ${message.roomId}`);
+				throw new Error(`[saveFinishMatch] room with this id not found ${message.roomId}`);
 			}
 			if (! await RoomUtilsService.isPlayerInvited(room, connection)) {
-				throw new Error(`[cancelMatch] player '${connection.userId}' is not a player in room ${message.roomId}`);
+				throw new Error(`[saveFinishMatch] player '${connection.userId}' is not a player in room ${message.roomId}`);
 			}
 			
 		} catch (error) {

@@ -2,6 +2,7 @@ import EmojiService from "./emoji.service.js";
 import RoomService from "./room.service.js";
 import InvitationService from "./invitation.service.js";
 import RoomUtilsService from "./roomutils.service.js";
+import MatchService from "../services/match.service.js";
 
 const timeoutSec = 30;
 
@@ -115,11 +116,11 @@ class MatchMakingService {
 	
 	
 	async cancelMatch(connection, message) {
-		const room = RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
+		let room = await RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
 		if (!room) {
 			throw new Error(`[cancelMatch] room with this id not found ${message.roomId}`);
 		}
-		if (!RoomUtilsService.isPlayerInvited(room, connection)) {
+		if (! await RoomUtilsService.isPlayerInvited(room, connection)) {
 			throw new Error(`[cancelMatch] player '${connection.userId}' is not a player in room ${message.roomId}`);
 		}
 
@@ -130,10 +131,33 @@ class MatchMakingService {
 		else if (message.status === "finish" || message.status === "finished") {
 			// is this needed? won't all players know anyways when the match is finished?
 		}
-		this.RoomService.destroyRoom(room.id);
+		await this.RoomService.destroyRoom(room.id);
 	}
-
+	
 	async saveFinishMatch(connection, message) {
+		let room = await RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
+		if (!room) {
+			throw new Error(`[cancelMatch] room with this id not found ${message.roomId}`);
+		}
+		if (! await RoomUtilsService.isPlayerInvited(room, connection)) {
+			throw new Error(`[cancelMatch] player '${connection.userId}' is not a player in room ${message.roomId}`);
+		}
+	
+		// save scores to database
+		const [player1, player2] = room.players;
+
+		const scores = message.players.map(player => player.score);
+		const [p1_score, p2_score] = scores;
+		
+		let match_id = await MatchService.initiateMatch(player1.wsclient.userId, player2.wsclient.userId, room.gameMode);
+		await MatchService.finishMatch(p1_score, p2_score, match_id);
+		
+
+		
+
+		await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, {message: "match was finished!"});
+
+		await this.RoomService.destroyRoom(room.id);
 
 	}
 }

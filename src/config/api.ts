@@ -1,6 +1,6 @@
 
 // Detect if we're using SSL based on the current page protocol
-const isSSL = window.location.protocol === 'https:';
+const isSSL = typeof window !== 'undefined' && window.location.protocol === 'https:';
 const wsProtocol = isSSL ? 'wss:' : 'ws:';
 const defaultPort = isSSL ? '3443' : '3000';
 

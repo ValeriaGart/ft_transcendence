@@ -23,6 +23,7 @@ interface MatchComponentState {
   showAddFriendForm: boolean;
   userProfiles: Record<number, { nickname?: string }>;
   user: User | null;
+  onlineFriends: number[];
 }
 
 export class MatchComponent extends Component<MatchComponentState> {
@@ -34,7 +35,8 @@ export class MatchComponent extends Component<MatchComponentState> {
     loading: true,
     showAddFriendForm: false,
     userProfiles: {},
-    user: null
+    user: null,
+    onlineFriends: []
   }
 
   constructor() {
@@ -50,8 +52,34 @@ export class MatchComponent extends Component<MatchComponentState> {
   
     this.setupStartAiMatchButton();
     this.setupToggleButtons();
+    this.setupOnlineStatus();
     this.fetchFriendships();
     this.updatePageVisibility();
+  }
+
+  /**
+   * Setup online status tracking via WebSocket
+   */
+  private setupOnlineStatus(): void {
+    const ws = WebSocketService.getInstance();
+    
+    // Subscribe to online status updates
+    ws.onOnlineStatusUpdate(this.handleOnlineStatusUpdate.bind(this));
+
+    // Request initial online friends status
+    if (ws.isConnected()) {
+      ws.requestOnlineFriends();
+    } else {
+      // If not connected, wait for connection and then request
+      const checkConnection = () => {
+        if (ws.isConnected()) {
+          ws.requestOnlineFriends();
+        } else {
+          setTimeout(checkConnection, 1000);
+        }
+      };
+      checkConnection();
+    }
   }
 
   /**
@@ -198,6 +226,9 @@ export class MatchComponent extends Component<MatchComponentState> {
 
         // Fetch user profiles for all unique user IDs in friendships
         await this.fetchUserProfiles(userFriendships);
+        
+        // Refresh online status after fetching friendships
+        this.refreshOnlineStatus();
       } else {
         const errorData = await response.json();
         console.error('API Error response:', errorData);
@@ -219,6 +250,16 @@ export class MatchComponent extends Component<MatchComponentState> {
         error: `Failed to load friendships: ${error instanceof Error ? error.message : 'Unknown error'}`,
         loading: false 
       });
+    }
+  }
+
+  /**
+   * Refresh online status from WebSocket
+   */
+  private refreshOnlineStatus(): void {
+    const ws = WebSocketService.getInstance();
+    if (ws.isConnected()) {
+      ws.requestOnlineFriends();
     }
   }
 
@@ -298,6 +339,7 @@ export class MatchComponent extends Component<MatchComponentState> {
         await this.fetchFriendships();
         this.renderFriendshipsList();
         this.updatePageVisibility();
+        this.refreshOnlineStatus();
       } else {
         const errorData = await response.json();
         console.error('Accept friend request failed:', errorData);
@@ -384,6 +426,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     
     // Refresh the friendships list
     this.fetchFriendships();
+    this.refreshOnlineStatus();
   }
 
   /**
@@ -504,6 +547,11 @@ export class MatchComponent extends Component<MatchComponentState> {
        const otherUserProfile = this.state.userProfiles?.[otherUserId];
        const displayName = otherUserProfile?.nickname || `User ${otherUserId}`;
 
+       // Check if friend is online
+       const isOnline = this.state.onlineFriends.includes(otherUserId);
+       const onlineStatusColor = '';
+       const onlineStatusText = isOnline ? 'Online' : 'Offline';
+
       let statusText = '';
       let statusColor = '';
       let buttonHtml = '';
@@ -516,7 +564,7 @@ export class MatchComponent extends Component<MatchComponentState> {
         if (isInitiator) {
           // User initiated the request - show "Pending..."
           statusText = 'Pending';
-          statusColor = 'text-yellow-600';
+          statusColor = '';
           buttonHtml = `
             <div class="px-4 py-2 ml-[30%] text-[#81C3C3] font-['Irish_Grover'] text-sm">
               Pending...
@@ -525,7 +573,7 @@ export class MatchComponent extends Component<MatchComponentState> {
         } else if (isRecipient) {
           // User received the request - show "Confirm" button
           statusText = 'Pending';
-          statusColor = 'text-yellow-600';
+          statusColor = '';
                      const buttonId = `confirm-btn-${friendship.id}`;
            buttonHtml = `
              <button id="${buttonId}" class="confirm-friend-btn px-4 py-2 ml-[20%] lg:ml-[30%] bg-[#81C3C3] text-white font-['Irish_Grover'] text-sm rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer" 
@@ -538,14 +586,17 @@ export class MatchComponent extends Component<MatchComponentState> {
       }
 
       return `
-        <div class="flex items-center justify-start p-2 mb-1">
-          <div class="flex items-center">
+        <div class="flex items-center justify-start p-2 mb-1 ">
+          <div class="flex items-center ">
             <div>
-              <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg">${displayName}</div>
-              <div class="text-[#81C3C3] text-xs opacity-50">
+              <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">
+                ${displayName}
+                <div class="w-2 h-2 rounded-full ${onlineStatusColor} flex-shrink-0" style="background-color: ${isOnline ? '#AEDFAD' : '#FFA9A3'};" title="${onlineStatusText}"></div>
+              </div>
+              <div class="text-[#81C3C3] text-xs opacity-50 ">
                 Created: ${new Date(friendship.createdAt).toLocaleDateString()}
               </div>
-              <div class="text-xs ${statusColor} font-semibold">
+              <div class="text-xs ${statusColor} font-semibold" style="${statusText === 'Pending' ? 'color: #FFA9A3;' : ''}">
                 ${statusText}
               </div>
             </div>
@@ -556,7 +607,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     }).join('');
 
     friendListContainer.innerHTML = `
-      <div class="w-full h-full overflow-y-auto">
+      <div class="w-full h-[95%] lg:h-full overflow-y-auto -ml-[5%]">
         ${friendshipsHtml}
       </div>
     `;
@@ -583,6 +634,19 @@ export class MatchComponent extends Component<MatchComponentState> {
 
   protected onUnmount(): void {
     console.log('MatchComponent onUnmount called');
+    
+    // Clean up WebSocket subscription
+    const ws = WebSocketService.getInstance();
+    ws.offOnlineStatusUpdate(this.handleOnlineStatusUpdate.bind(this));
+  }
+
+  /**
+   * Handle online status updates from WebSocket
+   */
+  private handleOnlineStatusUpdate(onlineFriends: number[]): void {
+    console.log('Online friends update received:', onlineFriends);
+    this.setState({ onlineFriends });
+    this.renderFriendshipsList(); // Re-render to update status indicators
   }
 
   render() {

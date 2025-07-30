@@ -1,6 +1,7 @@
 export class WebSocketService {
   private static instance: WebSocketService;
   public ws!: WebSocket;
+  private onlineStatusCallbacks: ((onlineFriends: number[]) => void)[] = [];
 
   private constructor() {}
 
@@ -38,6 +39,35 @@ export class WebSocketService {
     }
   }
 
+  /**
+   * Request online friends status from the server
+   */
+  public requestOnlineFriends(): void {
+    if (this.isConnected()) {
+      const message = {
+        type: 2
+      };
+      this.sendMessage(JSON.stringify(message));
+    }
+  }
+
+  /**
+   * Subscribe to online status updates
+   */
+  public onOnlineStatusUpdate(callback: (onlineFriends: number[]) => void): void {
+    this.onlineStatusCallbacks.push(callback);
+  }
+
+  /**
+   * Unsubscribe from online status updates
+   */
+  public offOnlineStatusUpdate(callback: (onlineFriends: number[]) => void): void {
+    const index = this.onlineStatusCallbacks.indexOf(callback);
+    if (index > -1) {
+      this.onlineStatusCallbacks.splice(index, 1);
+    }
+  }
+
   private setupEventListeners(): void {
     this.ws.onopen = () => {
       console.log('Connected to WebSocket server');
@@ -45,6 +75,23 @@ export class WebSocketService {
 
     this.ws.onmessage = (event) => {
       console.log('Received message:', event.data);
+      
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle online friends status update
+        if (data.onlineFriends) {
+          const onlineFriendIds = data.onlineFriends.map((friend: any) => friend.userId);
+          console.log('Online friends received:', onlineFriendIds);
+          
+          // Notify all subscribers
+          this.onlineStatusCallbacks.forEach(callback => {
+            callback(onlineFriendIds);
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
     };
 
     this.ws.onerror = (error) => {

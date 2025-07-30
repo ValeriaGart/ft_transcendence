@@ -46,18 +46,19 @@ class FriendController {
 			const userId = request.user.userId;
 			const { friend_nickname } = request.body;
 
-			// Resolve nickname to user ID
-			let friendId;
 			try {
-				const userIdObj = await ProfileService.getIdByNick(friend_nickname);
-				friendId = userIdObj.userId;
+				const { userId: friendId } = await ProfileService.getIdByNick(friend_nickname);
+				return await FriendService.requestFriend(userId, friendId);
 			} catch (error) {
 				console.warn(`[FriendController] Error resolving nickname '${friend_nickname}': `, error.message);
-				reply.code(404);
-				return { error: 'User not found', details: `No user found with nickname '${friend_nickname}'` };
+				if (typeof error.message === 'string' && error.message.includes('No such user')) {
+					reply.code(404);
+					return { error: 'User not found', details: `No user found with nickname '${friend_nickname}'` };
+				} else {
+					reply.code(500);
+					return { error: 'Failed to resolve user', details: error.message };
+				}
 			}
-
-			return await FriendService.requestFriend(userId, friendId);
 		} catch (error) {
 			console.warn(`[FriendController] Error in requestFriend: `, error.message);
 			reply.code(500);

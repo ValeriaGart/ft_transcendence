@@ -73,6 +73,20 @@ class WebsocketService {
 					// this.matchMakingService.matchMakingInit(connection, parsedMessage);
 					this.invitationService.matchMakingAcceptInvitation(connection, parsedMessage);
 				}
+				else if (parsedMessage.type === 5) {
+					console.log("[handleMessage] type 5: cancel or finish match (without saving to database)");
+					if (!parsedMessage.roomId || !parsedMessage.status) {
+						throw new Error ("Parsing: Invalid message: 'roomId' or 'status' field is missing or empty");
+					}
+					//
+				}
+				else if (parsedMessage.type === 6) {
+					console.log("[handleMessage] type 6: finish match, saving to database");
+					if (!parsedMessage.roomId || !parsedMessage.status || !parsedMessage.players) {
+						throw new Error ("Parsing: Invalid message: 'roomId', 'status' or 'players' field is missing or empty");
+					}
+					//
+				}
 				else {
 					console.log("[handleMessage] unknown type");
 				}

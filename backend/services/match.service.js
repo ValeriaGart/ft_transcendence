@@ -53,6 +53,29 @@ class MatchService {
 		return match_id;
 	}
 
+	static async insertMatch(player1, player2, player1_score, player2_score, matchtype) {
+		if (player1 === player2)
+		{
+			throw new Error ("Can't match against yourself...");
+		}
+		const win = player1_score > player2_score ? "1" : player1_score === player2_score ? "0" : "2";
+		let winner_id;
+		if (win === "1") {
+			winner_id = player1;
+		}
+		else {
+			winner_id = player2;
+		}
+
+		const matchResult = await dbRun(
+			'INSERT INTO match (player1_id, player2_id, player1_score, player2_score, type, gameFinishedAt, winner_id) \
+			VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)',
+			[player1, player2, player1_score, player2_score, matchtype, winner_id]
+		);
+		const matchID = matchResult.lastID;
+		return matchID;
+	}
+
 	
 	static async deleteMatch(match_id) {
 		const matchResult = await dbRun(

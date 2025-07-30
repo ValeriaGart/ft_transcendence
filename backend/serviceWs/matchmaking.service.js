@@ -112,6 +112,30 @@ class MatchMakingService {
 			return ;
 		}
 	}
+	
+	
+	async cancelMatch(connection, message) {
+		const room = RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
+		if (!room) {
+			throw new Error(`[cancelMatch] room with this id not found ${message.roomId}`);
+		}
+		if (!RoomUtilsService.isPlayerInvited(room, connection)) {
+			throw new Error(`[cancelMatch] player '${connection.userId}' is not a player in room ${message.roomId}`);
+		}
+
+		if (message.status === "cancel" || message.status === "cancelled") {
+			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, this.createCancelMatchMessage(room));
+			
+		}
+		else if (message.status === "finish" || message.status === "finished") {
+			// is this needed? won't all players know anyways when the match is finished?
+		}
+		this.RoomService.destroyRoom(room.id);
+	}
+
+	async saveFinishMatch(connection, message) {
+
+	}
 }
 
 export default MatchMakingService;

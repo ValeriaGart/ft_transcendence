@@ -63,8 +63,11 @@ class MatchService {
 		if (win === "1") {
 			winner_id = player1;
 		}
-		else {
+		else if (win === "2") {
 			winner_id = player2;
+		}
+		else {
+			winner_id = null;
 		}
 
 		const matchResult = await dbRun(

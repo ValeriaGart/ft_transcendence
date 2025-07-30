@@ -49,6 +49,13 @@ export default defineConfig({
 				changeOrigin: true,
 				...(httpsAgent && { agent: httpsAgent }),
 				rewrite: (path) => path.replace(/^\/api/, '')
+			},
+			'/ws': {
+				target: sslEnabled ? 'wss://localhost:3443' : 'ws://localhost:3000',
+				ws: true,
+				changeOrigin: true,
+				...(httpsAgent && { agent: httpsAgent }),
+				rewrite: (path) => path.replace(/^\/ws/, '')
 			}
 		}
 	},

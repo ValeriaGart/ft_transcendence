@@ -139,16 +139,17 @@ class MatchMakingService {
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
-				message: "Something went wrong when finishing/cancelling the match (5)."
+				message: "The match doesn't exist, or you are not a player in the match (5)."
 			});
 
 		}
 	}
 	
 	async saveFinishMatch(connection, message) {
+		let room;
 		try {
 
-			let room = await RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
+			room = await RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
 			if (!room) {
 				throw new Error(`[cancelMatch] room with this id not found ${message.roomId}`);
 			}
@@ -156,37 +157,50 @@ class MatchMakingService {
 				throw new Error(`[cancelMatch] player '${connection.userId}' is not a player in room ${message.roomId}`);
 			}
 			
-			// save scores to database
-			const [player1, player2] = room.players;
-			
-			const nicks = message.players.map(player => player.nick);
-			const [p1_nick, p2_nick] = nicks;
-			if (p1_nick !== player1.nick || p2_nick !== player2.nick) {
-				console.log(`player1 room: ${player1.nick} message: ${p1_nick}\nplayer2 room: ${player2.nick} message: ${p2_nick}`);
-				throw new Error ("[saveFinishMatch] player nicks don't match up");
-			}
-			
-			
-			const scores = message.players.map(player => player.score);
-			const [p1_score, p2_score] = scores;
-			
-			let match_id = await MatchService.initiateMatch(player1.wsclient.userId, player2.wsclient.userId, room.gameMode);
-			await MatchService.finishMatch(p1_score, p2_score, match_id);
-			
-			
-			
-			
-			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, {message: "match was finished!"});
-			
-			await this.RoomService.destroyRoom(room.id);
 		} catch (error) {
 			console.error(error.message);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
-				message: "Something went wrong when finishing the match (6)."
+				message: "The match doesn't exist, or you are not a player in the match (6)."
 			});
+			return ;
 		}
+		
+		
+		try {
+			
+		// save scores to database
+		const [player1, player2] = room.players;
+		
+		const nicks = message.players.map(player => player.nick);
+		const [p1_nick, p2_nick] = nicks;
+		if (p1_nick !== player1.nick || p2_nick !== player2.nick) {
+			console.log(`player1 room: ${player1.nick} message: ${p1_nick}\nplayer2 room: ${player2.nick} message: ${p2_nick}`);
+			throw new Error ("[saveFinishMatch] player nicks don't match up with room data");
+		}
+			
+			
+		const scores = message.players.map(player => player.score);
+		const [p1_score, p2_score] = scores;
+		
+		// let match_id = await MatchService.initiateMatch(player1.wsclient.userId, player2.wsclient.userId, room.gameMode);
+		// await MatchService.finishMatch(p1_score, p2_score, match_id);
+		await MatchService.insertMatch(player1.wsclient.userId, player2.wsclient.userId, p1_score, p2_score, room.gameMode);
+		
+		
+		
+	} catch (error) {
+		console.error(error.message);
+		await this.WebsocketService.sendMessageToClient(connection, {
+			type: "ERROR",
+			sender: "__server",
+			message: "Something went wrong when saving the match, data was forfeit and match closed (6)."
+		});
+	}
+	await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, {message: "match was finished!"});
+	
+	await this.RoomService.destroyRoom(room.id);
 
 	}
 }

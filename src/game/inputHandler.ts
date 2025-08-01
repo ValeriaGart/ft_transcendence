@@ -149,19 +149,14 @@ export class InputHandler {
 			console.log('Sending cancel match msg:', JSON.stringify(msg));
 			this._engine._ws.sendMessage(JSON.stringify(msg));
 			this._engine._gameStateMachine.transition(GameState.SELECT);
+			this._engine.endGameLoop();
 		}
 	}
 		
 	private handleGameOverScreen(event: KeyboardEvent): void {
 		if (event.key == 'Enter') {
-			// const msg = {
-			// 	"type": 5,
-			// 	"roomId": this._engine._roomID,
-			// 	"status": "cancelled"
-			// }
-			// console.log('Sending cancel match msg:', JSON.stringify(msg));
-			// this._engine._ws.sendMessage(JSON.stringify(msg));
 			this._engine._gameStateMachine.transition(GameState.SELECT);
+			this._engine.endGameLoop();
 		}
 	}
 

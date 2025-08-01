@@ -8,6 +8,7 @@ import { Player } from './player.ts';
 import { Tournament } from './tournament.ts';
 import { OpponentScreen } from './opponentSelectScreen.ts';
 import { WebSocketService } from "../lib/webSocket";
+import { Router } from '@blitz-ts/router.ts';
 
 export class GameEngine {
 	//standard classes
@@ -37,7 +38,7 @@ export class GameEngine {
 	private oppMode: string | null = null;
 
 	public _ws = WebSocketService.getInstance();
-
+	private _intervalId?: NodeJS.Timeout;
 
 	constructor(canvasID: string) {
 		this._canvas = document.getElementById(canvasID) as HTMLCanvasElement;
@@ -143,6 +144,32 @@ export class GameEngine {
 		console.log('game mode: ', this.gameMode);
 		console.log('opponent mode: ', this.oppMode);
 	}
+
+	private removeAllEventListeners(): void {
+		const canvas = document.getElementById(this._canvas.id);
+		if (canvas) {
+			canvas.replaceWith(canvas.cloneNode(true));
+		}
+	}
+
+	private cleanup(): void {
+		if (this._canvas) {
+			if (this._ctx) {
+				this._ctx.clearRect(0,0, this._canvas.width, this._canvas.height);
+			}
+			this._canvas.remove();
+		}
+		this.removeAllEventListeners();
+	}
+
+	public endGameLoop(): void {
+		if (this._intervalId) {
+			clearInterval(this._intervalId);
+			this.cleanup();
+			const router = Router.getInstance();
+			router.navigate('/user');
+		}
+	}
 	
 	public startGameLoop(msg: MessageEvent): void {
 		if (!msg || !msg.data) {
@@ -151,7 +178,7 @@ export class GameEngine {
 		}
 		this._inputHandler.setupEventListeners();
 		console.log("game loop started")
-		const setIntervalId = setInterval(() => { this.update(); }, 16);
+		this._intervalId = setInterval(() => { this.update(); }, 16);
 		//roughly 60fps
 		
 		this.parseMessage(msg);

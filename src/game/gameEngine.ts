@@ -7,6 +7,7 @@ import { PongGame } from './pongGame.ts';
 import { Player } from './player.ts';
 import { Tournament } from './tournament.ts';
 import { OpponentScreen } from './opponentSelectScreen.ts';
+import { WebSocketService } from "../lib/webSocket";
 
 export class GameEngine {
 	//standard classes
@@ -23,7 +24,7 @@ export class GameEngine {
 	private _tournament: Tournament | undefined = undefined;
 
 	//game variables
-	private roomID: string | null = null;
+	public _roomID: string | null = null;
 	private p1Nick: string | null = null;
 	private p2Nick: string | null = null;
 	private p3Nick: string | null = null;
@@ -34,6 +35,9 @@ export class GameEngine {
 	private p4AI: boolean = true;
 	private gameMode: string | null = null;
 	private oppMode: string | null = null;
+
+	public _ws = WebSocketService.getInstance();
+
 
 	constructor(canvasID: string) {
 		this._canvas = document.getElementById(canvasID) as HTMLCanvasElement;
@@ -122,7 +126,7 @@ export class GameEngine {
 		var msg
 		msg = JSON.parse(message.data);
 
-		this.roomID = msg.roomId;
+		this._roomID = msg.roomId;
 		this.p1Nick = msg.players[0].nick;
 		this.p2Nick = msg.players[1].nick;
 		this.p3Nick = msg.players[2]?.nick || null;
@@ -133,7 +137,7 @@ export class GameEngine {
 		this.p4AI = msg.players[3]?.ai || true;
 		this.gameMode = msg.gameMode;
 		this.oppMode = msg.oppMode;
-		console.log('id: ', this.roomID);
+		console.log('id: ', this._roomID);
 		console.log('p1: ', this.p1Nick, ' AI: ', this.p1AI);
 		console.log('p2: ', this.p2Nick, ' AI: ', this.p2AI);
 		console.log('game mode: ', this.gameMode);

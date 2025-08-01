@@ -108,6 +108,16 @@ export class PongGame {
 		}
 	}
 
+	private sendFinishMessage() {
+		const msg = {
+			"type": 5,
+			"roomId": this._engine._roomID,
+			"status": "finished"
+		}
+		console.log('Sending finish match msg:', JSON.stringify(msg));
+		this._engine._ws.sendMessage(JSON.stringify(msg));
+	}
+
 	private checkWinCondition(): boolean {
 		if (this._gameStats.scores.left >= 3) {
 			this._p1.setPosition(this._p1.getPosition() - 1)
@@ -117,6 +127,7 @@ export class PongGame {
 			}
 			this._engine._gameStateMachine.transition(GameState.GAME_OVER);
 			this._winScreen.drawWinScreen(this._p1.getName());
+			this.sendFinishMessage();
 			return false;
 		}
 		
@@ -128,6 +139,7 @@ export class PongGame {
 			}
 			this._engine._gameStateMachine.transition(GameState.GAME_OVER);
 			this._winScreen.drawWinScreen(this._p2.getName());
+			this.sendFinishMessage();
 			return false;
 		}
 		return false;

@@ -15,6 +15,30 @@ class MatchService {
 		const match = await dbAll('SELECT * FROM match WHERE player1_id = ? or player2_id = ?', [userId, userId]);
 		return match;
 	}
+
+	static async getAllMatchesByUserId(userId) {
+		const matches = await dbAll(
+			'SELECT * FROM match WHERE player1_id = ? OR player2_id = ? ORDER BY gameFinishedAt DESC, id DESC',
+			[userId, userId]
+		);
+		return matches;
+	}
+
+	static async getWinsLossesById(userId) {
+		const stats = await dbGet(
+			`SELECT 
+				SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) as wins,
+				SUM(CASE WHEN winner_id IS NOT NULL AND winner_id != ? THEN 1 ELSE 0 END) as losses
+			 FROM match 
+			 WHERE (player1_id = ? OR player2_id = ?) AND gameFinishedAt IS NOT NULL`,
+			[userId, userId, userId, userId]
+		);
+		
+		return {
+			wins: stats.wins || 0,
+			losses: stats.losses || 0
+		};
+	}
 	
 	static async initiateMatch(player1, player2, matchtype) {
 		if (player1 === player2)

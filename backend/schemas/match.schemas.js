@@ -32,4 +32,4 @@ export const matchParamsSchema = {
 		id: { type: "integer" }
 	},
 	required: ["id"]
-}
+};

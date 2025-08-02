@@ -91,7 +91,7 @@ class RoomUtilsService {
 
 
 	// this method updates the wsclient inside the room.players array after user has reconnected
-	static async reconnectPlayerToRoom(room, connection) {
+	static reconnectPlayerToRoom(room, connection) {
 		for (let p of room.players) {
 			if (p.id === connection.userId) {
 				p.wsclient = connection;

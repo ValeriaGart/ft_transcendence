@@ -211,6 +211,16 @@ class MatchMakingService {
 	}
 
 
+	async remoteMessageForwarding(roomId, gamestate, connection) {
+		let room = RoomUtilsService.roomExists(this.RoomService.rooms, roomId);
+		if (!room) {
+			console.log("error, room doesn't exist");
+			return ;
+		}
+		await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, gamestate, connection);
+	}
+
+
 }
 
 export default MatchMakingService;

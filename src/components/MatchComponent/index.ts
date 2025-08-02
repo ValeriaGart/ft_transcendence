@@ -358,32 +358,29 @@ export class MatchComponent extends Component<MatchComponentState> {
       return;
     }
 
-    const userIdStr = inputElement.value.trim();
-    if (!userIdStr) {
-      const storedUser = authService.getCurrentUser();
-      this.showError('Please enter a user ID');
-      console.log('Debug - storedUser:', storedUser);
-      return;
-    }
-
-    const userId = parseInt(userIdStr);
-    if (isNaN(userId)) {
-      this.showError('Please enter a valid user ID (number)');
-      return;
-    }
-
-    console.log('Adding friend with user ID:', userId);
-
-    // Check if trying to add yourself
+    const nickname = inputElement.value.trim();
+    if (!nickname) {
+		return this.showError('Please enter a nickname');
+	}
+    
     const currentUser = authService.getCurrentUser();
-    console.log('Current user id:', currentUser?.id, 'userId:', userId);
-    if (currentUser?.id === userId) {
-      this.showError('You cannot add yourself as a friend');
-      return;
-    }
+    if (!currentUser) { 
+	  return this.showError('You must be logged in to add friends');
+	}
 
-    // Send friend request - backend will validate user existence
     try {
+      // Check if trying to add yourself
+      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      if (!profileResponse.ok) {
+		return this.showError('Failed to get your profile');
+	  }
+      
+      const currentUserProfile = await profileResponse.json();
+      if (currentUserProfile.nickname === nickname) {
+        return this.showError('You cannot add yourself as a friend');
+      }
+
+      // Send friend request using nickname
       const response = await fetch(getApiUrl('/friend/me'), {
         method: 'POST',
         headers: {
@@ -391,12 +388,11 @@ export class MatchComponent extends Component<MatchComponentState> {
         },
         credentials: 'include',
         body: JSON.stringify({
-          friend_id: userId
+          friend_nickname: nickname
         }),
       });
 
       if (response.ok) {
-        console.log('Friend request sent successfully');
         this.handleFriendRequestSuccess();
       } else {
         const errorData = await response.json();
@@ -413,8 +409,6 @@ export class MatchComponent extends Component<MatchComponentState> {
    * Handle successful friend request
    */
   private handleFriendRequestSuccess(): void {
-    console.log('Friend request sent successfully');
-    
     // Clear input and switch back to friends list
     const inputElement = this.element.querySelector('#add-friends-input') as HTMLInputElement;
     if (inputElement) {

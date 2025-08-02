@@ -56,7 +56,7 @@ class RoomUtilsService {
 			if (p.ai == true) {
 				continue ;
 			}
-			if (p.wsclient.userId == connection.userId) {
+			if (p.id == connection.userId) {
 				areUEvenInvitedBro = true;
 				break;
 			}
@@ -85,6 +85,18 @@ class RoomUtilsService {
 			}
 			if (p.accepted != "declined") {
 				await websocketService.sendMessageToClient(p.wsclient, message);
+			}
+		}
+	}
+
+
+	// this method updates the wsclient inside the room.players array after user has reconnected
+	static async reconnectPlayerToRoom(room, connection) {
+		for (let p of room.players) {
+			if (p.id === connection.userId) {
+				p.wsclient = connection;
+				console.log(`[reconnect] reconnected user ${p.id} to room ${room.id}`);
+				break ;
 			}
 		}
 	}

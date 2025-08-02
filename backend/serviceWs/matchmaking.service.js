@@ -203,7 +203,7 @@ class MatchMakingService {
 	}
 
 
-	async reconnectPlayerToAllRooms(connection) {
+	reconnectPlayerToAllRooms(connection) {
 		let rooms = this.RoomService.rooms;
 		for (let r of rooms) {
 			RoomUtilsService.reconnectPlayerToRoom(r, connection);

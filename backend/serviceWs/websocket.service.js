@@ -16,15 +16,19 @@ class WebsocketService {
 
 	handleJoin(connection, wsid) {
 		connection.userId = wsid;
+		console.log("[WebSocket] user connected ", connection.userId);
 		this.broadcast({
 			type: "BROADCAST",
 			sender: '__server',
 			message: `id ${wsid} joined`
 		}, connection);
-	}
 
+		this.matchMakingService.reconnectPlayerToAllRooms(connection);
+	}
+	
 	handleLeave(connection) {
 		connection.on('close', () => {
+			console.log("[WebSocket] user disconnected ", connection.userId);
 			this.broadcast({
 				type: "BROADCAST",
 				sender: '__server',

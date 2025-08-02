@@ -201,6 +201,16 @@ class MatchMakingService {
 		await this.RoomService.destroyRoom(room.id);
 
 	}
+
+
+	reconnectPlayerToAllRooms(connection) {
+		let rooms = this.RoomService.rooms;
+		for (let r of rooms) {
+			RoomUtilsService.reconnectPlayerToRoom(r, connection);
+		}
+	}
+
+
 }
 
 export default MatchMakingService;

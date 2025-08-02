@@ -41,7 +41,7 @@ class RoomUtilsService {
 	}
 
 
-	static async roomExists(rooms, roomId) {
+	static roomExists(rooms, roomId) {
 		for (let r of rooms) {
 			if (r.id == roomId) {
 				return (r);
@@ -78,12 +78,12 @@ class RoomUtilsService {
 		}
 	}
 
-	static async sendMessageToAllPlayers(websocketService, room, message) {
+	static async sendMessageToAllPlayers(websocketService, room, message, connection = null) {
 		for (let p of room.players) {
 			if (p.ai == true) {
 				continue ;
 			}
-			if (p.accepted != "declined") {
+			if (p.accepted != "declined" && p.wsclient !== null && p.wsclient !== connection) {
 				await websocketService.sendMessageToClient(p.wsclient, message);
 			}
 		}

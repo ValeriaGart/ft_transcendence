@@ -91,6 +91,13 @@ class WebsocketService {
 					}
 					this.matchMakingService.saveFinishMatch(connection, parsedMessage);
 				}
+				else if (parsedMessage.type === 7) {
+					console.log("[handleMessage] type 7: remote game messaging");
+					if (!parsedMessage.roomId || !parsedMessage._gameState) {
+						throw new Error ("Parsing: Invalid message: 'roomId' or 'gameState' field is missing or empty");
+					}
+					this.matchMakingService.remoteMessageForwarding(parsedMessage.roomId, parsedMessage._gameState, connection);
+				}
 				else {
 					console.log("[handleMessage] unknown type");
 				}

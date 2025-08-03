@@ -28,10 +28,11 @@ class RoomUtilsService {
 			const playerNicks = await this.getAllAcceptedPlayerNicksRoom(room);
 			// console.log("[playersBusy] accepted playerNicks: ", playerNicks);
 			for (let player of players) {
-				//👉 if (player.id === aiPlayer)
-				//	continue ;
+				if (player.ai === true) {
+					continue ;
+				}
 				console.log("[playersBusy] checking player: ", player.nick);
-				if (player.ai === false && playerNicks.includes(player.nick)) {
+				if (playerNicks.includes(player.nick)) {
 					console.log("someone is busy: ", player.nick);
 					return true; // Player is busy
 				}

@@ -14,18 +14,22 @@
         </div>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" blitz-if="stats">
-            <div class="bg-gray-800 rounded-lg p-4 text-center flex flex-col items-center justify-center">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" blitz-if="stats">
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
                 <div class="text-2xl font-bold text-[#B784F2]">{{stats.totalMatches}}</div>
-                <div class="text-sm text-gray-400 text-center">Total Matches</div>
+                <div class="text-sm text-gray-400">Total Matches</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 text-center flex flex-col items-center justify-center">
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
                 <div class="text-2xl font-bold text-green-400">{{stats.wins}}</div>
-                <div class="text-sm text-gray-400 text-center">Wins</div>
+                <div class="text-sm text-gray-400">Wins</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 text-center flex flex-col items-center justify-center">
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
                 <div class="text-2xl font-bold text-red-400">{{stats.losses}}</div>
-                <div class="text-sm text-gray-400 text-center">Losses</div>
+                <div class="text-sm text-gray-400">Losses</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-gray-400">{{stats.draws}}</div>
+                <div class="text-sm text-gray-400">Draws</div>
             </div>
         </div>
     </div>
@@ -85,11 +89,11 @@
                         <!-- Score -->
                         <div class="text-right">
                             <div class="text-2xl font-bold">
-                                <span class="{{match.isWin ? 'text-green-400' : 'text-red-400'}}">
+                                <span class="{{match.isWin ? 'text-green-400' : match.isLoss ? 'text-red-400' : 'text-gray-400'}}">
                                     {{match.playerScore}}
                                 </span>
                                 <span class="text-gray-500 mx-2">-</span>
-                                <span class="{{match.isLoss ? 'text-green-400' : 'text-red-400'}}">
+                                <span class="{{match.isLoss ? 'text-green-400' : match.isWin ? 'text-red-400' : 'text-gray-400'}}">
                                     {{match.opponentScore}}
                                 </span>
                             </div>
@@ -106,7 +110,8 @@
         <div class="flex items-center justify-between" blitz-if="totalPages > 1">
             <button 
                 id="prev-page"
-                class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled="{{currentPage === 1}}"
             >
                 Previous
             </button>
@@ -119,7 +124,8 @@
             
             <button 
                 id="next-page"
-                class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled="{{currentPage === totalPages}}"
             >
                 Next
             </button>

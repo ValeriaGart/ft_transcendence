@@ -31,7 +31,7 @@ class RoomUtilsService {
 				//👉 if (player.id === aiPlayer)
 				//	continue ;
 				console.log("[playersBusy] checking player: ", player.nick);
-				if (playerNicks.includes(player.nick)) {
+				if (player.ai === false && playerNicks.includes(player.nick)) {
 					console.log("someone is busy: ", player.nick);
 					return true; // Player is busy
 				}

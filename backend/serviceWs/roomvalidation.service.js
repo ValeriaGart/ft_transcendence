@@ -1,3 +1,6 @@
+let validGameModes = ["bestof", "infinite"];
+let validOppModes = ["single", "online"];
+
 class RoomValidationService {
 
 	static playersFieldCheck(players) {
@@ -18,8 +21,6 @@ class RoomValidationService {
 			throw new Error ("[playersFieldCheck] object is missing nick variable");
 		}
 
-
-
 		// checking if all player.nick are not empty
 		const allNicks = players.every(obj => obj.nick !== "");
 		if (allNicks === false) {
@@ -29,11 +30,8 @@ class RoomValidationService {
 		// checking if all player.ai are not null
 		const allAi = players.every(obj => obj.ai !== null);
 		if (allAi === false) {
-			// console.log("[playersFieldCheck] someone has empty nick");
 			throw new Error ("[playersFieldCheck] someone has null AI info");
 		}
-
-		
 		
 		// check for duplicate nicks (including ai)
 		let nicks = [];
@@ -42,26 +40,40 @@ class RoomValidationService {
 				throw new Error ("[playersFieldCheck] duplicate nick was sent");
 			}
 			nicks.push(p.nick);
-			console.log(p);
 		}
-
 	}
 
+	static gameModeFieldCheck(gameMode) {
+		if (!gameMode || gameMode === "") {
+			throw new Error ("[gameModeFieldCheck] field is empty");
+		}
+
+		if (!validGameModes.includes(gameMode)) {
+			throw new Error ("[gameModeFieldCheck] invalid game mode");
+		}
+	}
+	
+	static oppModeFieldCheck(oppMode) {
+		if (!oppMode || oppMode === "") {
+			throw new Error ("[oppModeFieldCheck] field is empty");
+		}
+
+		if (!validOppModes.includes(oppMode)) {
+			throw new Error ("[oppModeFieldCheck] invalid opponent mode");
+		}
+	}
 
 	static roomValidation(message) {
 		try {
-
-			// check if none of the fields are empty or null
-			
-			if (this.playersFieldCheck(message.players) === false) {
-				console.log("something went wrong");
-				return ;
-			}
+			// check for valid players array
+			this.playersFieldCheck(message.players);
 			
 			// check for valid gameMode
-			
+			this.gameModeFieldCheck(message.gameMode);
 			
 			// check for valid oppMode
+			this.oppModeFieldCheck(message.oppMode);
+
 		} catch (error) {
 			console.log(error.message);
 			return (false);

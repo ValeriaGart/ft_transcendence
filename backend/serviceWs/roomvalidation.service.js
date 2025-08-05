@@ -36,7 +36,15 @@ class RoomValidationService {
 		
 		
 		// check for duplicate nicks (including ai)
-		
+		let nicks = [];
+		for (let p of players) {
+			if (nicks.includes(p.nick)) {
+				throw new Error ("[playersFieldCheck] duplicate nick was sent");
+			}
+			nicks.push(p.nick);
+			console.log(p);
+		}
+
 	}
 
 

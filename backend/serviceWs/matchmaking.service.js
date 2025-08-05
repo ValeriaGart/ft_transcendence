@@ -65,7 +65,11 @@ class MatchMakingService {
 		
 		if (RoomValidationService.roomValidation(message) === false) {
 			console.log("[matchMakingInit] Room could not be validated");
-			// error message
+			await this.WebsocketService.sendMessageToClient(connection, {
+				type: "ERROR",
+				sender: "__server",
+				message: "Error creating Match: Room Validation failed"
+			});
 			return ;
 		}
 

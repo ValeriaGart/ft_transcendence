@@ -75,7 +75,7 @@ class RoomValidationService {
 			this.oppModeFieldCheck(message.oppMode);
 
 		} catch (error) {
-			console.log(error.message);
+			console.error("Error: ", error.message);
 			return (false);
 		}
 

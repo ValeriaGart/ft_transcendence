@@ -2,7 +2,7 @@
 import FriendService from "../services/friend.service.js";
 import InvitationService from "./invitation.service.js";
 import MatchMakingService from "./matchmaking.service.js";
-
+import sleep from "../utils/sleep.utils.js";
 // const _matchMakingService = new MatchMakingService(this);
 
 class WebsocketService {
@@ -27,13 +27,16 @@ class WebsocketService {
 	}
 	
 	handleLeave(connection) {
-		connection.on('close', () => {
+		connection.on('close', async () => {
 			console.log("[WebSocket] user disconnected ", connection.userId);
 			this.broadcast({
 				type: "BROADCAST",
 				sender: '__server',
 				message: `id ${connection.userId} left`
 			});
+			await sleep (5000);
+			console.log("disconnecting user...");
+			this.matchMakingService.disconnectPlayerFromAllRooms(connection);
 		});
 	}
 

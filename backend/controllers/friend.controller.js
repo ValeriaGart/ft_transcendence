@@ -1,4 +1,5 @@
 import FriendService from '../services/friend.service.js'
+import ProfileService from '../services/profile.service.js'
 
 class FriendController {
 	static async getAllFriendships(request, reply) {
@@ -43,34 +44,40 @@ class FriendController {
 	static async requestFriend(request, reply) {
 		try {
 			const userId = request.user.userId;
-			const { friend_id } = request.body;
-			console.log(`[FriendController] User ${userId} requested friendship with User ${friend_id}`);
-			const friend = await FriendService.requestFriend(userId, friend_id);
-			return friend;
+			const { friend_nickname } = request.body;
+
+			try {
+				const { userId: friendId } = await ProfileService.getIdByNick(friend_nickname);
+				return await FriendService.requestFriend(userId, friendId);
+			} catch (error) {
+				console.warn(`[FriendController] Error resolving nickname '${friend_nickname}': `, error.message);
+				if (typeof error.message === 'string' && error.message.includes('No such user')) {
+					reply.code(404);
+					return { error: 'User not found', details: `No user found with nickname '${friend_nickname}'` };
+				} else {
+					reply.code(500);
+					return { error: 'Failed to resolve user', details: error.message };
+				}
+			}
 		} catch (error) {
 			console.warn(`[FriendController] Error in requestFriend: `, error.message);
 			reply.code(500);
 			return { error: 'Failed to request friendship', details: error.message };
 		}
 	}
-	
+
 	static async acceptFriend(request, reply) {
 		try {
 			const userId = request.user.userId;
 			const { friend_id } = request.body;
 			console.log(`[FriendController] User ${userId} accepts friend request from User ${friend_id}`);
-			const friend = await FriendService.acceptFriend(userId, friend_id);
-			return friend;
+			return await FriendService.acceptFriend(userId, friend_id);
 		} catch (error) {
 			console.warn(`[FriendController] Error in acceptFriend: `, error.message);
 			reply.code(500);
 			return { error: 'Failed to accept friendship', details: error.message };
 		}
 	}
-
-	
-
-
 }
 
 export default FriendController;

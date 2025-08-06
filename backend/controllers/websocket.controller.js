@@ -6,7 +6,6 @@ class WebsocketController {
     }
 
 	handleConnection(connection, req, wsid) {
-		console.log("[WebsocketController] handle connection ", wsid );
 
 		this.service.handleJoin(connection, wsid);
 		this.service.handleLeave(connection);

@@ -41,6 +41,39 @@ class MatchController {
 			return { error: 'Failed to retrieve matches for this user', details: error.message };
 		}
 	}
+
+	static async getAllMatchesByUserId(request, reply) {
+		try {
+			const { id } = request.params;
+			const matches = await MatchService.getAllMatchesByUserId(id);
+			
+			if (!matches || matches.length === 0) {
+				return { matches: [], message: 'No matches found for this user' };
+			}
+			
+			return { matches, total: matches.length };
+		} catch (error) {
+			reply.code(500);
+			return { error: 'Failed to retrieve matches for user', details: error.message };
+		}
+	}
+
+	static async getWinsLossesById(request, reply) {
+		try {
+			const { id } = request.params;
+			const stats = await MatchService.getWinsLossesById(id);
+			
+			return {
+				userId: parseInt(id),
+				wins: stats.wins,
+				losses: stats.losses,
+				total: stats.wins + stats.losses
+			};
+		} catch (error) {
+			reply.code(500);
+			return { error: 'Failed to retrieve win/loss statistics', details: error.message };
+		}
+	}
 	
 	static async initiateMatch(request, reply) {
 		try {

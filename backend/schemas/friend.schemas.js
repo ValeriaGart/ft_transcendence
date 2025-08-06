@@ -1,9 +1,17 @@
 export const requestFriendSchema = {
 	type: "object",
 	properties: {
+		friend_nickname: { type: 'string', minLength: 1 }
+	},
+	required: ['friend_nickname']
+};
+
+export const acceptFriendSchema = {
+	type: "object",
+	properties: {
 		friend_id: { type: 'integer' }
 	},
-	required: [ 'friend_id' ]
+	required: ['friend_id']
 };
 
 export const friendStatusSchema = {

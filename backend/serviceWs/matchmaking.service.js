@@ -19,9 +19,9 @@ class MatchMakingService {
 		console.log("[MatchMakingService] constructor");
     }
 
-	createStartMatchMessage(room) {
+	createStartMatchMessage(room, playernumber) {
 		const sanitizedPlayers = room.players.map(player => {
-			const { wsclient, ...rest } = player; // Exclude wsclient
+			const { wsclient, id, ...rest } = player; // Exclude wsclient
 			return rest;
 		});
 		const message = {
@@ -29,6 +29,7 @@ class MatchMakingService {
 			sender: "__server",
 			message: "Your match will start now.",
 			roomId: room.id,
+			urp: playernumber,
 			players: sanitizedPlayers,
 			gameMode: room.gameMode,
 			oppMode: room.oppMode
@@ -52,7 +53,7 @@ class MatchMakingService {
 		for (let player of room.players) {
 			if (player.id && player.wsclient) {
 				console.log("[startMatch] player: ", player.nick);
-				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room));
+				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room, player.pnumber));
 			}
 		}
 

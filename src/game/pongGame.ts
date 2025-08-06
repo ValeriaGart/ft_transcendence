@@ -118,10 +118,10 @@ export class PongGame {
 
 	private broadcastGameState(): void {
 		const msg = {
-			"type": 1,
-			"message": "test"
+			"type": 7,
+			"roomId": this._engine._roomID,
+			"_gameState": this._gameStats
 		};
-		// const gameStateString = JSON.stringify(this._gameStats);
 		const gameStateString = JSON.stringify(msg);
 		this._engine._ws.sendMessage(gameStateString);
 		console.log('client has sent message: ', gameStateString);

@@ -26,6 +26,7 @@ export class GameEngine {
 
 	//game variables
 	public _roomID: string | null = null;
+		public _personalID: number | null = null;
 	private p1Nick: string | null = null;
 	private p2Nick: string | null = null;
 	private p3Nick: string | null = null;
@@ -34,6 +35,10 @@ export class GameEngine {
 	private p2AI: boolean = true;
 	private p3AI: boolean = true;
 	private p4AI: boolean = true;
+		private p1ID: number | null = null;
+		private p2ID: number | null = null;
+		private p4ID: number | null = null;
+		private p3ID: number | null = null;
 	private gameMode: string | null = null;
 	private oppMode: string | null = null;
 

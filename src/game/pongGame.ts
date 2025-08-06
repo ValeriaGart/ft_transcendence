@@ -28,6 +28,7 @@ export class PongGame {
 	public _p2: Player;
 	private _round: number = 0;
 	private _lastAIUpdateTimeMs: number = 0;
+	private _lastBroadcastTimeMs: number = 0;
 
 	constructor(engine: GameEngine, mode?: GameMode, opponent?: OpponentMode, p1?: Player, p2?: Player, round?: number) {
 		this._engine = engine;
@@ -40,7 +41,6 @@ export class PongGame {
 		this._round = round || this._round;
 
 		console.log('game running in mode: ', this._mode, " : ", this._oppMode);
-		// console.log(this._oppMode);
 
 		// const randomDirection = getRandomDirection();
 		// const randomAngle = getRandomAngle()
@@ -58,6 +58,10 @@ export class PongGame {
 		this._renderEngine = new RenderEngine(this);
 		this._pauseScreen = new PauseScreen(this._engine);
 		this._winScreen = new WinScreen(this);
+
+		this._engine._ws.ws.onmessage = (message) => {
+			this.parseMessage(message);
+		}
 	}
 
 	public drawGameScreen(): void {
@@ -106,6 +110,25 @@ export class PongGame {
 				}
 			}
 		}
+
+		if (this._lastBroadcastTimeMs === 0 || Date.now() - this._lastBroadcastTimeMs > 500) {
+			this.broadcastGameState();
+		}
+	}
+
+	private broadcastGameState(): void {
+		const msg = {
+			"type": 1,
+			"message": "test"
+		};
+		// const gameStateString = JSON.stringify(this._gameStats);
+		const gameStateString = JSON.stringify(msg);
+		this._engine._ws.sendMessage(gameStateString);
+		console.log('client has sent message: ', gameStateString);
+	}
+
+	private parseMessage(message: MessageEvent): void {
+		console.log('client has reveived message: ', JSON.parse(message.data));
 	}
 
 	private sendFinishMessage() {

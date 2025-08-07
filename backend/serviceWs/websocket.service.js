@@ -35,7 +35,6 @@ class WebsocketService {
 				message: `id ${connection.userId} left`
 			});
 			await sleep (5000);
-			console.log("disconnecting user...");
 			this.matchMakingService.disconnectPlayerFromAllRooms(connection);
 		});
 	}

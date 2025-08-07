@@ -206,7 +206,7 @@ class MatchMakingService {
 		let rooms = this.RoomService.rooms;
 		for (let r of rooms) {
 			for (let p of r.players) {
-				if (p.id === connection.userId) {
+				if (p.id === connection.userId && p.wsclient === connection) {
 					console.log(`[disconnect] disconnected user ${p.id} from room ${r.id}, cancelling room`);
 					await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, r, this.createCancelMatchMessage(r));
 					await this.RoomService.destroyRoom(r.id);
@@ -218,7 +218,6 @@ class MatchMakingService {
 	reconnectPlayerToAllRooms(connection) {
 		let rooms = this.RoomService.rooms;
 		for (let r of rooms) {
-			console.log(`[reconnect] reconnected user ${p.id} to room ${r.id}`);
 			RoomUtilsService.reconnectPlayerToRoom(r, connection);
 		}
 	}

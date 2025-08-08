@@ -2,6 +2,7 @@ import EmojiService from "./emoji.service.js";
 import RoomService from "./room.service.js";
 import InvitationService from "./invitation.service.js";
 import RoomUtilsService from "./roomutils.service.js";
+import RoomValidationService from "./roomvalidation.service.js";
 import MatchService from "../services/match.service.js";
 
 const timeoutSec = 30;
@@ -62,6 +63,17 @@ class MatchMakingService {
 
 	async matchMakingInit(connection, message) {
 		console.log("[matchMakingInit] start");
+		
+		if (RoomValidationService.roomValidation(message) === false) {
+			console.log("[matchMakingInit] Room could not be validated");
+			await this.WebsocketService.sendMessageToClient(connection, {
+				type: "ERROR",
+				sender: "__server",
+				message: "Error creating Match: Room Validation failed"
+			});
+			return ;
+		}
+
 		if (this.RoomService.rooms.length > 0)
 		{
 			if (await RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {

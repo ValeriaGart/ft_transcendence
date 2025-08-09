@@ -6,10 +6,14 @@ import sleep from "../utils/sleep.utils.js";
 // const _matchMakingService = new MatchMakingService(this);
 
 class WebsocketService {
-    constructor(websocketServer) {
+	static WS_TIMEOUT_DISCONNECT = 5000;
+	
+	constructor(websocketServer) {
         this.websocketServer = websocketServer;
 		this.matchMakingService = new MatchMakingService(this);
 		this.invitationService = new InvitationService(this);
+
+
     }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
@@ -34,7 +38,7 @@ class WebsocketService {
 				sender: '__server',
 				message: `id ${connection.userId} left`
 			});
-			await sleep (5000);
+			await sleep (WS_TIMEOUT_DISCONNECT);
 			this.matchMakingService.disconnectPlayerFromAllRooms(connection);
 		});
 	}

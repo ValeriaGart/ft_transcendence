@@ -28,6 +28,7 @@ export interface GameStats {
 	paddleVelocity: { left: number; right: number};
 	paddleDirection: { left: number; right: number};
 	scores: { left: number; right: number};
+	pnumber: number;
 }
 
 export type PaddleSide = 'left' | 'right';

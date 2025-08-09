@@ -30,13 +30,13 @@ export class PongGame {
 	private _lastAIUpdateTimeMs: number = 0;
 	private _lastBroadcastTimeMs: number = 0;
 
-	constructor(engine: GameEngine, mode?: GameMode, opponent?: OpponentMode, p1?: Player, p2?: Player, round?: number) {
+	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1?: Player, p2?: Player, round?: number) {
 		this._engine = engine;
 		this._mode = mode || this._mode
 		this._oppMode = opponent || this._oppMode;
-		this._p1 = p1 || new Player();
+		this._p1 = p1 || new Player("default", 0, true, 1);
 		this._p1.setSide('left');
-		this._p2 = p2 || new Player();
+		this._p2 = p2 || new Player("default", 0, true, 2);
 		this._p2.setSide('right');
 		this._round = round || this._round;
 
@@ -52,7 +52,8 @@ export class PongGame {
 			paddlePositions: { left: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2), right: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2)},
 			paddleDirection: {left: 0, right: 0},
 			paddleVelocity: { left :0, right: 0},
-			scores: { left: 0, right: 0}
+			scores: { left: 0, right: 0},
+			pnumber: this._engine._urp
 		};
 		this._collisionHandler = new CollisionHandler(this);
 		this._renderEngine = new RenderEngine(this);
@@ -124,11 +125,25 @@ export class PongGame {
 		};
 		const gameStateString = JSON.stringify(msg);
 		this._engine._ws.sendMessage(gameStateString);
-		console.log('client has sent message: ', gameStateString);
+		// console.log('client has sent message: ', gameStateString);
 	}
 
 	private parseMessage(message: MessageEvent): void {
-		console.log('client has reveived message: ', JSON.parse(message.data));
+		var msg = JSON.parse(message.data);
+		console.log('client has reveived message: ', msg);
+		console.log("stats in msg: ", msg.ballPosition);
+		if (!msg.ballPosition) {
+			return;
+		}
+		if (this._gameStats.pnumber == this._p2.getPnumber()) {
+			console.log("hasdhfjkashdfjkahsjkdf");
+			this._gameStats.ballPosition = msg.ballPosition;
+			this._gameStats.ballVelocity = msg.ballVelocity;
+			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
+		}
+		if (this._gameStats.pnumber == this._p1.getPnumber()) {
+			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
+		}
 	}
 
 	private sendFinishMessage() {

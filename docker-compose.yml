@@ -1,0 +1,24 @@
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"  # Expose to host
+      - "3000:3000"  # http backend
+      - "3443:3443"  # https backend
+    environment:
+      - NODE_ENV=production
+    networks:
+      - transcendence_net
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+
+networks:
+  transcendence_net:
+    driver: bridge
+
+volumes:
+  pgdata:

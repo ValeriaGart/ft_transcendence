@@ -13,12 +13,12 @@ services:
     networks:
       - transcendence_net
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./db.sqlite:/workspaces/ft_transcendence/db.sqlite
 
 
 networks:
   transcendence_net:
     driver: bridge
 
-volumes:
-  pgdata:
+# volumes:
+  # sqlite:

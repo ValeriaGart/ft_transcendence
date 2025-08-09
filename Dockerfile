@@ -8,7 +8,7 @@ RUN apt-get update
 WORKDIR /workspaces/ft_transcendence
 
 # (Optional) Copy your project files
-COPY . .
+COPY . /workspaces/ft_transcendence
 
 # (Optional) Install dependencies
 RUN npm install

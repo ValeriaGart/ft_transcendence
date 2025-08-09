@@ -1,8 +1,6 @@
 import RoomUtilsService from "./roomutils.service.js";
+import sleep from "../utils/sleep.utils.js";
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 class InvitationService {
 	constructor(websocketService) {
 		this.websocketService = websocketService;

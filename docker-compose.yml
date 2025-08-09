@@ -117,6 +117,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    networks:
+      - transcendence_net
+
 
   kibana:
     depends_on:
@@ -148,6 +151,8 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    networks:
+      - transcendence_net
 
   logstash:
     image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
@@ -167,6 +172,8 @@ services:
     depends_on:
       kibana:
         condition: service_healthy
+    networks:
+      - transcendence_net
 
   # apm:
   #   image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
@@ -187,6 +194,8 @@ services:
     depends_on:
       kibana:
         condition: service_healthy
+    networks:
+      - transcendence_net
     # ports:
     #   - 5044:5044
 
@@ -197,10 +206,8 @@ volumes:
     driver: local
   kibanadata:
     driver: local
+  # sqlite_data:
 
 networks:
   transcendence_net:
     driver: bridge
-
-# volumes:
-  # sqlite:

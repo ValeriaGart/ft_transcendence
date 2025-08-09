@@ -58,6 +58,41 @@ class MatchController {
 		}
 	}
 
+	static async getMatchHistoryWithNicknames(request, reply) {
+		try {
+			const { id } = request.params;
+			console.log('Received ID param:', id, 'Type:', typeof id); // Debug log
+			const matchHistory = await MatchService.getMatchHistoryWithNicknames(id);
+			console.log('Service returned:', matchHistory.length, 'matches'); // Debug log
+			
+			return {
+				userId: parseInt(id),
+				matches: matchHistory,
+				total: matchHistory.length
+			};
+		} catch (error) {
+			console.error('Controller error:', error); // Debug log
+			reply.code(500);
+			return { error: 'Failed to retrieve match history', details: error.message };
+		}
+	}
+
+	static async getCurrentUserMatchHistory(request, reply) {
+		try {
+			const userId = request.user.userId;
+			const matchHistory = await MatchService.getMatchHistoryWithNicknames(userId);
+			
+			return {
+				userId,
+				matches: matchHistory,
+				total: matchHistory.length
+			};
+		} catch (error) {
+			reply.code(500);
+			return { error: 'Failed to retrieve match history', details: error.message };
+		}
+	}
+
 	static async getWinsLossesById(request, reply) {
 		try {
 			const { id } = request.params;

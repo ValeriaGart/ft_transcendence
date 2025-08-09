@@ -2,6 +2,7 @@ export class WebSocketService {
   private static instance: WebSocketService;
   public ws!: WebSocket;
   private onlineStatusCallbacks: ((onlineFriends: number[]) => void)[] = [];
+  private lastStartMatchMessage: MessageEvent | null = null;
 
   private constructor() {}
 
@@ -68,6 +69,20 @@ export class WebSocketService {
     }
   }
 
+  /**
+   * Get the last STARTMATCH message (for GamePage)
+   */
+  public getLastStartMatchMessage(): MessageEvent | null {
+    return this.lastStartMatchMessage;
+  }
+
+  /**
+   * Clear the last STARTMATCH message (after GamePage uses it)
+   */
+  public clearLastStartMatchMessage(): void {
+    this.lastStartMatchMessage = null;
+  }
+
   private setupEventListeners(): void {
     this.ws.onopen = () => {
       console.log('Connected to WebSocket server');
@@ -88,6 +103,12 @@ export class WebSocketService {
           this.onlineStatusCallbacks.forEach(callback => {
             callback(onlineFriendIds);
           });
+        }
+        
+        // Store STARTMATCH messages for GamePage
+        if (data.type === "STARTMATCH") {
+          console.log('Storing STARTMATCH message for GamePage');
+          this.lastStartMatchMessage = event;
         }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);

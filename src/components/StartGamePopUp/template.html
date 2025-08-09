@@ -1,0 +1,31 @@
+<div id="start-game-popup" class="fixed inset-0 flex items-center justify-center z-50" style="display: none;">
+    <div class="bg-[#FFF7AC] border-4 border-[#EE9C47] rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
+        <!-- Close button -->
+        <button 
+            id="close-popup" 
+            class="absolute top-4 right-4 text-[#81C3C3] hover:text-[#B784F2] transition-colors duration-300 cursor-pointer"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        
+        <div class="text-center">
+            <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">
+                Start New Game
+            </h2>
+            
+            <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">
+                Ready to play? Start a new match against the AI!
+            </p>
+            
+            <button 
+                id="start-new-match" 
+                class="px-8 py-4 bg-[#B784F2] text-white font-['Irish_Grover'] text-xl rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer shadow-lg"
+                ${this.state.loading ? 'disabled' : ''}
+            >
+                Play!
+            </button>
+        </div>
+    </div>
+</div>

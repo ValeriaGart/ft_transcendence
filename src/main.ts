@@ -11,10 +11,29 @@ import { GamePage } from "./components/GamePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { authService } from "./lib/auth";
+import { StartGamePopUp } from "./components/StartGamePopUp";
+import { registerComponent } from "./lib/blitz-ts/componentRegistry";
 
 
 // Register all components automatically
-autoRegisterComponents();
+autoRegisterComponents().then(() => {
+  console.log('All components registered. Available custom elements:');
+  console.log('blitz-start-game-popup:', customElements.get('blitz-start-game-popup'));
+  console.log('blitz-match-component:', customElements.get('blitz-match-component'));
+  
+  // List all registered blitz components
+  const allBlitzComponents = Object.keys(customElements).filter(name => name.startsWith('blitz-'));
+  console.log('All registered blitz components:', allBlitzComponents);
+  
+  // Manually register StartGamePopUp if it wasn't auto-registered
+  if (!customElements.get('blitz-start-game-popup')) {
+    console.log('Manually registering StartGamePopUp component...');
+    registerComponent('blitz-start-game-popup', StartGamePopUp);
+    console.log('StartGamePopUp manually registered');
+  }
+  
+
+});
 
 console.log('=== APP STARTUP DEBUG ===');
 console.log('Current URL:', window.location.href);

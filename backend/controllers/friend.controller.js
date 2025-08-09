@@ -65,7 +65,7 @@ class FriendController {
 			return { error: 'Failed to request friendship', details: error.message };
 		}
 	}
-	
+
 	static async acceptFriend(request, reply) {
 		try {
 			const userId = request.user.userId;

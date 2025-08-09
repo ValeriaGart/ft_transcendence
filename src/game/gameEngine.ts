@@ -7,6 +7,8 @@ import { PongGame } from './pongGame.ts';
 import { Player } from './player.ts';
 import { Tournament } from './tournament.ts';
 import { OpponentScreen } from './opponentSelectScreen.ts';
+import { WebSocketService } from "../lib/webSocket";
+import { Router } from '@blitz-ts/router.ts';
 
 export class GameEngine {
 	//standard classes
@@ -23,7 +25,7 @@ export class GameEngine {
 	private _tournament: Tournament | undefined = undefined;
 
 	//game variables
-	private roomID: string | null = null;
+	public _roomID: string | null = null;
 	private p1Nick: string | null = null;
 	private p2Nick: string | null = null;
 	private p3Nick: string | null = null;
@@ -34,6 +36,9 @@ export class GameEngine {
 	private p4AI: boolean = true;
 	private gameMode: string | null = null;
 	private oppMode: string | null = null;
+
+	public _ws = WebSocketService.getInstance();
+	private _intervalId?: NodeJS.Timeout;
 
 	constructor(canvasID: string) {
 		this._canvas = document.getElementById(canvasID) as HTMLCanvasElement;
@@ -122,7 +127,7 @@ export class GameEngine {
 		var msg
 		msg = JSON.parse(message.data);
 
-		this.roomID = msg.roomId;
+		this._roomID = msg.roomId;
 		this.p1Nick = msg.players[0].nick;
 		this.p2Nick = msg.players[1].nick;
 		this.p3Nick = msg.players[2]?.nick || null;
@@ -133,11 +138,37 @@ export class GameEngine {
 		this.p4AI = msg.players[3]?.ai || true;
 		this.gameMode = msg.gameMode;
 		this.oppMode = msg.oppMode;
-		console.log('id: ', this.roomID);
+		console.log('id: ', this._roomID);
 		console.log('p1: ', this.p1Nick, ' AI: ', this.p1AI);
 		console.log('p2: ', this.p2Nick, ' AI: ', this.p2AI);
 		console.log('game mode: ', this.gameMode);
 		console.log('opponent mode: ', this.oppMode);
+	}
+
+	private removeAllEventListeners(): void {
+		const canvas = document.getElementById(this._canvas.id);
+		if (canvas) {
+			canvas.replaceWith(canvas.cloneNode(true));
+		}
+	}
+
+	private cleanup(): void {
+		if (this._canvas) {
+			if (this._ctx) {
+				this._ctx.clearRect(0,0, this._canvas.width, this._canvas.height);
+			}
+			this._canvas.remove();
+		}
+		this.removeAllEventListeners();
+	}
+
+	public endGameLoop(): void {
+		if (this._intervalId) {
+			clearInterval(this._intervalId);
+			this.cleanup();
+			const router = Router.getInstance();
+			router.navigate('/user');
+		}
 	}
 	
 	public startGameLoop(msg: MessageEvent): void {
@@ -147,7 +178,7 @@ export class GameEngine {
 		}
 		this._inputHandler.setupEventListeners();
 		console.log("game loop started")
-		const setIntervalId = setInterval(() => { this.update(); }, 16);
+		this._intervalId = setInterval(() => { this.update(); }, 16);
 		//roughly 60fps
 		
 		this.parseMessage(msg);

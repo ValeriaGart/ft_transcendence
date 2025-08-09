@@ -2,6 +2,7 @@ import EmojiService from "./emoji.service.js";
 import RoomService from "./room.service.js";
 import InvitationService from "./invitation.service.js";
 import RoomUtilsService from "./roomutils.service.js";
+import RoomValidationService from "./roomvalidation.service.js";
 import MatchService from "../services/match.service.js";
 
 const timeoutSec = 30;
@@ -19,9 +20,9 @@ class MatchMakingService {
 		console.log("[MatchMakingService] constructor");
     }
 
-	createStartMatchMessage(room) {
+	createStartMatchMessage(room, playernumber) {
 		const sanitizedPlayers = room.players.map(player => {
-			const { wsclient, ...rest } = player; // Exclude wsclient
+			const { wsclient, id, ...rest } = player; // Exclude wsclient
 			return rest;
 		});
 		const message = {
@@ -29,6 +30,7 @@ class MatchMakingService {
 			sender: "__server",
 			message: "Your match will start now.",
 			roomId: room.id,
+			urp: playernumber,
 			players: sanitizedPlayers,
 			gameMode: room.gameMode,
 			oppMode: room.oppMode
@@ -52,7 +54,7 @@ class MatchMakingService {
 		for (let player of room.players) {
 			if (player.id && player.wsclient) {
 				console.log("[startMatch] player: ", player.nick);
-				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room));
+				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room, player.pnumber));
 			}
 		}
 
@@ -61,6 +63,17 @@ class MatchMakingService {
 
 	async matchMakingInit(connection, message) {
 		console.log("[matchMakingInit] start");
+		
+		if (RoomValidationService.roomValidation(message) === false) {
+			console.log("[matchMakingInit] Room could not be validated");
+			await this.WebsocketService.sendMessageToClient(connection, {
+				type: "ERROR",
+				sender: "__server",
+				message: "Error creating Match: Room Validation failed"
+			});
+			return ;
+		}
+
 		if (this.RoomService.rooms.length > 0)
 		{
 			if (await RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
@@ -201,6 +214,42 @@ class MatchMakingService {
 		await this.RoomService.destroyRoom(room.id);
 
 	}
+
+	async disconnectPlayerFromAllRooms(connection) {
+		let rooms = this.RoomService.rooms;
+		let deleteRooms = [];
+		for (let r of rooms) {
+			for (let p of r.players) {
+				if (p.id === connection.userId && p.wsclient === connection) {
+					console.log(`[disconnect] disconnected user ${p.id} from room ${r.id}, cancelling room`);
+					deleteRooms.push(r);
+				}
+			}
+		}
+		for (let dr of deleteRooms) {
+			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, dr, this.createCancelMatchMessage(dr));
+			await this.RoomService.destroyRoom(dr.id);
+		}
+	}
+
+	reconnectPlayerToAllRooms(connection) {
+		let rooms = this.RoomService.rooms;
+		for (let r of rooms) {
+			RoomUtilsService.reconnectPlayerToRoom(r, connection);
+		}
+	}
+
+
+	async remoteMessageForwarding(roomId, gamestate, connection) {
+		let room = RoomUtilsService.roomExists(this.RoomService.rooms, roomId);
+		if (!room) {
+			console.log("error, room doesn't exist");
+			return ;
+		}
+		await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, gamestate, connection);
+	}
+
+
 }
 
 export default MatchMakingService;

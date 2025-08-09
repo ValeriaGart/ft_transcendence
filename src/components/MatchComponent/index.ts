@@ -24,6 +24,9 @@ interface MatchComponentState {
   userProfiles: Record<number, { nickname?: string }>;
   user: User | null;
   onlineFriends: number[];
+  showStartGamePopup: boolean;
+  selectedFriendId: number | null;
+  invitationHandler?: (event: MessageEvent) => void;
 }
 
 export class MatchComponent extends Component<MatchComponentState> {
@@ -36,11 +39,20 @@ export class MatchComponent extends Component<MatchComponentState> {
     showAddFriendForm: false,
     userProfiles: {},
     user: null,
-    onlineFriends: []
+    onlineFriends: [],
+    showStartGamePopup: false,
+    selectedFriendId: null,
+    invitationHandler: undefined
   }
 
   constructor() {
     super();
+    // Initialize instance-specific state
+    this.state = {
+      ...this.state,
+      showStartGamePopup: false,
+      selectedFriendId: null
+    };
   }
 
   /**
@@ -48,13 +60,20 @@ export class MatchComponent extends Component<MatchComponentState> {
    * Sets up event listeners and fetches friendships
    */
   protected onMount(): void {
-    console.log('MatchComponent onMount called, isMounted:');
+    console.log('MatchComponent onMount called');
+  
+    // Make component instance available globally for onclick handlers
+    (window as any).matchComponent = this;
+  
+    // Mark showStartGamePopup as structural since it affects template rendering
+    this.markStructural('showStartGamePopup');
   
     this.setupStartAiMatchButton();
     this.setupToggleButtons();
     this.setupOnlineStatus();
     this.fetchFriendships();
     this.updatePageVisibility();
+    this.updatePlayButtonText();
   }
 
   /**
@@ -65,6 +84,9 @@ export class MatchComponent extends Component<MatchComponentState> {
     
     // Subscribe to online status updates
     ws.onOnlineStatusUpdate(this.handleOnlineStatusUpdate.bind(this));
+
+    // Setup WebSocket message handling for errors
+    this.setupWebSocketErrorHandling();
 
     // Request initial online friends status
     if (ws.isConnected()) {
@@ -83,20 +105,198 @@ export class MatchComponent extends Component<MatchComponentState> {
   }
 
   /**
-   * Setup the "Start AI Match" button functionality
-   * Navigates to AI game page
+   * Setup WebSocket error handling
+   */
+  private setupWebSocketErrorHandling(): void {
+    const ws = WebSocketService.getInstance();
+    
+    // Add message listener to handle errors
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle error messages
+        if (data.type === "ERROR") {
+          console.log('WebSocket error received:', data.message);
+          
+          if (data.message.includes('Players are busy')) {
+            this.showError('One or both players are currently in a game. Please wait for the current game to finish or try again later.');
+          } else {
+            this.showError(data.message || 'An error occurred while creating the match.');
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    // Add the message listener only if WebSocket is connected
+    if (ws.ws && ws.isConnected()) {
+      ws.ws.addEventListener('message', handleMessage);
+      // Store the handler for cleanup
+      this.setState({ invitationHandler: handleMessage });
+    } else {
+      // If not connected, wait for connection and then add listener
+      const checkConnection = () => {
+        if (ws.ws && ws.isConnected()) {
+          ws.ws.addEventListener('message', handleMessage);
+          this.setState({ invitationHandler: handleMessage });
+        } else {
+          setTimeout(checkConnection, 1000);
+        }
+      };
+      checkConnection();
+    }
+  }
+
+  /**
+   * Setup WebSocket message handling for popup
+   */
+  private setupWebSocketPopupHandler(): void {
+    // For now, we'll show the popup directly when the button is clicked
+    // The WebSocket response can be handled separately
+  }
+
+  /**
+   * Show the start game popup
+   */
+  private showStartGamePopup(): void {
+    const popupContainer = document.getElementById('start-game-popup');
+    if (popupContainer) {
+      // Write the component HTML to the container
+      popupContainer.innerHTML = '<blitz-start-game-popup></blitz-start-game-popup>';
+      console.log('Popup component added to container via WebSocket');
+    } else {
+      console.error('Popup container not found!');
+    }
+  }
+
+  /**
+   * Setup the "Play" button functionality
+   * Starts AI match if no friend selected, or 1v1 match if friend selected
    */
   private setupStartAiMatchButton(): void {
-    const startAiButton = document.getElementById('start-ai-match');
-    if (startAiButton) {
-      // Remove any existing event listeners to prevent duplicates
-      const newButton = startAiButton.cloneNode(true);
-      startAiButton.parentNode?.replaceChild(newButton, startAiButton);
+    console.log('Setting up Play button...');
+    
+    // Use the component's event listener system
+    this.addEventListener('#start-ai-match', 'click', async (e) => {
+      e.preventDefault();
+      console.log('Play button clicked');
       
-      // Add the event listener to the new button
-      newButton.addEventListener('click', async () => {
-        await this.handleStartAiMatch();
-      });
+      // Check if a friend is selected
+      if (this.state.selectedFriendId) {
+        // Start 1v1 match with selected friend
+        await this.start1v1Match();
+      } else {
+        // Start AI match
+        // Ask StartGamePopUp to show and start AI flow
+        window.dispatchEvent(new Event('request-ai-start'));
+      }
+    });
+    
+    console.log('Event listener attached using component system');
+  }
+
+  /**
+   * Start AI match
+   */
+  private async startAiMatch(): Promise<void> {
+    console.log('Starting AI match...');
+    
+    try {
+      // Get current user's profile to get their nickname
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      // Fetch current user's profile to get nickname
+      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      if (!profileResponse.ok) {
+        console.error('Failed to get user profile');
+        return;
+      }
+
+      const profileData = await profileResponse.json();
+      const userNickname = profileData.nickname || `User${currentUser.id}`;
+
+      if (!userNickname || userNickname.trim() === '') {
+        console.error('User nickname not set');
+        return;
+      }
+
+      console.log('Using nickname for AI match:', userNickname);
+      // AI popup is handled by always-mounted StartGamePopUp via 'open-ai-popup' event
+      console.log('AI popup will be opened by StartGamePopUp');
+    } catch (error) {
+      console.error('Error sending AI match request:', error);
+    }
+  }
+
+  /**
+   * Start 1v1 match with selected friend
+   */
+  private async start1v1Match(): Promise<void> {
+    console.log('Starting 1v1 match with friend...');
+    
+    try {
+      // Get current user's profile to get their nickname
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      // Fetch current user's profile to get nickname
+      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      if (!profileResponse.ok) {
+        console.error('Failed to get user profile');
+        return;
+      }
+
+      const profileData = await profileResponse.json();
+      const userNickname = profileData.nickname || `User${currentUser.id}`;
+
+      if (!userNickname || userNickname.trim() === '') {
+        console.error('User nickname not set');
+        return;
+      }
+
+      // Get the selected friend's profile
+      const selectedFriendProfile = this.state.userProfiles[this.state.selectedFriendId];
+      if (!selectedFriendProfile || !selectedFriendProfile.nickname) {
+        this.showError('Selected friend profile not found');
+        return;
+      }
+
+      console.log('Starting 1v1 match with friend:', selectedFriendProfile.nickname);
+
+      const ws = WebSocketService.getInstance();
+
+      // Send type 3 message for 1v1 match with friend
+      const msg = {
+        "type": 3,
+        "players": [
+          {"nick": userNickname, "ai": false},
+          {"nick": selectedFriendProfile.nickname, "ai": false}
+        ],
+        "gameMode": "bestof",
+        "oppMode": "online"
+      };
+
+      console.log('Sending 1v1 match request:', JSON.stringify(msg));
+      ws.sendMessage(JSON.stringify(msg));
+      
+      // Show the popup for 1v1 matches too
+      this.showStartGamePopup();
+      
+      // Show success message
+      console.log('1v1 match invitation sent to friend');
+      
+    } catch (error) {
+      console.error('Error starting 1v1 match:', error);
+      this.showError('Failed to start 1v1 match. Please try again.');
     }
   }
 
@@ -135,6 +335,8 @@ export class MatchComponent extends Component<MatchComponentState> {
       console.log('Initiator ID:', initiatorId);
       this.handleConfirmFriend(parseInt(initiatorId || '0'));
     });
+
+
   }
 
   /**
@@ -229,6 +431,9 @@ export class MatchComponent extends Component<MatchComponentState> {
         
         // Refresh online status after fetching friendships
         this.refreshOnlineStatus();
+        
+        // Update play button text after loading friendships
+        this.updatePlayButtonText();
       } else {
         const errorData = await response.json();
         console.error('API Error response:', errorData);
@@ -358,32 +563,29 @@ export class MatchComponent extends Component<MatchComponentState> {
       return;
     }
 
-    const userIdStr = inputElement.value.trim();
-    if (!userIdStr) {
-      const storedUser = authService.getCurrentUser();
-      this.showError('Please enter a user ID');
-      console.log('Debug - storedUser:', storedUser);
-      return;
-    }
-
-    const userId = parseInt(userIdStr);
-    if (isNaN(userId)) {
-      this.showError('Please enter a valid user ID (number)');
-      return;
-    }
-
-    console.log('Adding friend with user ID:', userId);
-
-    // Check if trying to add yourself
+    const nickname = inputElement.value.trim();
+    if (!nickname) {
+		return this.showError('Please enter a nickname');
+	}
+    
     const currentUser = authService.getCurrentUser();
-    console.log('Current user id:', currentUser?.id, 'userId:', userId);
-    if (currentUser?.id === userId) {
-      this.showError('You cannot add yourself as a friend');
-      return;
-    }
+    if (!currentUser) { 
+	  return this.showError('You must be logged in to add friends');
+	}
 
-    // Send friend request - backend will validate user existence
     try {
+      // Check if trying to add yourself
+      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      if (!profileResponse.ok) {
+		return this.showError('Failed to get your profile');
+	  }
+      
+      const currentUserProfile = await profileResponse.json();
+      if (currentUserProfile.nickname === nickname) {
+        return this.showError('You cannot add yourself as a friend');
+      }
+
+      // Send friend request using nickname
       const response = await fetch(getApiUrl('/friend/me'), {
         method: 'POST',
         headers: {
@@ -391,12 +593,11 @@ export class MatchComponent extends Component<MatchComponentState> {
         },
         credentials: 'include',
         body: JSON.stringify({
-          friend_id: userId
+          friend_nickname: nickname
         }),
       });
 
       if (response.ok) {
-        console.log('Friend request sent successfully');
         this.handleFriendRequestSuccess();
       } else {
         const errorData = await response.json();
@@ -413,8 +614,6 @@ export class MatchComponent extends Component<MatchComponentState> {
    * Handle successful friend request
    */
   private handleFriendRequestSuccess(): void {
-    console.log('Friend request sent successfully');
-    
     // Clear input and switch back to friends list
     const inputElement = this.element.querySelector('#add-friends-input') as HTMLInputElement;
     if (inputElement) {
@@ -427,6 +626,43 @@ export class MatchComponent extends Component<MatchComponentState> {
     // Refresh the friendships list
     this.fetchFriendships();
     this.refreshOnlineStatus();
+  }
+
+  /**
+   * Handle friend selection for 1v1 game
+   */
+  public handleFriendSelection(friendId: number): void {
+    console.log('Friend selected:', friendId);
+    
+    // If the same friend is clicked again, deselect it
+    if (this.state.selectedFriendId === friendId) {
+      this.setState({ selectedFriendId: null });
+    } else {
+      // Select the new friend (only one friend can be selected at a time)
+      this.setState({ selectedFriendId: friendId });
+    }
+    
+    // Re-render the friendships list to update the selection visual
+    this.renderFriendshipsList();
+    
+    // Update the play button text
+    this.updatePlayButtonText();
+  }
+
+  /**
+   * Update the play button text based on friend selection
+   */
+  private updatePlayButtonText(): void {
+    const playButton = this.element.querySelector('#start-ai-match') as HTMLButtonElement;
+    if (playButton) {
+      if (this.state.selectedFriendId) {
+        const selectedFriendProfile = this.state.userProfiles[this.state.selectedFriendId];
+        const friendName = selectedFriendProfile?.nickname || 'Friend';
+        playButton.textContent = `Play vs ${friendName}`;
+      } else {
+        playButton.textContent = 'Play vs AI';
+      }
+    }
   }
 
   /**
@@ -585,8 +821,20 @@ export class MatchComponent extends Component<MatchComponentState> {
         }
       }
 
+      const isSelected = this.state.selectedFriendId === otherUserId;
+      const bgColor = isSelected ? '#f2e6ff' : 'transparent';
+      const borderStyle = isSelected ? 'border-2 border-[#B784F2]' : '';
+      
+      // Only allow selection for accepted friends
+      const canSelect = isAccepted;
+      const cursorStyle = canSelect ? 'cursor-pointer' : 'cursor-default';
+      const friendItemClass = canSelect ? 'friend-item' : '';
+      
       return `
-        <div class="flex items-center justify-start p-2 mb-1 ">
+        <div class="flex items-center justify-start p-2 mb-1 ${cursorStyle} hover:bg-[#f2e6ff] transition-colors duration-200 ${friendItemClass} ${borderStyle}" 
+             style="background-color: ${bgColor};"
+             data-friend-id="${otherUserId}"
+             ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})"` : ''}>
           <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">
@@ -630,6 +878,8 @@ export class MatchComponent extends Component<MatchComponentState> {
         }
       }
     });
+
+
   }
 
   protected onUnmount(): void {
@@ -638,6 +888,11 @@ export class MatchComponent extends Component<MatchComponentState> {
     // Clean up WebSocket subscription
     const ws = WebSocketService.getInstance();
     ws.offOnlineStatusUpdate(this.handleOnlineStatusUpdate.bind(this));
+    
+    // Clean up message handler
+    if (this.state.invitationHandler && ws.ws) {
+      ws.ws.removeEventListener('message', this.state.invitationHandler);
+    }
   }
 
   /**

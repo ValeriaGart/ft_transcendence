@@ -2,34 +2,44 @@
 import FriendService from "../services/friend.service.js";
 import InvitationService from "./invitation.service.js";
 import MatchMakingService from "./matchmaking.service.js";
-
+import sleep from "../utils/sleep.utils.js";
 // const _matchMakingService = new MatchMakingService(this);
 
 class WebsocketService {
-    constructor(websocketServer) {
+	static WS_TIMEOUT_DISCONNECT = 5000;
+	
+	constructor(websocketServer) {
         this.websocketServer = websocketServer;
 		this.matchMakingService = new MatchMakingService(this);
 		this.invitationService = new InvitationService(this);
+
+
     }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
 
 	handleJoin(connection, wsid) {
 		connection.userId = wsid;
+		console.log("[WebSocket] user connected ", connection.userId);
 		this.broadcast({
 			type: "BROADCAST",
 			sender: '__server',
 			message: `id ${wsid} joined`
 		}, connection);
-	}
 
+		this.matchMakingService.reconnectPlayerToAllRooms(connection);
+	}
+	
 	handleLeave(connection) {
-		connection.on('close', () => {
+		connection.on('close', async () => {
+			console.log("[WebSocket] user disconnected ", connection.userId);
 			this.broadcast({
 				type: "BROADCAST",
 				sender: '__server',
 				message: `id ${connection.userId} left`
 			});
+			await sleep (WS_TIMEOUT_DISCONNECT);
+			this.matchMakingService.disconnectPlayerFromAllRooms(connection);
 		});
 	}
 
@@ -86,6 +96,13 @@ class WebsocketService {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'players' field is missing or empty");
 					}
 					this.matchMakingService.saveFinishMatch(connection, parsedMessage);
+				}
+				else if (parsedMessage.type === 7) {
+					console.log("[handleMessage] type 7: remote game messaging");
+					if (!parsedMessage.roomId || !parsedMessage._gameState) {
+						throw new Error ("Parsing: Invalid message: 'roomId' or 'gameState' field is missing or empty");
+					}
+					this.matchMakingService.remoteMessageForwarding(parsedMessage.roomId, parsedMessage._gameState, connection);
 				}
 				else {
 					console.log("[handleMessage] unknown type");

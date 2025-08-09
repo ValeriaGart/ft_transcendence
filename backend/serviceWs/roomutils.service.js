@@ -83,6 +83,7 @@ class RoomUtilsService {
 			if (p.ai == true) {
 				continue ;
 			}
+			// if (p.accepted != "declined" && p.wsclient !== null) {
 			if (p.accepted != "declined" && p.wsclient !== null && p.wsclient !== connection) {
 				await websocketService.sendMessageToClient(p.wsclient, message);
 			}

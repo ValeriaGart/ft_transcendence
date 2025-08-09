@@ -39,7 +39,20 @@ if (sslEnabled) {
 }
 
 export default defineConfig({
-	plugins: [tailwindcss(), htmlTemplatePlugin()],
+	plugins: [
+		tailwindcss(),
+		htmlTemplatePlugin(),
+		{
+			name: 'health-endpoint',
+			configureServer(server) {
+				server.middlewares.use('/health', (req, res) => {
+					res.statusCode = 200;
+					res.setHeader('Content-Type', 'application/json');
+					res.end(JSON.stringify({ status: 'ok' }));
+				});
+			}
+		}
+	],
 	server: {
 		host: "0.0.0.0",
 		...(sslConfig && { https: sslConfig }),
@@ -57,7 +70,8 @@ export default defineConfig({
 				...(httpsAgent && { agent: httpsAgent }),
 				rewrite: (path) => path.replace(/^\/ws/, '')
 			}
-		}
+		},
+		middlewareMode: false
 	},
 	resolve: {
 		alias: { "@blitz-ts": resolve(__dirname, "./src/lib/blitz-ts") }

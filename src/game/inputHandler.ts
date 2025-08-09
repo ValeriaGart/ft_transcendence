@@ -109,14 +109,18 @@ export class InputHandler {
 	private handleGameScreenDown(event: KeyboardEvent): void {
 		const gameStats = this._engine._pongGame._gameStats.paddleDirection;
 
-		if ((!this._engine._pongGame._p1.isBot() && event.location == 0) || (this._engine._pongGame._p1.isBot() && event.location == 1)) {
-			if (event.key == 'w') gameStats.left = -1;
-			if (event.key == 's') gameStats.left = +1;
+		if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber()) {
+			if ((!this._engine._pongGame?._p1.isBot() && event.location == 0) || (this._engine._pongGame?._p1.isBot() && event.location == 1)) {
+				if (event.key == 'w') gameStats.left = -1;
+				if (event.key == 's') gameStats.left = +1;
+			}
 		}
 		
-		if ((!this._engine._pongGame._p2.isBot() && event.location == 0) || (this._engine._pongGame._p2.isBot() && event.location == 1)) {
-			if (event.key == 'ArrowUp') gameStats.right = -1;
-			if (event.key == 'ArrowDown') gameStats.right = +1;
+		if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber()) {
+			if ((!this._engine._pongGame?._p2.isBot() && event.location == 0) || (this._engine._pongGame?._p2.isBot() && event.location == 1)) {
+				if (event.key == 'ArrowUp') gameStats.right = -1;
+				if (event.key == 'ArrowDown') gameStats.right = +1;
+			}
 		}
 		
 		if (event.key == 'Escape') {
@@ -127,12 +131,16 @@ export class InputHandler {
 	private handleGameScreenUp(event: KeyboardEvent): void {
 		const gameStats = this._engine._pongGame._gameStats.paddleDirection;
 
-		if ((!this._engine._pongGame._p1.isBot() && event.location == 0) || (this._engine._pongGame._p1.isBot() && event.location == 1)) {
-			if (event.key == 'w' || event.key == 's') gameStats.left = 0;
+		if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber()) {
+			if ((!this._engine._pongGame._p1.isBot() && event.location == 0) || (this._engine._pongGame._p1.isBot() && event.location == 1)) {
+				if (event.key == 'w' || event.key == 's') gameStats.left = 0;
+			}
 		}
 		
-		if ((!this._engine._pongGame._p2.isBot() && event.location == 0) || (this._engine._pongGame._p2.isBot() && event.location == 1)) {
-			if (event.key == 'ArrowUp' || event.key == 'ArrowDown') gameStats.right = 0;
+		if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber()) {
+			if ((!this._engine._pongGame._p2.isBot() && event.location == 0) || (this._engine._pongGame._p2.isBot() && event.location == 1)) {
+				if (event.key == 'ArrowUp' || event.key == 'ArrowDown') gameStats.right = 0;
+			}
 		}
 	}
 	

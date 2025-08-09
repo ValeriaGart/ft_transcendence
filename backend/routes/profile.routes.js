@@ -1,4 +1,5 @@
 import ProfileController from '../controllers/profile.controller.js';
+import ProfileService from '../services/profile.service.js';
 import {
   profileBodySchema,
   profileParamsSchema,
@@ -13,6 +14,26 @@ async function routes(fastify, options) {
   fastify.get('/profiles/:id', {
     schema: { params: profileParamsSchema }
   }, ProfileController.getProfileById);
+
+  // Public route - get profile by user ID (using existing service method)
+  fastify.get('/profiles/user/:userId', {
+    schema: { params: { type: 'object', properties: { userId: { type: 'integer' } }, required: ['userId'] } }
+  }, async (request, reply) => {
+    try {
+      const { userId } = request.params;
+      const profile = await ProfileService.getProfileByUserId(userId);
+      
+      if (!profile) {
+        reply.code(404);
+        return { error: 'Profile not found' };
+      }
+      
+      return profile;
+    } catch (error) {
+      reply.code(500);
+      return { error: 'Failed to get profile', details: error.message };
+    }
+  });
 
   // Protected route - get current user's profile
   fastify.get('/profiles/me', {

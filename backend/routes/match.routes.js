@@ -14,10 +14,20 @@ async function routes(fastify, options) {
 		preHandler: [fastify.authenticate]
 	}, MatchController.getCurrentUserMatches);
 
+	// Get current user's match history with nicknames (authenticated)
+	fastify.get('/match/history/me', {
+		preHandler: [fastify.authenticate]
+	}, MatchController.getCurrentUserMatchHistory);
+
 	// Get all matches for a specific user by user ID
 	fastify.get('/match/:id', {
 		schema: { params: matchParamsSchema }
 	}, MatchController.getAllMatchesByUserId);
+
+	// Get match history with nicknames for a specific user by user ID
+	fastify.get('/match/history/:id', {
+		schema: { params: matchParamsSchema }
+	}, MatchController.getMatchHistoryWithNicknames);
 
 	// Get win/loss statistics for a specific user by user ID
 	fastify.get('/match/wl/:id', {

@@ -24,6 +24,53 @@ class MatchService {
 		return matches;
 	}
 
+	static async getMatchHistoryWithNicknames(userId) {
+		// Ensure userId is an integer
+		const userIdInt = parseInt(userId);
+		
+		const matches = await dbAll(
+			`SELECT 
+				m.id,
+				m.type,
+				m.player1_id,
+				m.player2_id,
+				m.winner_id,
+				m.player1_score,
+				m.player2_score,
+				m.createdAt,
+				m.gameFinishedAt,
+				p1.nickname as player1_nickname,
+				p2.nickname as player2_nickname
+			FROM match m
+			LEFT JOIN profiles p1 ON m.player1_id = p1.userId
+			LEFT JOIN profiles p2 ON m.player2_id = p2.userId
+			WHERE (m.player1_id = ? OR m.player2_id = ?) 
+				AND m.gameFinishedAt IS NOT NULL
+			ORDER BY m.gameFinishedAt DESC, m.id DESC`,
+			[userIdInt, userIdInt]
+		);
+
+		// Transform the data to the desired format
+		return matches.map(match => {
+			const isPlayer1 = match.player1_id === userIdInt;
+			const opponentId = isPlayer1 ? match.player2_id : match.player1_id;
+			const opponentNickname = isPlayer1 ? match.player2_nickname : match.player1_nickname;
+			const playerScore = isPlayer1 ? match.player1_score : match.player2_score;
+			const opponentScore = isPlayer1 ? match.player2_score : match.player1_score;
+			const isWin = match.winner_id === userIdInt;
+
+			return {
+				id: match.id,
+				date: match.gameFinishedAt,
+				opponent: opponentNickname || `User${opponentId}`,
+				playerScore,
+				opponentScore,
+				result: isWin ? 'Win' : 'Loss',
+				matchType: match.type
+			};
+		});
+	}
+
 	static async getWinsLossesById(userId) {
 		const stats = await dbGet(
 			`SELECT 

@@ -28,7 +28,12 @@ const API_CONFIG = {
     ME: '/auth/me',
     
     // Users
-    USERS: '/users'
+    USERS: '/users',
+    
+    // Matches
+    MATCHES: '/match',
+    MATCH_HISTORY: '/match/me',
+    MATCH_STATS: '/match/wl'
   }
 };
 

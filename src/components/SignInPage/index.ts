@@ -211,7 +211,6 @@ export class SignInPage extends Component<SignInPageState> {
                    domainPart.length > 0 && 
                    domainPart.includes('.') &&
                    !localPart.startsWith('.') && 
-                   !localPart.startsWith('.') &&
                    !localPart.endsWith('.') &&
                    !domainPart.startsWith('.') && 
                    !domainPart.endsWith('.') &&

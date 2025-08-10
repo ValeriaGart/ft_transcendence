@@ -40,17 +40,180 @@ export class SettingsPage extends Component<SettingsPageState> {
     super();
   }
 
+    private validateEmail(email: string): boolean {
+        // More comprehensive email validation
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        
+        if (!email || typeof email !== 'string') {
+            return false;
+        }
+        
+        if (email.length > 254) {
+            return false;
+        }
+        
+        const parts = email.split('@');
+        if (parts.length !== 2) {
+            return false;
+        }
+        
+        const localPart = parts[0];
+        const domainPart = parts[1];
+              
+        if (localPart.length > 64 || localPart.length === 0) {
+            return false;
+        }
+          
+        if (domainPart.length > 253 || domainPart.length === 0) {
+            return false;
+        }
+        
+        if (localPart.startsWith('.') || localPart.endsWith('.')) {
+            return false;
+        }
+        
+        if (localPart.includes('..')) {
+            return false;
+        }
+        
+        if (domainPart.startsWith('.') || domainPart.endsWith('.')) {
+            return false;
+        }
+        
+        if (domainPart.includes('..')) {
+            return false;
+        }
+        
+        if (domainPart.startsWith('-') || domainPart.endsWith('-')) {
+            return false;
+        }
+        
+        const domainParts = domainPart.split('.');
+        if (domainParts.length > 4) {
+            return false;
+        }
+        
+        // Check that no domain part starts or ends with hyphens
+        for (const part of domainParts) {
+            if (part.startsWith('-') || part.endsWith('-')) {
+                return false;
+            }
+        }
+        
+        // Ensure domain has at least one dot (TLD requirement)
+        if (!domainPart.includes('.')) {
+            return false;
+        }
+        
+        const commonTLDs = ['com', 'org', 'net', 'edu', 'gov', 'mil', 'int'];
+        
+        // Handle 2-part domains (e.g., example.com)
+        if (domainParts.length === 2) {
+            const secondPart = domainParts[1];
+            if (!commonTLDs.includes(secondPart)) {
+                return false;
+            }
+            return true;
+        }
+        
+        // Handle 3-part domains (e.g., sub.example.com, example.co.uk)
+        if (domainParts.length === 3) {
+            const secondPart = domainParts[1];
+            const thirdPart = domainParts[2];
+            
+            // Define valid country TLD combinations
+            const validCountryTLDs = [
+                'co.uk', 'co.us', 'co.ca', 'co.au', 'co.nz', 'co.za', 'co.in', 'co.jp', 'co.kr', 'co.cn',
+                'com.au', 'com.br', 'com.mx', 'com.sg', 'com.hk', 'com.tw', 'com.my', 'com.ph', 'com.th',
+                'org.uk', 'org.au', 'org.nz', 'org.za', 'org.in', 'org.jp', 'org.kr', 'org.cn',
+                'net.uk', 'net.au', 'net.nz', 'net.za', 'net.in', 'net.jp', 'net.kr', 'net.cn',
+                'edu.au', 'edu.nz', 'edu.za', 'edu.in', 'edu.jp', 'edu.kr', 'edu.cn',
+                'gov.uk', 'gov.au', 'gov.nz', 'gov.za', 'gov.in', 'gov.jp', 'gov.kr', 'gov.cn'
+            ];
+            
+            const countryTLD = secondPart + '.' + thirdPart;
+            if (validCountryTLDs.includes(countryTLD)) {
+                // This is valid: sub.example.co.uk, example.co.uk
+                return true;
+            }
+            
+            // Reject: example.com.com, example.org.com, example.com.org
+            if (commonTLDs.includes(secondPart) && commonTLDs.includes(thirdPart)) {
+                return false;
+            }
+            
+            if (commonTLDs.includes(thirdPart)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Handle 4-part domains (e.g., sub.example.co.uk, sub.example.com.au)
+        if (domainParts.length === 4) {
+            const thirdPart = domainParts[2];
+            const fourthPart = domainParts[3];
+            
+            // Define valid country TLD combinations
+            const validCountryTLDs = [
+                'co.uk', 'co.us', 'co.ca', 'co.au', 'co.nz', 'co.za', 'co.in', 'co.jp', 'co.kr', 'co.cn',
+                'com.au', 'com.br', 'com.mx', 'com.sg', 'com.hk', 'com.tw', 'com.my', 'com.ph', 'com.th',
+                'org.uk', 'org.au', 'org.nz', 'org.za', 'org.in', 'org.jp', 'org.kr', 'org.cn',
+                'net.uk', 'net.au', 'net.nz', 'net.za', 'net.in', 'net.jp', 'net.kr', 'net.cn',
+                'edu.au', 'edu.nz', 'edu.za', 'edu.in', 'edu.jp', 'edu.kr', 'edu.cn',
+                'gov.uk', 'gov.au', 'gov.nz', 'gov.za', 'gov.in', 'gov.jp', 'gov.kr', 'gov.cn'
+            ];
+
+            const lastTwoParts = thirdPart + '.' + fourthPart;
+            
+            // If the last two parts form a valid country TLD, this is a valid subdomain
+            if (validCountryTLDs.includes(lastTwoParts)) {
+                return true;
+            }
+            
+            // Check for invalid double TLD patterns in the last three parts
+            if (commonTLDs.includes(thirdPart) && commonTLDs.includes(fourthPart)) {
+                return false;
+            }
+            
+            // Allow valid subdomain patterns where the last part is a TLD
+            if (commonTLDs.includes(fourthPart)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        if (email.length > 100) {
+            return localPart.length > 0 && 
+                   domainPart.length > 0 && 
+                   domainPart.includes('.') &&
+                   !localPart.startsWith('.') && 
+                   !localPart.startsWith('.') &&
+                   !localPart.endsWith('.') &&
+                   !domainPart.startsWith('.') && 
+                   !domainPart.endsWith('.') &&
+                   !localPart.includes('..') &&
+                   !domainPart.includes('..') &&
+                   !domainPart.startsWith('-') &&
+                   !domainPart.endsWith('-');
+        }
+        
+        // Regex validation for shorter emails
+        return emailRegex.test(email);
+    }
+
   private showError(message: string) {
     this.setState({
-        showError: true,
-        errorMessage: message
+      showError: true,
+      errorMessage: message
     });
 
     ErrorManager.showError(message, this.element, () => {
-        this.setState({
-            showError: false,
-            errorMessage: null
-        });
+      this.setState({
+        showError: false,
+        errorMessage: null
+      });
     });
   }
 
@@ -175,6 +338,11 @@ export class SettingsPage extends Component<SettingsPageState> {
       const currentEmail = emailInput ? emailInput.value.trim() : '';
       const originalEmail = this.state.originalValues.email || '';
       if (currentEmail !== originalEmail) {
+        // Validate email before adding to pending changes
+        if (!this.validateEmail(currentEmail)) {
+          this.showError('Please enter a valid email address');
+          return;
+        }
         pendingChanges.email = currentEmail;
       }
 
@@ -220,6 +388,11 @@ export class SettingsPage extends Component<SettingsPageState> {
       const currentEmail = emailInput ? emailInput.value.trim() : '';
       const originalEmail = this.state.originalValues.email || '';
       if (currentEmail !== originalEmail) {
+        // Validate email before adding to pending changes
+        if (!this.validateEmail(currentEmail)) {
+          this.showError('Please enter a valid email address');
+          return;
+        }
         pendingChanges.email = currentEmail;
       }
       

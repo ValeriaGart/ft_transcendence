@@ -215,6 +215,22 @@ class MatchMakingService {
 
 	}
 
+	async disconnectPlayerFromAllRooms(connection) {
+		let rooms = this.RoomService.rooms;
+		let deleteRooms = [];
+		for (let r of rooms) {
+			for (let p of r.players) {
+				if (p.id === connection.userId && p.wsclient === connection) {
+					console.log(`[disconnect] disconnected user ${p.id} from room ${r.id}, cancelling room`);
+					deleteRooms.push(r);
+				}
+			}
+		}
+		for (let dr of deleteRooms) {
+			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, dr, this.createCancelMatchMessage(dr));
+			await this.RoomService.destroyRoom(dr.id);
+		}
+	}
 
 	reconnectPlayerToAllRooms(connection) {
 		let rooms = this.RoomService.rooms;

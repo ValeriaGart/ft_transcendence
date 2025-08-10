@@ -41,10 +41,20 @@ import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import ws from '@fastify/websocket';
+import pino from 'pino';
 
 // Initialize SSL configuration
 const sslOptions = getSSLOptions();
-const fastifyOptions = { logger: true };
+
+// // logging setup
+const fastifyOptions = {
+  logger: {
+    transport: {
+      target: 'pino/file',
+      options: { destination: 'logs_backend/app.log' }
+    }
+  }
+};
 
 if (sslOptions) {
   fastifyOptions.https = sslOptions;

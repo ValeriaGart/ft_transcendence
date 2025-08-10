@@ -25,11 +25,12 @@ interface MatchComponentState {
   user: User | null;
   onlineFriends: number[];
   showStartGamePopup: boolean;
-  selectedFriendId: number | null;
+  selectedFriendIds: number[];
   invitationHandler?: (event: MessageEvent) => void;
 }
 
 export class MatchComponent extends Component<MatchComponentState> {
+  private onlineStatusHandler?: (onlineFriends: number[]) => void;
   protected static state: MatchComponentState = {
     currentPage: 'show-friends',
     error: null,
@@ -41,7 +42,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     user: null,
     onlineFriends: [],
     showStartGamePopup: false,
-    selectedFriendId: null,
+    selectedFriendIds: [],
     invitationHandler: undefined
   }
 
@@ -51,7 +52,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     this.state = {
       ...this.state,
       showStartGamePopup: false,
-      selectedFriendId: null
+      selectedFriendIds: []
     };
   }
 
@@ -83,7 +84,8 @@ export class MatchComponent extends Component<MatchComponentState> {
     const ws = WebSocketService.getInstance();
     
     // Subscribe to online status updates
-    ws.onOnlineStatusUpdate(this.handleOnlineStatusUpdate.bind(this));
+    this.onlineStatusHandler = this.handleOnlineStatusUpdate.bind(this);
+    ws.onOnlineStatusUpdate(this.onlineStatusHandler);
 
     // Setup WebSocket message handling for errors
     this.setupWebSocketErrorHandling();
@@ -148,27 +150,12 @@ export class MatchComponent extends Component<MatchComponentState> {
       checkConnection();
     }
   }
-
-  /**
-   * Setup WebSocket message handling for popup
-   */
-  private setupWebSocketPopupHandler(): void {
-    // For now, we'll show the popup directly when the button is clicked
-    // The WebSocket response can be handled separately
-  }
-
   /**
    * Show the start game popup
    */
   private showStartGamePopup(): void {
-    const popupContainer = document.getElementById('start-game-popup');
-    if (popupContainer) {
-      // Write the component HTML to the container
-      popupContainer.innerHTML = '<blitz-start-game-popup></blitz-start-game-popup>';
-      console.log('Popup component added to container via WebSocket');
-    } else {
-      console.error('Popup container not found!');
-    }
+    // Deprecated: StartGamePopUp is always mounted in UserPage. Use window events instead.
+    console.warn('showStartGamePopup called but deprecated; use window events.');
   }
 
   /**
@@ -183,15 +170,19 @@ export class MatchComponent extends Component<MatchComponentState> {
       e.preventDefault();
       console.log('Play button clicked');
       
-      // Check if a friend is selected
-      if (this.state.selectedFriendId) {
-        // Start 1v1 match with selected friend
-        await this.start1v1Match();
-      } else {
-        // Start AI match
-        // Ask StartGamePopUp to show and start AI flow
-        window.dispatchEvent(new Event('request-ai-start'));
+      const selectedIds = this.state.selectedFriendIds;
+      if (selectedIds.length > 1) {
+        await this.startTournament(selectedIds);
+        return;
       }
+      if (selectedIds.length === 1) {
+        // Backward compatibility: reuse 1v1 path
+        (this.state as any).selectedFriendId = selectedIds[0];
+        await this.start1v1Match();
+        return;
+      }
+      // Start AI match (no selection)
+      window.dispatchEvent(new Event('request-ai-start'));
     });
     
     console.log('Event listener attached using component system');
@@ -270,6 +261,14 @@ export class MatchComponent extends Component<MatchComponentState> {
         return;
       }
 
+      // Prevent inviting offline friend
+      const friendId = this.state.selectedFriendId as number;
+      const isFriendOnline = this.state.onlineFriends.includes(friendId);
+      if (!isFriendOnline) {
+        this.showError('Friend is offline');
+        return;
+      }
+
       console.log('Starting 1v1 match with friend:', selectedFriendProfile.nickname);
 
       const ws = WebSocketService.getInstance();
@@ -297,6 +296,94 @@ export class MatchComponent extends Component<MatchComponentState> {
     } catch (error) {
       console.error('Error starting 1v1 match:', error);
       this.showError('Failed to start 1v1 match. Please try again.');
+    }
+  }
+
+  private async startTournament(selectedFriendIds: number[]): Promise<void> {
+    console.log('Starting tournament with selected friends:', selectedFriendIds);
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        this.showError('You must be logged in to start a game');
+        return;
+      }
+
+      // Get current user's nickname
+      const meResp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      if (!meResp.ok) {
+        this.showError('Failed to get user profile');
+        return;
+      }
+      const meData = await meResp.json();
+      const meNick = (meData.nickname || `User${currentUser.id}`).trim();
+      if (!meNick) {
+        this.showError('Please set a nickname in your profile before starting a game');
+        return;
+      }
+
+      // Build players list: me + selected friends (2 or 3). If only 2 friends, fill the 4th slot with AI.
+      const players: { nick: string; ai: boolean }[] = [];
+      players.push({ nick: meNick, ai: false });
+
+      for (const fid of selectedFriendIds) {
+        // online check
+        if (!this.state.onlineFriends.includes(fid)) {
+          this.showError('One of the selected friends is offline');
+          return;
+        }
+        // fetch nickname
+        let nick = '';
+        try {
+          const r = await fetch(getApiUrl(`/profiles/${fid}`), { credentials: 'include' });
+          if (r.ok) {
+            const fp = await r.json();
+            nick = (fp?.nickname || '').trim();
+          }
+        } catch {}
+        if (!nick) {
+          const cached = this.state.userProfiles[fid];
+          nick = (cached?.nickname || '').trim();
+        }
+        if (!nick) {
+          this.showError('Failed to resolve a player nickname');
+          return;
+        }
+        players.push({ nick, ai: false });
+        if (players.length >= 4) break;
+      }
+
+      while (players.length < 4) {
+        players.push({ nick: 'CPU', ai: true });
+      }
+
+      // Validate unique nicks (backend will also validate)
+      const nicks = new Set(players.map(p => p.nick));
+      if (nicks.size !== players.length) {
+        this.showError('Duplicate nicknames detected. Please adjust selections.');
+        return;
+      }
+
+      // Send tournament request
+      const ws = WebSocketService.getInstance();
+      const msg = {
+        type: 3,
+        players,
+        gameMode: 'bestof',
+        oppMode: 'online'
+      };
+      console.log('Sending tournament request:', JSON.stringify(msg));
+      ws.sendMessage(JSON.stringify(msg));
+
+      // Inform StartGamePopUp about pending participants for better waiting UI
+      try {
+        const participantNames = players.map(p => p.nick);
+        window.dispatchEvent(new CustomEvent('set-pending-participants', { detail: { participants: participantNames, type: 'tournament' } }));
+      } catch {}
+
+      // Show waiting popup is handled by StartGamePopUp via INFO/CANCEL/STARTMATCH
+    } catch (e) {
+      console.error('Error starting tournament:', e);
+      this.showError('Failed to start tournament. Please try again.');
     }
   }
 
@@ -633,19 +720,18 @@ export class MatchComponent extends Component<MatchComponentState> {
    */
   public handleFriendSelection(friendId: number): void {
     console.log('Friend selected:', friendId);
-    
-    // If the same friend is clicked again, deselect it
-    if (this.state.selectedFriendId === friendId) {
-      this.setState({ selectedFriendId: null });
+    const current = new Set<number>(this.state.selectedFriendIds);
+    if (current.has(friendId)) {
+      current.delete(friendId);
     } else {
-      // Select the new friend (only one friend can be selected at a time)
-      this.setState({ selectedFriendId: friendId });
+      if (current.size >= 3) {
+        this.showError('You can select at most 3 friends (tournament of 4)');
+        return;
+      }
+      current.add(friendId);
     }
-    
-    // Re-render the friendships list to update the selection visual
+    this.setState({ selectedFriendIds: Array.from(current) });
     this.renderFriendshipsList();
-    
-    // Update the play button text
     this.updatePlayButtonText();
   }
 
@@ -655,12 +741,15 @@ export class MatchComponent extends Component<MatchComponentState> {
   private updatePlayButtonText(): void {
     const playButton = this.element.querySelector('#start-ai-match') as HTMLButtonElement;
     if (playButton) {
-      if (this.state.selectedFriendId) {
-        const selectedFriendProfile = this.state.userProfiles[this.state.selectedFriendId];
-        const friendName = selectedFriendProfile?.nickname || 'Friend';
+      const count = this.state.selectedFriendIds.length;
+      if (count === 0) {
+        playButton.textContent = 'Play vs AI';
+      } else if (count === 1) {
+        const fid = this.state.selectedFriendIds[0];
+        const friendName = this.state.userProfiles[fid]?.nickname || `User ${fid}`;
         playButton.textContent = `Play vs ${friendName}`;
       } else {
-        playButton.textContent = 'Play vs AI';
+        playButton.textContent = `Start Tournament (${count + 1}/4)`;
       }
     }
   }
@@ -821,20 +910,19 @@ export class MatchComponent extends Component<MatchComponentState> {
         }
       }
 
-      const isSelected = this.state.selectedFriendId === otherUserId;
-      const bgColor = isSelected ? '#f2e6ff' : 'transparent';
-      const borderStyle = isSelected ? 'border-2 border-[#B784F2]' : '';
-      
       // Only allow selection for accepted friends
       const canSelect = isAccepted;
+      const isSelected = this.state.selectedFriendIds.includes(otherUserId);
+      const selectedClass = isSelected ? 'bg-[#f2e6ff]' : '';
+      const borderStyle = isSelected ? 'border-2 border-[#B784F2]' : '';
+      
       const cursorStyle = canSelect ? 'cursor-pointer' : 'cursor-default';
       const friendItemClass = canSelect ? 'friend-item' : '';
       
       return `
-        <div class="flex items-center justify-start p-2 mb-1 ${cursorStyle} hover:bg-[#f2e6ff] transition-colors duration-200 ${friendItemClass} ${borderStyle}" 
-             style="background-color: ${bgColor};"
+        <div class="flex items-center justify-start p-2 mb-1 ${cursorStyle} hover:bg-[#f2e6ff] transition-colors duration-200 ${friendItemClass} ${borderStyle} ${selectedClass}" 
              data-friend-id="${otherUserId}"
-             ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})"` : ''}>
+              ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})"` : ''}>
           <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">
@@ -887,7 +975,9 @@ export class MatchComponent extends Component<MatchComponentState> {
     
     // Clean up WebSocket subscription
     const ws = WebSocketService.getInstance();
-    ws.offOnlineStatusUpdate(this.handleOnlineStatusUpdate.bind(this));
+    if (this.onlineStatusHandler) {
+      ws.offOnlineStatusUpdate(this.onlineStatusHandler);
+    }
     
     // Clean up message handler
     if (this.state.invitationHandler && ws.ws) {

@@ -5,7 +5,7 @@ import { promisify } from 'util';
 sqlite3.verbose();
 
 const db = new sqlite3.Database(
-  path.resolve('../db.sqlite'),
+  path.resolve('./db.sqlite'),
   sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE
 );
 

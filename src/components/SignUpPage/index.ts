@@ -214,7 +214,8 @@ export class SignUpPage extends Component<SignUpPageState> {
                    !domainPart.endsWith('-');
         }
         
-        // Regex validation for shorter emails
+        
+        // Regex validation for emails
         return emailRegex.test(email);
     }
 

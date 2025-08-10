@@ -69,7 +69,7 @@ export function sanitizeAttribute(value: string | null | undefined): string {
         case '<': return '&lt;';
         case '>': return '&gt;';
         case '"': return '&quot;';
-        case "'": return '&#x27;';
+        case "'": return '&#039;';
         case '&': return '&amp;';
         default: return char;
       }

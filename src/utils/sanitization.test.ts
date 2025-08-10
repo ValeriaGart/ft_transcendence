@@ -13,7 +13,7 @@ function testEscapeHtml() {
     { input: '<script>alert("xss")</script>', expected: '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;' },
     { input: 'Hello & goodbye', expected: 'Hello &amp; goodbye' },
     { input: '<img src="x" onerror="alert(1)">', expected: '&lt;img src=&quot;x&quot; onerror=&quot;alert(1)&quot;&gt;' },
-    { input: "'; DROP TABLE users; --", expected: "&#x27;; DROP TABLE users; --" },
+    { input: "'; DROP TABLE users; --", expected: "&#039;; DROP TABLE users; --" },
     { input: 'Normal text', expected: 'Normal text' },
     { input: '', expected: '' },
   ];

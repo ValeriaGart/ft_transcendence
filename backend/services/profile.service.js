@@ -1,10 +1,16 @@
 import { dbRun, dbGet, dbAll } from '../config/database.js';
 import { validateNickname, nicknameExists, generateUniqueNickname, cleanNickname } from '../utils/nickname.utils.js';
+import { sanitizeInput, sanitizeObject, escapeHtml } from '../utils/sanitization.utils.js';
 
 class ProfileService {
   static async getAllProfiles() {
     const profiles = await dbAll('SELECT * FROM profiles');
-    return profiles;
+    // Sanitize output to prevent XSS in API responses
+    return profiles.map(profile => ({
+      ...profile,
+      nickname: profile.nickname ? escapeHtml(profile.nickname) : profile.nickname,
+      bio: profile.bio ? escapeHtml(profile.bio) : profile.bio
+    }));
   }
 
 
@@ -22,16 +28,30 @@ class ProfileService {
 
   static async getProfileById(id) {
     const profile = await dbGet('SELECT * FROM profiles WHERE id = ?', [id]);
-    return profile;
+    if (!profile) return profile;
+    // Sanitize output to prevent XSS in API responses
+    return {
+      ...profile,
+      nickname: profile.nickname ? escapeHtml(profile.nickname) : profile.nickname,
+      bio: profile.bio ? escapeHtml(profile.bio) : profile.bio
+    };
   }
 
   static async getProfileByUserId(userId) {
     const profile = await dbGet('SELECT * FROM profiles WHERE userId = ?', [userId]);
-    return profile;
+    if (!profile) return profile;
+    // Sanitize output to prevent XSS in API responses
+    return {
+      ...profile,
+      nickname: profile.nickname ? escapeHtml(profile.nickname) : profile.nickname,
+      bio: profile.bio ? escapeHtml(profile.bio) : profile.bio
+    };
   }
 
   static async updateProfile(id, profileData) {
-    const { nickname, profilePictureUrl, bio } = profileData;
+    // Sanitize inputs to prevent XSS
+    const sanitizedData = sanitizeObject(profileData, ['nickname', 'bio']);
+    const { nickname, profilePictureUrl, bio } = sanitizedData;
     
     // Validate nickname if provided
     if (nickname !== undefined) {
@@ -61,6 +81,7 @@ class ProfileService {
     }
     if (profilePictureUrl !== undefined) {
       updateFields.push('profilePictureUrl = ?');
+      // Don't sanitize URLs as they have different rules
       updateValues.push(profilePictureUrl);
     }
     if (bio !== undefined) {

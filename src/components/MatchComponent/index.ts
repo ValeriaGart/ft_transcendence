@@ -4,6 +4,7 @@ import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
 import { authService, type User } from "../../lib/auth";
 import { WebSocketService } from "../../lib/webSocket";
+import { sanitizeForTemplate } from "../../utils/sanitization";
 
 interface Friendship {
   id: number;
@@ -657,7 +658,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     if (playButton) {
       if (this.state.selectedFriendId) {
         const selectedFriendProfile = this.state.userProfiles[this.state.selectedFriendId];
-        const friendName = selectedFriendProfile?.nickname || 'Friend';
+        const friendName = sanitizeForTemplate(selectedFriendProfile?.nickname || 'Friend');
         playButton.textContent = `Play vs ${friendName}`;
       } else {
         playButton.textContent = 'Play vs AI';
@@ -780,8 +781,9 @@ export class MatchComponent extends Component<MatchComponentState> {
 
        // Get the other user's nickname
        const otherUserId = isInitiator ? friendship.recipient_id : friendship.initiator_id;
+       const safeUserId = Number.isInteger(otherUserId) ? otherUserId : 0;
        const otherUserProfile = this.state.userProfiles?.[otherUserId];
-       const displayName = otherUserProfile?.nickname || `User ${otherUserId}`;
+       const displayName = sanitizeForTemplate(otherUserProfile?.nickname || `User ${otherUserId}`);
 
        // Check if friend is online
        const isOnline = this.state.onlineFriends.includes(otherUserId);
@@ -833,8 +835,8 @@ export class MatchComponent extends Component<MatchComponentState> {
       return `
         <div class="flex items-center justify-start p-2 mb-1 ${cursorStyle} hover:bg-[#f2e6ff] transition-colors duration-200 ${friendItemClass} ${borderStyle}" 
              style="background-color: ${bgColor};"
-             data-friend-id="${otherUserId}"
-             ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})"` : ''}>
+             data-friend-id="${safeUserId}"
+             ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${safeUserId})"` : ''}>
           <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">

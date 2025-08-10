@@ -1,4 +1,5 @@
 import { Component } from "@blitz-ts/Component";
+import { sanitizeForTemplate } from "../../utils/sanitization";
 import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";

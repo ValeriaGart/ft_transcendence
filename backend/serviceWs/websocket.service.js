@@ -3,6 +3,7 @@ import FriendService from "../services/friend.service.js";
 import InvitationService from "./invitation.service.js";
 import MatchMakingService from "./matchmaking.service.js";
 import sleep from "../utils/sleep.utils.js";
+import { sanitizeWebSocketMessage } from "../utils/sanitization.utils.js";
 // const _matchMakingService = new MatchMakingService(this);
 
 class WebsocketService {
@@ -38,7 +39,7 @@ class WebsocketService {
 				sender: '__server',
 				message: `id ${connection.userId} left`
 			});
-			await sleep (WS_TIMEOUT_DISCONNECT);
+			await sleep(WebsocketService.WS_TIMEOUT_DISCONNECT);
 			this.matchMakingService.disconnectPlayerFromAllRooms(connection);
 		});
 	}
@@ -46,7 +47,10 @@ class WebsocketService {
 	handleMessage(connection) {
 		connection.on('message', async message => {
 			try {
-				const parsedMessage = JSON.parse(message);
+				const rawMessage = JSON.parse(message);
+				
+				// Sanitize the message to prevent XSS attacks
+				const parsedMessage = sanitizeWebSocketMessage(rawMessage);
 
 				// Validate required fields
 				if (!parsedMessage.type || typeof parsedMessage.type !== 'number') {

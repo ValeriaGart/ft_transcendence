@@ -1,3 +1,5 @@
+import { sanitizeForTemplate } from '../../utils/sanitization';
+
 /**
  * Parses a template string and replaces variables and control structures with their values
  * Supports:
@@ -49,15 +51,15 @@ export function parseTemplate(template: string, state: Record<string, any>): str
       
       // Replace item property references (e.g. {{item.name}})
       repeatedContent = repeatedContent.replace(new RegExp(`{{${itemName}\\.([^}]+)}}`, 'g'), (_: string, prop: string) => {
-        return item[prop] !== undefined ? String(item[prop]) : '';
+        return item[prop] !== undefined ? sanitizeForTemplate(item[prop]) : '';
       });
       
       // Replace direct item references (e.g. {{item}})
-      repeatedContent = repeatedContent.replace(new RegExp(`{{${itemName}}}`, 'g'), String(item));
+      repeatedContent = repeatedContent.replace(new RegExp(`{{${itemName}}}`, 'g'), sanitizeForTemplate(item));
       
       // Replace index references if index name is provided
       if (indexName) {
-        repeatedContent = repeatedContent.replace(new RegExp(`{{${indexName}}}`, 'g'), String(index));
+        repeatedContent = repeatedContent.replace(new RegExp(`{{${indexName}}}`, 'g'), sanitizeForTemplate(index));
       }
 
       return `<${tagName}${rest}>${repeatedContent}</${tagName}>`;
@@ -160,10 +162,10 @@ export function parseTemplate(template: string, state: Record<string, any>): str
   }
 
   // Finally handle template variables
-  result = result.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+  result = result.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
     const trimmedKey = key.trim();
     const value = trimmedKey.split('.').reduce((obj: any, prop: string) => obj?.[prop], state);
-    return value !== undefined ? String(value) : '';
+    return value !== undefined ? sanitizeForTemplate(value) : '';
   });
 
   // Ensure blitz-slot elements are preserved

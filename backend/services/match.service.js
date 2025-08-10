@@ -46,6 +46,7 @@ class MatchService {
 			LEFT JOIN profiles p2 ON m.player2_id = p2.userId
 			WHERE (m.player1_id = ? OR m.player2_id = ?) 
 				AND m.gameFinishedAt IS NOT NULL
+				AND m.type IN ('bestof', 'tournament')
 			ORDER BY m.gameFinishedAt DESC, m.id DESC`,
 			[userIdInt, userIdInt]
 		);
@@ -77,7 +78,9 @@ class MatchService {
 				SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) as wins,
 				SUM(CASE WHEN winner_id IS NOT NULL AND winner_id != ? THEN 1 ELSE 0 END) as losses
 			 FROM match 
-			 WHERE (player1_id = ? OR player2_id = ?) AND gameFinishedAt IS NOT NULL`,
+			 WHERE (player1_id = ? OR player2_id = ?) 
+			 	AND gameFinishedAt IS NOT NULL
+			 	AND type IN ('bestof', 'tournament')`,
 			[userId, userId, userId, userId]
 		);
 		

@@ -189,7 +189,6 @@ export class SettingsPage extends Component<SettingsPageState> {
                    domainPart.length > 0 && 
                    domainPart.includes('.') &&
                    !localPart.startsWith('.') && 
-                   !localPart.startsWith('.') &&
                    !localPart.endsWith('.') &&
                    !domainPart.startsWith('.') && 
                    !domainPart.endsWith('.') &&

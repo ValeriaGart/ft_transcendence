@@ -16,6 +16,7 @@ services:
       - ./db.sqlite:/workspaces/ft_transcendence/db.sqlite
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./logs_backend:/workspaces/ft_transcendence/logs_backend
 
     healthcheck:
       test: ["CMD", "/workspaces/ft_transcendence/healthcheck.sh"]

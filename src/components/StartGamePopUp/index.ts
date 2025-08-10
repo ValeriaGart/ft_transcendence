@@ -15,6 +15,8 @@ interface StartGamePopUpState {
   invitationData?: any;
   aiOpenListener?: (e: Event) => void;
   defaultContentHtml?: string;
+  pendingParticipants?: string[];
+  pendingInviteType?: '1v1' | 'tournament';
 }
 
 export class StartGamePopUp extends Component<StartGamePopUpState> {
@@ -27,7 +29,9 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     gameMode: undefined,
     invitationData: undefined,
     aiOpenListener: undefined,
-    defaultContentHtml: undefined
+    defaultContentHtml: undefined,
+    pendingParticipants: undefined,
+    pendingInviteType: undefined
   }
 
   constructor() {
@@ -51,6 +55,16 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     this.setupInvitationHandling();
     this.setupAiOpenListener();
     this.setupAiStartListener();
+    this.setupPendingParticipantsListener();
+    // Ensure dynamic Close buttons work (delegated listener)
+    this.element.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest('#close-popup')) {
+        e.preventDefault();
+        console.log('Decline invitation clicked');
+        this.declineInvitation();
+      }
+    });
   }
 
   /**
@@ -111,6 +125,31 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
             const router = Router.getInstance();
             router.navigate('/user/game');
           }
+        } else if (parsedData.type === "CANCELMATCH") {
+          console.log('Match was cancelled (declined or timed out).');
+          // Keep popup open but replace content with decline message and who declined if available
+          const declinedByNick = this.state.invitationData?.players?.find((p: any) => p.accepted === 'declined')?.nick;
+          const message = declinedByNick
+            ? `Invitation declined by ${declinedByNick}.`
+            : (parsedData.message || 'Invitation declined or match was cancelled.');
+
+          const content = this.element.querySelector('.text-center') as HTMLElement | null;
+          if (content) {
+            content.innerHTML = `
+              <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Invitation Update</h2>
+              <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-6">${message}</p>
+              <button id="acknowledge-close" class="px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Close</button>
+            `;
+            this.showPopup();
+            // Rebind close button
+            const closeBtn = this.element.querySelector('#acknowledge-close') as HTMLButtonElement | null;
+            if (closeBtn) closeBtn.addEventListener('click', (e) => { e.preventDefault(); this.closePopup(false); window.location.reload(); });
+          } else {
+            // Fallback: close and show error banner
+            this.closePopup(false);
+            this.showError(message);
+            setTimeout(() => window.location.reload(), 100);
+          }
         } else {
           console.log('StartGamePopUp: Received other message type:', parsedData.type, parsedData);
         }
@@ -145,13 +184,17 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     this.addEventListener('#close-popup', 'click', (e) => {
       e.preventDefault();
       console.log('Close popup button clicked');
-      this.closePopup();
+      console.log('Decline invitation clicked');
+        this.declineInvitation();
+        window.location.reload();
     });
 
     // Also close when clicking outside the popup
     this.addEventListener('#start-game-popup', 'click', (e) => {
       if (e.target === e.currentTarget) {
-        this.closePopup();
+        console.log('Decline invitation clicked');
+        this.declineInvitation();
+        window.location.reload();
       }
     });
   }
@@ -159,7 +202,16 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
   /**
    * Close the popup
    */
-  private closePopup(): void {
+  private closePopup(shouldCancel: boolean = false): void {
+    // Optionally cancel match if this is a user-initiated close on 1v1 flow
+    if (shouldCancel && this.state.gameMode === '1v1' && this.state.pendingRoomId) {
+      try {
+        const ws = WebSocketService.getInstance();
+        const cancelMsg = { type: 5, roomId: this.state.pendingRoomId, status: 'cancel' };
+        ws.sendMessage(JSON.stringify(cancelMsg));
+      } catch {}
+    }
+
     // Remove the event listener
     if (this.state.invitationHandler) {
       const ws = WebSocketService.getInstance();
@@ -171,6 +223,11 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     if (popupElement) {
       (popupElement as HTMLElement).style.display = 'none';
       console.log('StartGamePopUp: Popup hidden');
+    }
+
+    // If user-initiated cancellation/close in 1v1, reload their page to reset UI
+    if (shouldCancel && this.state.gameMode === '1v1') {
+      setTimeout(() => window.location.reload(), 100);
     }
   }
 
@@ -238,6 +295,18 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
   }
 
   /**
+   * Receive participants list from MatchComponent (for initiator waiting view)
+   */
+  private setupPendingParticipantsListener(): void {
+    window.addEventListener('set-pending-participants', (e: Event) => {
+      const ce = e as CustomEvent<{participants: string[]; type: '1v1'|'tournament'}>;
+      if (ce.detail) {
+        this.setState({ pendingParticipants: ce.detail.participants, pendingInviteType: ce.detail.type });
+      }
+    });
+  }
+
+  /**
    * Show the invitation popup for 1v1 matches
    */
   private showInvitationPopup(invitationData: any): void {
@@ -246,14 +315,17 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     // Update the popup content to show accept/decline buttons
     const popupContent = this.element.querySelector('.text-center');
     if (popupContent) {
+      const players = Array.isArray(invitationData.players) ? invitationData.players : [];
+      const isTournament = players.length === 4;
+      const title = isTournament ? 'Tournament Invitation' : '1v1 Invitation';
+      const listHtml = players.map((p: any) => `<li class="text-[#81C3C3]">${p.nick}${p.ai ? ' (AI)' : ''}</li>`).join('');
       popupContent.innerHTML = `
-        <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">
-          Game Invitation
-        </h2>
+        <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">${title}</h2>
         
         <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">
-          You've been invited to play a 1v1 game!
+          You've been invited to play!
         </p>
+        ${players.length ? `<ul class="mb-4 space-y-1">${listHtml}</ul>` : ''}
         
         <div class="mb-4">
           <p class="text-sm text-[#81C3C3]">Game Mode: ${invitationData.gameMode}</p>
@@ -290,19 +362,17 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     // Update the popup content to show waiting message
     const popupContent = this.element.querySelector('.text-center');
     if (popupContent) {
+      const participants = (this.state.pendingParticipants ?? []) as string[];
+      const isTournament = this.state.pendingInviteType === 'tournament' || participants.length === 4;
+      const title = isTournament ? 'Waiting for Players' : 'Waiting for Player';
+      const listHtml = participants.length ? `<ul class=\"mb-4 space-y-1\">${participants.map((n: string) => `<li class=\\\"text-[#81C3C3]\\\">${n}</li>`).join('')}</ul>` : '';
       popupContent.innerHTML = `
-        <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">
-          Waiting for Player
-        </h2>
-        
-        <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">
-          Your game room has been created. Waiting for the other player to accept the invitation...
-        </p>
-        
+        <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">${title}</h2>
+        <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">Your room was created. Waiting for participants to accept...</p>
+        ${listHtml}
         <div class="mb-4">
           <p class="text-sm text-[#81C3C3]">Room ID: ${infoData.roomId}</p>
         </div>
-        
         <div class="flex justify-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B784F2]"></div>
         </div>
@@ -333,6 +403,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         e.preventDefault();
         console.log('Decline invitation clicked');
         this.declineInvitation();
+        window.location.reload();
       });
     }
   }
@@ -347,19 +418,32 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     }
 
     const ws = WebSocketService.getInstance();
+    const isTournament = (this.state.pendingInviteType === 'tournament')
+      || (Array.isArray(this.state.invitationData?.players) && this.state.invitationData.players.length === 4);
+
+    if (isTournament) {
+      // TEMP: in tournament case, behave like decline to avoid backend crash path
+      const cancelMessage = {
+        type: 5,
+        roomId: this.state.pendingRoomId,
+        status: 'cancel'
+      };
+      console.log('Tournament accept treated as cancel:', cancelMessage);
+      ws.sendMessage(JSON.stringify(cancelMessage));
+      this.closePopup(false);
+      setTimeout(() => window.location.reload(), 100);
+      return;
+    }
+
+    // Normal 1v1 accept flow
     const acceptMessage = {
       type: 4,
       roomId: this.state.pendingRoomId,
-      acceptance: "accepted"
+      acceptance: 'accepted'
     };
-    
     console.log('Sending accept message:', acceptMessage);
     ws.sendMessage(JSON.stringify(acceptMessage));
-    
     console.log('Accept message sent, waiting for STARTMATCH or other response...');
-    
-    // Don't close the popup immediately - wait for STARTMATCH message
-    // The popup will be closed when STARTMATCH is received
   }
 
   /**
@@ -372,14 +456,14 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     }
 
     const ws = WebSocketService.getInstance();
-    const declineMessage = {
-      type: 4,
+    // Send a cancel to avoid backend crash path on type 4 for tournaments
+    const cancelMessage = {
+      type: 5,
       roomId: this.state.pendingRoomId,
-      acceptance: "declined"
+      status: 'cancel'
     };
-    
-    console.log('Sending decline message:', declineMessage);
-    ws.sendMessage(JSON.stringify(declineMessage));
+    console.log('Sending cancel message (decline):', cancelMessage);
+    ws.sendMessage(JSON.stringify(cancelMessage));
     
     // Close the popup
     this.closePopup();

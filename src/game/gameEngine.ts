@@ -166,8 +166,8 @@ export class GameEngine {
 		if (this._intervalId) {
 			clearInterval(this._intervalId);
 			this.cleanup();
-			const router = Router.getInstance();
-			router.navigate('/user');
+			// Force full reload to reset UserPage state consistently (AI and 1v1)
+			window.location.assign('/user');
 		}
 	}
 	

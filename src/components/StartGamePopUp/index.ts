@@ -257,8 +257,8 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         </p>
         
         <div class="mb-4">
-          <p class="text-sm text-[#81C3C3]">Game Mode: ${invitationData.gameMode}</p>
-          <p class="text-sm text-[#81C3C3]">Room ID: ${invitationData.roomId}</p>
+          <p class="text-sm text-[#81C3C3]">Game Mode: ${sanitizeForTemplate(invitationData.gameMode)}</p>
+          <p class="text-sm text-[#81C3C3]">Room ID: ${sanitizeForTemplate(invitationData.roomId)}</p>
         </div>
         
         <div class="flex space-x-4">
@@ -301,7 +301,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         </p>
         
         <div class="mb-4">
-          <p class="text-sm text-[#81C3C3]">Room ID: ${infoData.roomId}</p>
+          <p class="text-sm text-[#81C3C3]">Room ID: ${sanitizeForTemplate(infoData.roomId)}</p>
         </div>
         
         <div class="flex justify-center">

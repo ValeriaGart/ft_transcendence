@@ -23,7 +23,7 @@ class MatchService {
 		);
 		return matches;
 	}
-
+ 
 	static async getMatchHistoryWithNicknames(userId) {
 		// Ensure userId is an integer
 		const userIdInt = parseInt(userId);

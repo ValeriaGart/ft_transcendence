@@ -10,7 +10,7 @@
 mkdir -p /etc/logrotate.d
 touch /etc/logrotate.d/ft_transcendence
 cat << EOF > /etc/logrotate.d/ft_transcendence
-/workspaces/ft_transcendence/logs_backend/app_backend.log {
+/workspaces/ft_transcendence/logs_backend/app.log {
 	su root root
 	rotate 10
 	size 100k

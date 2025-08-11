@@ -8,7 +8,12 @@ export const profileBodySchema = {
       pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]*$',
       description: 'Nickname must be 2-20 characters, start with alphanumeric, and contain only letters, numbers, underscores, and hyphens'
     },
-    profilePictureUrl: { type: 'string', minLength: 1 },
+    profilePictureUrl: { 
+      type: 'string', 
+      minLength: 1,
+      maxLength: 500,
+      description: 'Profile picture URL must be a valid HTTP/HTTPS URL or relative path'
+    },
     bio: { type: 'string', maxLength: 500 }
   },
   required: ["nickname", "profilePictureUrl", "bio"]
@@ -32,7 +37,12 @@ export const profilePatchSchema = {
       pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]*$',
       description: 'Nickname must be 2-20 characters, start with alphanumeric, and contain only letters, numbers, underscores, and hyphens'
     },
-    profilePictureUrl: { type: 'string', minLength: 1 },
+    profilePictureUrl: { 
+      type: 'string', 
+      minLength: 1,
+      maxLength: 500,
+      description: 'Profile picture URL must be a valid HTTP/HTTPS URL or relative path'
+    },
     bio: { type: 'string', maxLength: 500 }
   },
   anyOf: [

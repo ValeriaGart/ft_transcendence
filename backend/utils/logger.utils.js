@@ -60,6 +60,9 @@ function log_prod(message, level = "info") {
 }
 
 export function setLoggerApp(app, console) {
+	if (!app) {
+		throw new Error("Critical error: used invalid app instance in setLoggerApp");
+	}
 	appInstance = app;
 	if (console === "true") {
 		log_it = log_dev;
@@ -72,5 +75,8 @@ export function setLoggerApp(app, console) {
 }
 
 export function log(message, level = "info") {
+	if (!appInstance) {
+		throw new Error("Critical error: didn't set app instance in setLoggerApp");
+	}
     return log_it(message, level);
 }

@@ -3,7 +3,7 @@ filebeat.inputs:
   id: my-filestream-id
   enabled: true
   paths:
-    - /usr/share/filebeat/mylogs/*.log
+    - /usr/share/filebeat/logs_backend/*.log*
 
 output.logstash:
   hosts: ["logstash:5044"]

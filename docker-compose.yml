@@ -193,7 +193,8 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
     volumes:
-      - ./devops/mylogs/logstash-tutorial-dataset:/usr/share/filebeat/mylogs/logstash-tutorial-dataset.log
+      # - ./devops/mylogs/logstash-tutorial-dataset:/usr/share/filebeat/mylogs/logstash-tutorial-dataset.log
+      - ./logs_backend:/user/share/filebeat/logs_backend
       - ./devops/filebeat/config/filebeat.example.yml:/usr/share/filebeat/filebeat.yml
     depends_on:
       kibana:

@@ -112,7 +112,7 @@ export class PongGame {
 			}
 		}
 
-		if (this._lastBroadcastTimeMs === 0 || Date.now() - this._lastBroadcastTimeMs > 500) {
+		if (this._oppMode == OpponentMode.ONLINE && (this._lastBroadcastTimeMs === 0 || Date.now() - this._lastBroadcastTimeMs > 500)) {
 			this.broadcastGameState();
 		}
 	}

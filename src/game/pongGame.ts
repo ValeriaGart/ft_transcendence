@@ -8,6 +8,8 @@ import { PauseScreen } from './pauseScreen.ts';
 import { Player } from './player.ts';
 import { WinScreen } from './winScreen.ts';
 
+const BROADCAST_INTERVAL_MS = 16;
+const AI_INTERVAL_MS = 1000;
 
 export class PongGame {
 	//custom interfaces
@@ -28,19 +30,19 @@ export class PongGame {
 	public _p2: Player;
 	private _round: number = 0;
 	private _lastAIUpdateTimeMs: number = 0;
+	private _lastBroadcastTimeMs: number = 0;
 
-	constructor(engine: GameEngine, mode?: GameMode, opponent?: OpponentMode, p1?: Player, p2?: Player, round?: number) {
+	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1?: Player, p2?: Player, round?: number) {
 		this._engine = engine;
 		this._mode = mode || this._mode
 		this._oppMode = opponent || this._oppMode;
-		this._p1 = p1 || new Player();
+		this._p1 = p1 || new Player("default", 0, true, 1);
 		this._p1.setSide('left');
-		this._p2 = p2 || new Player();
+		this._p2 = p2 || new Player("default", 0, true, 2);
 		this._p2.setSide('right');
 		this._round = round || this._round;
 
 		console.log('game running in mode: ', this._mode, " : ", this._oppMode);
-		// console.log(this._oppMode);
 
 		// const randomDirection = getRandomDirection();
 		// const randomAngle = getRandomAngle()
@@ -52,12 +54,17 @@ export class PongGame {
 			paddlePositions: { left: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2), right: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2)},
 			paddleDirection: {left: 0, right: 0},
 			paddleVelocity: { left :0, right: 0},
-			scores: { left: 0, right: 0}
+			scores: { left: 0, right: 0},
+			pnumber: this._engine._urp
 		};
 		this._collisionHandler = new CollisionHandler(this);
 		this._renderEngine = new RenderEngine(this);
 		this._pauseScreen = new PauseScreen(this._engine);
 		this._winScreen = new WinScreen(this);
+
+		this._engine._ws.ws.onmessage = (message) => {
+			this.parseMessage(message);
+		}
 	}
 
 	public drawGameScreen(): void {
@@ -75,7 +82,7 @@ export class PongGame {
 		this._gameStats.ballPosition.x += this._gameStats.ballVelocity.x;
 		this._gameStats.ballPosition.y += this._gameStats.ballVelocity.y;
 
-		if (this._lastAIUpdateTimeMs === 0 || Date.now() - this._lastAIUpdateTimeMs > 1000) {
+		if (this._lastAIUpdateTimeMs === 0 || Date.now() - this._lastAIUpdateTimeMs > AI_INTERVAL_MS) {
 			if (this._p1.isBot() == true) {
 				this._p1._AI.update(this);
 			}
@@ -105,6 +112,40 @@ export class PongGame {
 						break;
 				}
 			}
+		}
+
+		if (this._oppMode == OpponentMode.ONLINE && (this._lastBroadcastTimeMs === 0 || Date.now() - this._lastBroadcastTimeMs > BROADCAST_INTERVAL_MS)) {
+			this.broadcastGameState();
+			this._lastBroadcastTimeMs = Date.now();
+		}
+	}
+
+	private broadcastGameState(): void {
+		const msg = {
+			"type": 7,
+			"roomId": this._engine._roomID,
+			"_gameState": this._gameStats
+		};
+		const gameStateString = JSON.stringify(msg);
+		this._engine._ws.sendMessage(gameStateString);
+		// console.log('client has sent message: ', gameStateString);
+	}
+
+	private parseMessage(message: MessageEvent): void {
+		var msg = JSON.parse(message.data);
+		console.log('client has reveived message: ', msg);
+		console.log("stats in msg: ", msg.ballPosition);
+		if (!msg.ballPosition) {
+			return;
+		}
+		if (this._gameStats.pnumber == this._p2.getPnumber()) {
+			this._gameStats.ballPosition = msg.ballPosition;
+			this._gameStats.ballVelocity = msg.ballVelocity;
+			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
+			this._gameStats.scores = msg.scores;
+		}
+		if (this._gameStats.pnumber == this._p1.getPnumber()) {
+			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
 		}
 	}
 

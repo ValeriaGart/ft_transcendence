@@ -10,16 +10,20 @@
             <h2 class="text-[#81C3C3] font-['Irish_Grover'] text-md lg:text-lg ">
                Add a new friend 
             </h2>
-            <button id="add-a-friend" class=" ml-[5%] hover:scale-150 transition-transform duration-300 cursor-pointer"> 
-                <img src="/art/user_page/plus_button.svg" alt="Add a friend" class="w-[20px] h-[20px]">
+            <button id="add-a-friend" class=" ml-[5%] text-[#81C3C3] hover:text-[#B784F2] transition-colors duration-300 cursor-pointer"> 
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16M4 12h16"></path>
+                </svg>
             </button>
         </div>
         <div id="friend-list" class="flex flex-col items-start justify-start h-full w-full mx-[5%]">
         </div>
     </div>
     <form id="add-friends-container" class="flex flex-col items-center justify-center h-[420px] lg:h-[520px] w-full relative bg-[#F0F7F7] gap-y-5" style="display: none;">
-        <button id="close_button" class="absolute top-1 right-1 cursor-pointer">
-            <img src="/art/user_page/plus_button.svg" alt="Close" class="w-[30px] h-[30px] rotate-45">
+        <button id="close_button" class="absolute top-1 right-1 text-[#81C3C3] hover:text-[#B784F2] transition-colors duration-300 cursor-pointer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
         </button>
         <label for="add-friends-input" class="text-[#81C3C3] font-['Irish_Grover'] text-md lg:text-lg">Enter the nickname of your friend</label>
         <input type="text" id="add-friends-input" placeholder="PlayerNickname" class="w-[50%] h-[30px] rounded-2xl border-2 border-[#81C3C3]">

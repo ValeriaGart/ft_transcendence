@@ -1,7 +1,9 @@
+
+
+
 let appInstance = null;
-export function setLoggerApp(app) {
-	appInstance = app;
-}
+let log_it;
+log_it = log_dev;
 
 const colors = {
 	info: '\x1b[32m',    // Green
@@ -13,27 +15,7 @@ const colors = {
 const reset = '\x1b[0m';
 
 
-function log_dev(message, level) {
-	switch (level) {
-		case "debug":
-			console.debug(`${colors.debug}[DEBUG]${reset} ${message}`);
-			break ;
-		case "info":
-			console.log(`${colors.info}[INFO]${reset} ${message}`);
-			break ;
-		case "warn":
-			console.warn(`${colors.warn}[WARN]${reset} ${message}`);
-			break ;
-		case "error":
-			console.error(`${colors.error}[ERROR]${reset} ${message}`);
-			break ;
-		default:
-			console.log(`[LOG] ${message}`);
-
-	}
-}
-
-function log_prod(message, level) {
+function log_dev(message, level = "info") {
 	switch (level) {
 		case "debug":
 			console.debug(`${colors.debug}[DEBUG]${reset} ${message}`);
@@ -51,20 +33,44 @@ function log_prod(message, level) {
 			console.error(`${colors.error}[ERROR]${reset} ${message}`);
 			appInstance.log.error(message);
 			break ;
-
 		default:
 			console.log(`[LOG] ${message}`);
 			appInstance.log.info(message);
-
 	}
 }
 
+function log_prod(message, level = "info") {
+	switch (level) {
+		case "debug":
+			appInstance.log.debug(message);
+			break ;
+		case "info":
+			appInstance.log.info(message);
+			break ;
+		case "warn":
+			appInstance.log.warn(message);
+			break ;
+		case "error":
+			appInstance.log.error(message);
+			break ;
 
-let log_it;
-if (process.env.CONSOLE_LOG === "true") {
-    log_it = log_dev;
-} else {
-    log_it = log_prod;
+		default:
+			appInstance.log.info(message);
+	}
 }
 
-export default log_it;
+export function setLoggerApp(app, console) {
+	appInstance = app;
+	if (console === "true") {
+		log_it = log_dev;
+		return ;
+	} 
+	else if (console === "false") {
+		log_it = log_prod;
+		return ;
+	}
+}
+
+export function log(message, level = "info") {
+    return log_it(message, level);
+}

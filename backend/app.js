@@ -41,7 +41,7 @@ import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import ws from '@fastify/websocket';
-import log_it, { setLoggerApp } from './utils/logger.utils.js';
+import { log, setLoggerApp } from './utils/logger.utils.js';
 
 // Initialize SSL configuration
 const sslOptions = getSSLOptions();
@@ -100,11 +100,12 @@ await app.register(matchRoutes);
 await app.register(websocketRoutes);
 await app.register(healthRoutes);
 
-setLoggerApp(app);
-log_it('DEBUGGING message blablabla', "debug");
-log_it('INFOING message blablabla', "info");
-log_it('WARNING message blablabla', "warn");
-log_it('ERRORING message blablabla', "error");
+setLoggerApp(app, process.env.CONSOLE_LOG);
+log('DEBUGGING message blablabla', "debug");
+log('INFOING message blablabla', "info");
+log('INFOING message without level flag');
+log('WARNING message blablabla', "warn");
+log('ERRORING message blablabla', "error");
 
 async function bootstrap() {
   try {
@@ -115,15 +116,15 @@ async function bootstrap() {
     
     await app.listen({ port, host: '0.0.0.0' });
     
-    log_it(`🚀 Server running on ${protocol}://localhost:${port}`, "info");
+    log(`🚀 Server running on ${protocol}://localhost:${port}`, "info");
     
     if (sslOptions) {
-      log_it('🔐 HTTPS enabled with self-signed certificate', "info");
-      log_it('⚠️  Browsers will show security warnings for development certificates', "info");
+      log('🔐 HTTPS enabled with self-signed certificate', "info");
+      log('⚠️  Browsers will show security warnings for development certificates', "info");
     }
     
   } catch (err) {
-    log_it(err, "error");
+    log(err, "error");
     process.exit(1);
   }
 }

@@ -2,6 +2,7 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { ErrorManager } from "../Error";
 import { authService } from "../../lib/auth";
+import { COMMON_TLDS, VALID_COUNTRY_TLDS } from "../../utils/emailTLDs";
 
 interface SignInPageState {
     email: string;
@@ -122,13 +123,11 @@ export class SignInPage extends Component<SignInPageState> {
             return false;
         }
         
-        const commonTLDs = ['com', 'org', 'net', 'edu', 'gov', 'mil', 'int'];
-        
         // Handle 2-part domains (e.g., example.com)
         if (domainParts.length === 2) {
             const secondPart = domainParts[1];
             // Check if the second part is a valid TLD
-            if (!commonTLDs.includes(secondPart)) {
+            if (!COMMON_TLDS.includes(secondPart)) {
                 return false;
             }
             return true;
@@ -140,14 +139,7 @@ export class SignInPage extends Component<SignInPageState> {
             const thirdPart = domainParts[2];
             
             // Define valid country TLD combinations
-            const validCountryTLDs = [
-                'co.uk', 'co.us', 'co.ca', 'co.au', 'co.nz', 'co.za', 'co.in', 'co.jp', 'co.kr', 'co.cn',
-                'com.au', 'com.br', 'com.mx', 'com.sg', 'com.hk', 'com.tw', 'com.my', 'com.ph', 'com.th',
-                'org.uk', 'org.au', 'org.nz', 'org.za', 'org.in', 'org.jp', 'org.kr', 'org.cn',
-                'net.uk', 'net.au', 'net.nz', 'net.za', 'net.in', 'net.jp', 'net.kr', 'net.cn',
-                'edu.au', 'edu.nz', 'edu.za', 'edu.in', 'edu.jp', 'edu.kr', 'edu.cn',
-                'gov.uk', 'gov.au', 'gov.nz', 'gov.za', 'gov.in', 'gov.jp', 'gov.kr', 'gov.cn'
-            ];
+            const validCountryTLDs = VALID_COUNTRY_TLDS;
             
             // This should be checked FIRST to allow both example.co.uk and sub.example.co.uk
             const countryTLD = secondPart + '.' + thirdPart;
@@ -157,12 +149,12 @@ export class SignInPage extends Component<SignInPageState> {
             }
         
             // Reject: example.com.com, example.org.com, example.com.org
-            if (commonTLDs.includes(secondPart) && commonTLDs.includes(thirdPart)) {
+            if (COMMON_TLDS.includes(secondPart) && COMMON_TLDS.includes(thirdPart)) {
                 return false;
             }
             
             // Allow valid subdomain patterns: sub.example.com, mail.example.org
-            if (commonTLDs.includes(thirdPart)) {
+            if (COMMON_TLDS.includes(thirdPart)) {
                 return true;
             }
             
@@ -175,14 +167,7 @@ export class SignInPage extends Component<SignInPageState> {
             const fourthPart = domainParts[3];
             
             // Define valid country TLD combinations
-            const validCountryTLDs = [
-                'co.uk', 'co.us', 'co.ca', 'co.au', 'co.nz', 'co.za', 'co.in', 'co.jp', 'co.kr', 'co.cn',
-                'com.au', 'com.br', 'com.mx', 'com.sg', 'com.hk', 'com.tw', 'com.my', 'com.ph', 'com.th',
-                'org.uk', 'org.au', 'org.nz', 'org.za', 'org.in', 'org.jp', 'org.kr', 'org.cn',
-                'net.uk', 'net.au', 'net.nz', 'net.za', 'net.in', 'net.jp', 'net.kr', 'net.cn',
-                'edu.au', 'edu.nz', 'edu.za', 'edu.in', 'edu.jp', 'edu.kr', 'edu.cn',
-                'gov.uk', 'gov.au', 'gov.nz', 'gov.za', 'gov.in', 'gov.jp', 'gov.kr', 'gov.cn'
-            ];
+            const validCountryTLDs = VALID_COUNTRY_TLDS;
             
             // Check if the last three parts form a valid pattern: example.co.uk
             
@@ -194,12 +179,12 @@ export class SignInPage extends Component<SignInPageState> {
             }
             
             // Check for invalid double TLD patterns in the last three parts
-            if (commonTLDs.includes(thirdPart) && commonTLDs.includes(fourthPart)) {
+            if (COMMON_TLDS.includes(thirdPart) && COMMON_TLDS.includes(fourthPart)) {
                 return false;
             }
             
             // Allow valid subdomain patterns where the last part is a TLD
-            if (commonTLDs.includes(fourthPart)) {
+            if (COMMON_TLDS.includes(fourthPart)) {
                 return true;
             }
             

@@ -1,12 +1,14 @@
 import RoomUtilsService from "./roomutils.service.js";
 import sleep from "../utils/sleep.utils.js";
+import { log } from '../utils/logger.utils.js';
 
 class InvitationService {
 	constructor(websocketService) {
 		this.websocketService = websocketService;
 		this.matchMakingService = websocketService.matchMakingService;
 		this.roomService = this.matchMakingService.RoomService;
-		console.log("[InvitationService] constructor");
+		log("[InvitationService] constructor");
+		
 	}
 
 	static async createInvitationMessage(room) {

@@ -62,7 +62,8 @@ if (sslOptions) {
 }
 
 const app = fastify(fastifyOptions);
-
+setLoggerApp(app, process.env.CONSOLE_LOG);
+log("logging setup :)");
 // register websocket
 await app.register(ws)
 
@@ -100,12 +101,6 @@ await app.register(matchRoutes);
 await app.register(websocketRoutes);
 await app.register(healthRoutes);
 
-setLoggerApp(app, process.env.CONSOLE_LOG);
-log('DEBUGGING message blablabla', "debug");
-log('INFOING message blablabla', "info");
-log('INFOING message without level flag');
-log('WARNING message blablabla', "warn");
-log('ERRORING message blablabla', "error");
 
 async function bootstrap() {
   try {

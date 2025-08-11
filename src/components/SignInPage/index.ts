@@ -2,6 +2,7 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { ErrorManager } from "../Error";
 import { authService } from "../../lib/auth";
+import { COMMON_TLDS, VALID_COUNTRY_TLDS } from "../../utils/emailTLDs";
 
 interface SignInPageState {
     email: string;
@@ -48,6 +49,164 @@ export class SignInPage extends Component<SignInPageState> {
                 errorMessage: null
             });
         });
+    }
+
+    private validateEmail(email: string): boolean {
+        // More comprehensive email validation
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        
+        if (!email || typeof email !== 'string') {
+            return false;
+        }
+        
+        if (email.length > 254) {
+            return false;
+        }
+        
+        const parts = email.split('@');
+        if (parts.length !== 2) {
+            return false;
+        }
+        
+        const localPart = parts[0];
+        const domainPart = parts[1];
+        
+        // Local part validation (max 64 characters)
+        if (localPart.length > 64 || localPart.length === 0) {
+            return false;
+        }
+        
+        // Domain part validation (max 253 characters)
+        if (domainPart.length > 253 || domainPart.length === 0) {
+            return false;
+        }
+        
+        // Check for leading/trailing dots in local part
+        if (localPart.startsWith('.') || localPart.endsWith('.')) {
+            return false;
+        }
+        
+        // Check for consecutive dots in local part
+        if (localPart.includes('..')) {
+            return false;
+        }
+        
+        // Check for leading/trailing dots in domain part
+        if (domainPart.startsWith('.') || domainPart.endsWith('.')) {
+            return false;
+        }
+        
+        // Check for consecutive dots in domain part
+        if (domainPart.includes('..')) {
+            return false;
+        }
+        
+        // Check for leading/trailing hyphens in domain part
+        if (domainPart.startsWith('-') || domainPart.endsWith('-')) {
+            return false;
+        }
+        
+        const domainParts = domainPart.split('.');
+        if (domainParts.length > 4) {
+            return false;
+        }
+        
+        // Check that no domain part starts or ends with hyphens
+        for (const part of domainParts) {
+            if (part.startsWith('-') || part.endsWith('-')) {
+                return false;
+            }
+        }
+        
+        // Ensure domain has at least one dot (TLD requirement)
+        if (!domainPart.includes('.')) {
+            return false;
+        }
+        
+        // Handle 2-part domains (e.g., example.com)
+        if (domainParts.length === 2) {
+            const secondPart = domainParts[1];
+            // Check if the second part is a valid TLD
+            if (!COMMON_TLDS.includes(secondPart)) {
+                return false;
+            }
+            return true;
+        }
+        
+        // Handle 3-part domains (e.g., sub.example.com, example.co.uk)
+        if (domainParts.length === 3) {
+            const secondPart = domainParts[1];
+            const thirdPart = domainParts[2];
+            
+            // Define valid country TLD combinations
+            const validCountryTLDs = VALID_COUNTRY_TLDS;
+            
+            // This should be checked FIRST to allow both example.co.uk and sub.example.co.uk
+            const countryTLD = secondPart + '.' + thirdPart;
+            if (validCountryTLDs.includes(countryTLD)) {
+                // This is valid: sub.example.co.uk, example.co.uk
+                return true;
+            }
+        
+            // Reject: example.com.com, example.org.com, example.com.org
+            if (COMMON_TLDS.includes(secondPart) && COMMON_TLDS.includes(thirdPart)) {
+                return false;
+            }
+            
+            // Allow valid subdomain patterns: sub.example.com, mail.example.org
+            if (COMMON_TLDS.includes(thirdPart)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Handle 4-part domains (e.g., sub.example.co.uk, sub.example.com.au)
+        if (domainParts.length === 4) {
+            const thirdPart = domainParts[2];
+            const fourthPart = domainParts[3];
+            
+            // Define valid country TLD combinations
+            const validCountryTLDs = VALID_COUNTRY_TLDS;
+            
+            // Check if the last three parts form a valid pattern: example.co.uk
+            
+            const lastTwoParts = thirdPart + '.' + fourthPart;
+            
+            // If the last two parts form a valid country TLD, this is a valid subdomain
+            if (validCountryTLDs.includes(lastTwoParts)) {
+                return true;
+            }
+            
+            // Check for invalid double TLD patterns in the last three parts
+            if (COMMON_TLDS.includes(thirdPart) && COMMON_TLDS.includes(fourthPart)) {
+                return false;
+            }
+            
+            // Allow valid subdomain patterns where the last part is a TLD
+            if (COMMON_TLDS.includes(fourthPart)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        if (email.length > 100) {
+            return localPart.length > 0 && 
+                   domainPart.length > 0 && 
+                   domainPart.includes('.') &&
+                   !localPart.startsWith('.') && 
+                   !localPart.endsWith('.') &&
+                   !domainPart.startsWith('.') && 
+                   !domainPart.endsWith('.') &&
+                   !localPart.includes('..') &&
+                   !domainPart.includes('..') &&
+                   !domainPart.startsWith('-') &&
+                   !domainPart.endsWith('-');
+        }
+        
+        // Regex validation for shorter emails
+        return emailRegex.test(email);
     }
 
     public async handleSignIn(e: Event) {

@@ -2,18 +2,20 @@ import { BotAI } from "./botAI.js";
 
 export class Player {
 	private	_name: string;
-	private	_position: number = 0;
-	private _isBot: boolean = false;
+	private	_position: number;
+	private _isBot: boolean;
 	public _side: string;
+	private _pnumber: number;
 
 	public _AI: BotAI;
 
-	constructor(name?: string, pos?: number, isBot?: boolean, side?: string) {
-		this._name = name || 'default';
-		this._position = pos || this._position;
-		this._isBot = isBot || this._isBot;
+	constructor(name: string, pos: number, isBot: boolean, pnumber: number, side?: string) {
+		this._name = name;
+		this._position = pos;
+		this._isBot = isBot;
 		this._side = side || 'default';
 		this._AI = new BotAI(this._side);
+		this._pnumber = pnumber;
 	}
 
 	public getSide(): string {
@@ -26,6 +28,10 @@ export class Player {
 
 	public getPosition(): number {
 		return this._position;
+	}
+
+	public getPnumber(): number {
+		return this._pnumber;
 	}
 
 	public isBot(): boolean {

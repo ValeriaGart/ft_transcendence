@@ -36,6 +36,7 @@ import friendRoutes from './routes/friend.routes.js';
 import matchRoutes from './routes/match.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import websocketRoutes from './routes/websocket.routes.js';
+import healthRoutes from './routes/health.routes.js';
 import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
@@ -86,6 +87,7 @@ await app.register(profileRoutes);
 await app.register(friendRoutes);
 await app.register(matchRoutes);
 await app.register(websocketRoutes);
+await app.register(healthRoutes);
 
 async function bootstrap() {
   try {

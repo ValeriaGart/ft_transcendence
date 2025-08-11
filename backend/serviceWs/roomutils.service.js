@@ -79,7 +79,10 @@ class RoomUtilsService {
 		}
 	}
 
+
 	static async sendMessageToAllPlayers(websocketService, room, message, connection = null) {
+    console.log("[sendMessageToAllPlayers]");
+
 		for (let p of room.players) {
 			if (p.ai == true) {
 				continue ;
@@ -103,7 +106,7 @@ class RoomUtilsService {
 		}
 	}
 
-
+	
 }
 
 export default RoomUtilsService;

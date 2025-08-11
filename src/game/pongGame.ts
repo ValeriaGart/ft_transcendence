@@ -8,7 +8,7 @@ import { PauseScreen } from './pauseScreen.ts';
 import { Player } from './player.ts';
 import { WinScreen } from './winScreen.ts';
 
-const BROADCAST_INTERVAL_MS = 500;
+const BROADCAST_INTERVAL_MS = 16;
 const AI_INTERVAL_MS = 1000;
 
 export class PongGame {
@@ -142,6 +142,7 @@ export class PongGame {
 			this._gameStats.ballPosition = msg.ballPosition;
 			this._gameStats.ballVelocity = msg.ballVelocity;
 			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
+			this._gameStats.scores = msg.scores;
 		}
 		if (this._gameStats.pnumber == this._p1.getPnumber()) {
 			this._gameStats.paddlePositions.right = msg.paddlePositions.right;

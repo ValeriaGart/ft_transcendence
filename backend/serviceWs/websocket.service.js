@@ -3,7 +3,6 @@ import FriendService from "../services/friend.service.js";
 import InvitationService from "./invitation.service.js";
 import MatchMakingService from "./matchmaking.service.js";
 import sleep from "../utils/sleep.utils.js";
-import { sanitizeWebSocketMessage } from "../utils/sanitization.utils.js";
 // const _matchMakingService = new MatchMakingService(this);
 
 class WebsocketService {
@@ -47,10 +46,7 @@ class WebsocketService {
 	handleMessage(connection) {
 		connection.on('message', async message => {
 			try {
-				const rawMessage = JSON.parse(message);
-				
-				// Sanitize the message to prevent XSS attacks
-				const parsedMessage = sanitizeWebSocketMessage(rawMessage);
+				const parsedMessage = JSON.parse(message);
 
 				// Validate required fields
 				if (!parsedMessage.type || typeof parsedMessage.type !== 'number') {

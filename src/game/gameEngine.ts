@@ -147,8 +147,8 @@ export class GameEngine {
 		this._p4AI = msg.players[3]?.ai || true;
 		this._p1ID = msg.players[0].pnumber;
 		this._p2ID = msg.players[1].pnumber;
-		this._p3ID = msg.players[2]?.pnumber || true;
-		this._p4ID = msg.players[3]?.pnumber || true;
+		this._p3ID = msg.players[2]?.pnumber || 0;
+		this._p4ID = msg.players[3]?.pnumber || 0;
 		this._gameModeStr = msg.gameMode;
 		this._oppModeStr = msg.oppMode;
 		console.log('id: ', this._roomID);
@@ -166,8 +166,6 @@ export class GameEngine {
 	}
 
 	private cleanup(): void {
-		if (this._pongGame) {
-		}
 		this.removeAllEventListeners();
 		if (this._canvas) {
 			if (this._ctx) {

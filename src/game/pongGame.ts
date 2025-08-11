@@ -8,6 +8,8 @@ import { PauseScreen } from './pauseScreen.ts';
 import { Player } from './player.ts';
 import { WinScreen } from './winScreen.ts';
 
+const BROADCAST_INTERVAL_MS = 500;
+const AI_INTERVAL_MS = 1000;
 
 export class PongGame {
 	//custom interfaces
@@ -80,7 +82,7 @@ export class PongGame {
 		this._gameStats.ballPosition.x += this._gameStats.ballVelocity.x;
 		this._gameStats.ballPosition.y += this._gameStats.ballVelocity.y;
 
-		if (this._lastAIUpdateTimeMs === 0 || Date.now() - this._lastAIUpdateTimeMs > 1000) {
+		if (this._lastAIUpdateTimeMs === 0 || Date.now() - this._lastAIUpdateTimeMs > AI_INTERVAL_MS) {
 			if (this._p1.isBot() == true) {
 				this._p1._AI.update(this);
 			}
@@ -112,8 +114,9 @@ export class PongGame {
 			}
 		}
 
-		if (this._oppMode == OpponentMode.ONLINE && (this._lastBroadcastTimeMs === 0 || Date.now() - this._lastBroadcastTimeMs > 500)) {
+		if (this._oppMode == OpponentMode.ONLINE && (this._lastBroadcastTimeMs === 0 || Date.now() - this._lastBroadcastTimeMs > BROADCAST_INTERVAL_MS)) {
 			this.broadcastGameState();
+			this._lastBroadcastTimeMs = Date.now();
 		}
 	}
 
@@ -136,7 +139,6 @@ export class PongGame {
 			return;
 		}
 		if (this._gameStats.pnumber == this._p2.getPnumber()) {
-			console.log("hasdhfjkashdfjkahsjkdf");
 			this._gameStats.ballPosition = msg.ballPosition;
 			this._gameStats.ballVelocity = msg.ballVelocity;
 			this._gameStats.paddlePositions.left = msg.paddlePositions.left;

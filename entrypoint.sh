@@ -13,7 +13,7 @@ cat << EOF > /etc/logrotate.d/ft_transcendence
 /workspaces/ft_transcendence/logs_backend/app.log {
 	su root root
 	rotate 10
-
+	daily
 	notifempty
 	missingok
 	dateext
@@ -29,7 +29,7 @@ EOF
 # ## # run logrotate every hour at minute 0 (zero)
 service cron start
 crontab -l > crontab_new 
-echo "* * * * * /usr/sbin/logrotate /etc/logrotate.d/ft_transcendence" >> crontab_new
+echo "* * * * * /usr/sbin/logrotate -f /etc/logrotate.d/ft_transcendence" >> crontab_new
 crontab crontab_new
 rm crontab_new
 

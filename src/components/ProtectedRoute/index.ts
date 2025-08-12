@@ -5,6 +5,7 @@ import type { AuthState } from "../../lib/auth";
 import { UserPage } from "../UserPage";
 import { SettingsPage } from "../SettingsPage";
 import { GamePage } from "../GamePage";
+import { ViewPage } from "../ViewPage";
 
 interface ProtectedRouteProps {
   children?: HTMLElement[];
@@ -38,6 +39,7 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
   private hasRendered: boolean = false; // Track if we've already rendered
   private retryCount: number = 0; // Track retry attempts
   private hasRenderedCurrentPage: string = ""; // Track if we've already rendered the current page
+  private viewPageComponent: ViewPage | null = null;
 
   constructor(props?: ProtectedRouteProps) {
     super(props || { children: [] });
@@ -107,6 +109,10 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
       this.settingsPageComponent.unmount();
       this.settingsPageComponent = null;
     }
+    if (this.viewPageComponent) {
+      this.viewPageComponent.unmount();
+      this.viewPageComponent = null;
+    }
   }
 
   private renderCurrentPage(): void {
@@ -130,6 +136,11 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
     } else if (currentPath === '/user/game') {
       console.log('ProtectedRoute: Rendering GamePage');
       this.renderGamePage();
+    } else if (currentPath.startsWith('/user/')) {
+      console.log('ProtectedRoute: Rendering ViewPage');
+      const rawNick = currentPath.split('/')[2] || '';
+      const nickname = decodeURIComponent(rawNick);
+      this.renderViewPage(nickname);
     } else {
       console.log('ProtectedRoute: Rendering UserPage');
       this.renderUserPage();
@@ -221,6 +232,24 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
       gamePageComponent.mount(slot as HTMLElement);
     } else {
       console.error('ProtectedRoute: No slot found for GamePage');
+    }
+  }
+
+  private renderViewPage(nickname: string): void {
+    console.log('ProtectedRoute: renderViewPage called with', nickname);
+    const slot = this.element.querySelector('blitz-slot');
+    if (slot) {
+      slot.innerHTML = '';
+    }
+
+    if (!this.viewPageComponent) {
+      this.viewPageComponent = new ViewPage({ nickname });
+    } else {
+      this.viewPageComponent.setProps({ nickname });
+    }
+
+    if (slot) {
+      this.viewPageComponent.mount(slot as HTMLElement);
     }
   }
 

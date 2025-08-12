@@ -9,6 +9,7 @@ import { UserPage } from "./components/UserPage";
 import { SettingsPage } from "./components/SettingsPage";
 import { GamePage } from "./components/GamePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ViewPage } from "./components/ViewPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { authService } from "./lib/auth";
 import { StartGamePopUp } from "./components/StartGamePopUp";
@@ -101,6 +102,10 @@ if (app) {
 			{
 				path: "",
 				component: UserPage,
+			},
+			{
+				path: "/:nickname",
+				component: ViewPage,
 			},
 			{
 				path: "/settings",

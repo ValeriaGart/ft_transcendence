@@ -188,42 +188,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     console.log('Event listener attached using component system');
   }
 
-  /**
-   * Start AI match
-   */
-  private async startAiMatch(): Promise<void> {
-    console.log('Starting AI match...');
-    
-    try {
-      // Get current user's profile to get their nickname
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser) {
-        console.error('User not authenticated');
-        return;
-      }
-
-      // Fetch current user's profile to get nickname
-      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
-      if (!profileResponse.ok) {
-        console.error('Failed to get user profile');
-        return;
-      }
-
-      const profileData = await profileResponse.json();
-      const userNickname = profileData.nickname || `User${currentUser.id}`;
-
-      if (!userNickname || userNickname.trim() === '') {
-        console.error('User nickname not set');
-        return;
-      }
-
-      console.log('Using nickname for AI match:', userNickname);
-      // AI popup is handled by always-mounted StartGamePopUp via 'open-ai-popup' event
-      console.log('AI popup will be opened by StartGamePopUp');
-    } catch (error) {
-      console.error('Error sending AI match request:', error);
-    }
-  }
+  // removed unused startAiMatch (replaced by window 'request-ai-start' flow)
 
   /**
    * Start 1v1 match with selected friend
@@ -495,7 +460,7 @@ export class MatchComponent extends Component<MatchComponentState> {
         
         // Filter friendships to only include the current user's friendships
         const currentUser = authService.getCurrentUser();
-        const currentUserId = currentUser?.id;
+      const currentUserId = currentUser?.id;
         
         if (!currentUserId) {
           this.showError('Could not get current user ID');
@@ -754,65 +719,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     }
   }
 
-  /**
-   * Handle AI match start button click
-   * Navigates to AI game page
-   */
-  private async handleStartAiMatch(): Promise<void> {
-    try {
-      console.log('Starting AI match...');
-
-      // Get current user's profile to get their nickname
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser) {
-        this.showError('You must be logged in to start a game');
-        return;
-      }
-
-      // Fetch current user's profile to get nickname
-      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
-      if (!profileResponse.ok) {
-        this.showError('Failed to get user profile');
-        return;
-      }
-
-      const profileData = await profileResponse.json();
-      const userNickname = profileData.nickname || `User${currentUser.id}`;
-
-      if (!userNickname || userNickname.trim() === '') {
-        this.showError('Please set a nickname in your profile before starting a game');
-        return;
-      }
-
-      console.log('Using nickname for AI match:', userNickname);
-
-      const ws = WebSocketService.getInstance();
-
-      const msg = {
-        "type": 3,
-        "players": [
-          {"nick": userNickname, "ai": false},
-          {"nick": "CPU", "ai": true},
-        ],
-        "gameMode": "bestof",
-        "oppMode": "single"
-        };
-
-      console.log('Sending AI match request:', JSON.stringify(msg));
-      ws.sendMessage(JSON.stringify(msg));
-      
-      // Navigate to the game page
-      const router = Router.getInstance();
-      router.navigate('/user/game');
-    } catch (error) {
-      console.error('Error starting AI match:', error);
-      this.setState({
-        error: 'Failed to start AI match. Please try again.'
-      });
-    }
-
-    console.log('AI Match started');
-  }
+  // removed unused handleStartAiMatch (Play button uses setupStartAiMatchButton flow)
 
   /**
    * Render friendships list in the friend-list container
@@ -916,17 +823,17 @@ export class MatchComponent extends Component<MatchComponentState> {
       const selectedClass = isSelected ? 'bg-[#f2e6ff]' : '';
       const borderStyle = isSelected ? 'border-2 border-[#B784F2]' : '';
       
-      const cursorStyle = canSelect ? 'cursor-pointer' : 'cursor-default';
+      const cursorStyle = 'cursor-default';
       const friendItemClass = canSelect ? 'friend-item' : '';
       
-      return `
+       return `
         <div class="flex items-center justify-start p-2 mb-1 ${cursorStyle} hover:bg-[#f2e6ff] transition-colors duration-200 ${friendItemClass} ${borderStyle} ${selectedClass}" 
              data-friend-id="${otherUserId}"
-              ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})"` : ''}>
+             ${canSelect ? `onclick=\"window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})\"` : ''}>
           <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">
-                ${displayName}
+                <span class="hover:underline cursor-pointer" style="text-decoration-color:#B784F2" ${canSelect ? `data-nick="${displayName}"` : ''}>${displayName}</span>
                 <div class="w-2 h-2 rounded-full ${onlineStatusColor} flex-shrink-0" style="background-color: ${isOnline ? '#AEDFAD' : '#FFA9A3'};" title="${onlineStatusText}"></div>
               </div>
               <div class="text-[#81C3C3] text-xs opacity-50 ">
@@ -966,6 +873,21 @@ export class MatchComponent extends Component<MatchComponentState> {
         }
       }
     });
+
+    // Add navigation on nickname click for accepted friends
+    const container = friendListContainer.querySelector('div.w-full');
+    if (container) {
+      container.querySelectorAll('span[data-nick]').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const nickname = (e.currentTarget as HTMLElement).getAttribute('data-nick') || '';
+          if (!nickname) return;
+          const router = Router.getInstance();
+          router.navigate(`/user/${encodeURIComponent(nickname)}`);
+        });
+      });
+    }
 
 
   }

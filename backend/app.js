@@ -1,28 +1,17 @@
-// Add this to the VERY top of the first file loaded in your app
-/* import apmInit from 'elastic-apm-node';
-const apm = apmInit.start({
-  // Override service name from package.json
-  // Allowed characters: a-z, A-Z, 0-9, -, _, and space
-  serviceName: 'apm',
-
-  // Use if APM Server requires a token
-  secretToken: '',
-
-  // Use if APM Server uses API keys for authentication
-  apiKey: '',
-
-  // Set custom APM Server URL (default: http://127.0.0.1:8200)
-  serverUrl: 'http://0.0.0.0:8200',
-})
- */
-
 import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import fs from 'fs'; 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+try {
+  fs.writeFileSync('/tmp/ft_transcendence.pid', process.pid.toString());
+} catch (err) {
+  console.error('Failed to write PID file:', err);
+}
 
 // Load environment variables FIRST, before other imports
 config({ path: path.resolve(__dirname, '../.env') });
@@ -56,14 +45,29 @@ const fastifyOptions = {
     }
   }
 };
+process.on('SIGHUP', () => {
+  logStream.end();
+  logStream = fs.createWriteStream('logs_backend/app.log', { flags: 'a' });
+  logger = {
+    level: process.env.LOG_LEVEL,
+    transport: {
+      target: 'pino/file',
+      options: { destination: 'logs_backend/app.log' }
+    }
+  };
+  logger.info('Log file reopened after SIGHUP');
+});
 
 if (sslOptions) {
   fastifyOptions.https = sslOptions;
 }
 
 const app = fastify(fastifyOptions);
+
+// set up logger
 setLoggerApp(app, process.env.CONSOLE_LOG);
 log("logging setup :)");
+
 // register websocket
 await app.register(ws)
 

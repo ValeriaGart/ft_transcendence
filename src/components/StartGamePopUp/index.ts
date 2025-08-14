@@ -1,5 +1,4 @@
 import { Component } from "@blitz-ts/Component";
-import { sanitizeForTemplate } from "../../utils/sanitization";
 import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
@@ -329,8 +328,8 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         ${players.length ? `<ul class="mb-4 space-y-1">${listHtml}</ul>` : ''}
         
         <div class="mb-4">
-          <p class="text-sm text-[#81C3C3]">Game Mode: ${sanitizeForTemplate(invitationData.gameMode)}</p>
-          <p class="text-sm text-[#81C3C3]">Room ID: ${sanitizeForTemplate(invitationData.roomId)}</p>
+          <p class="text-sm text-[#81C3C3]">Game Mode: ${invitationData.gameMode}</p>
+          <p class="text-sm text-[#81C3C3]">Room ID: ${invitationData.roomId}</p>
         </div>
         
         <div class="flex space-x-4">
@@ -372,7 +371,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">Your room was created. Waiting for participants to accept...</p>
         ${listHtml}
         <div class="mb-4">
-          <p class="text-sm text-[#81C3C3]">Room ID: ${sanitizeForTemplate(infoData.roomId)}</p>
+          <p class="text-sm text-[#81C3C3]">Room ID: ${infoData.roomId}</p>
         </div>
         <div class="flex justify-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B784F2]"></div>

@@ -1,5 +1,4 @@
 import { Component } from "@blitz-ts/Component";
-import { sanitizeForTemplate } from "../../utils/sanitization";
 
 interface ErrorBoundaryProps {
     fallback?: (error: Error, errorInfo: any) => HTMLElement;
@@ -78,10 +77,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 this.element.innerHTML = '';
                 this.element.appendChild(fallbackElement);
             } else {
-                // Sanitize error messages to prevent XSS
-                const safeErrorMessage = sanitizeForTemplate(this.state.error?.message || 'Unknown error');
-                const safeErrorStack = sanitizeForTemplate(this.state.error?.stack || 'No stack trace available');
-                
                 this.element.innerHTML = `
                     <div class="fixed inset-0 flex items-center justify-center z-50 bg-red-100">
                         <div class="bg-white border border-[#EF7D77] rounded-lg p-6 max-w-md mx-4">
@@ -89,8 +84,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                             <p class="text-gray-700 mb-4">An error occurred while rendering this component.</p>
                             <details class="text-sm text-gray-600">
                                 <summary class="cursor-pointer mb-2">Error Details</summary>
-                                <pre class="bg-gray-100 p-2 rounded text-xs overflow-auto">${safeErrorMessage}</pre>
-                                <pre class="bg-gray-100 p-2 rounded text-xs overflow-auto mt-2">${safeErrorStack}</pre>
+                                <pre class="bg-gray-100 p-2 rounded text-xs overflow-auto">${this.state.error?.message || this.state.error?.stack || 'Unknown error'}</pre>
                             </details>
                             <button onclick="window.location.reload()" class="mt-4 bg-[#EF7D77] font-['Irish_Grover'] text-white px-4 py-2 rounded hover:bg-red-600">
                                 Reload Page

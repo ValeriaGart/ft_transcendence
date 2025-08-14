@@ -1,17 +1,10 @@
 import { dbRun, dbGet, dbAll } from '../config/database.js';
 import { validateNickname, nicknameExists, generateUniqueNickname, cleanNickname } from '../utils/nickname.utils.js';
-import { sanitizeInput, sanitizeObject, escapeHtml, sanitizeUrl } from '../utils/sanitization.utils.js';
 
 class ProfileService {
   static async getAllProfiles() {
     const profiles = await dbAll('SELECT * FROM profiles');
-    // Sanitize output to prevent XSS in API responses
-    return profiles.map(profile => ({
-      ...profile,
-      nickname: profile.nickname ? escapeHtml(profile.nickname) : profile.nickname,
-      bio: profile.bio ? escapeHtml(profile.bio) : profile.bio,
-      profilePictureUrl: profile.profilePictureUrl ? sanitizeUrl(profile.profilePictureUrl) : profile.profilePictureUrl
-    }));
+    return profiles;
   }
 
 
@@ -29,39 +22,16 @@ class ProfileService {
 
   static async getProfileById(id) {
     const profile = await dbGet('SELECT * FROM profiles WHERE id = ?', [id]);
-    if (!profile) return profile;
-    // Sanitize output to prevent XSS in API responses
-    return {
-      ...profile,
-      nickname: profile.nickname ? escapeHtml(profile.nickname) : profile.nickname,
-      bio: profile.bio ? escapeHtml(profile.bio) : profile.bio
-    };
+    return profile;
   }
 
   static async getProfileByUserId(userId) {
     const profile = await dbGet('SELECT * FROM profiles WHERE userId = ?', [userId]);
-    if (!profile) return profile;
-    // Sanitize output to prevent XSS in API responses
-    return {
-      ...profile,
-      nickname: profile.nickname ? escapeHtml(profile.nickname) : profile.nickname,
-      bio: profile.bio ? escapeHtml(profile.bio) : profile.bio,
-      profilePictureUrl: profile.profilePictureUrl ? sanitizeUrl(profile.profilePictureUrl) : profile.profilePictureUrl
-    };
+    return profile;
   }
 
   static async updateProfile(id, profileData) {
-    // Sanitize inputs to prevent XSS
-    const sanitizedData = sanitizeObject(profileData, ['nickname', 'bio']);
-    let { nickname, profilePictureUrl, bio } = sanitizedData;
-    
-    // Sanitize profilePictureUrl separately to prevent malicious URLs
-    if (profilePictureUrl !== undefined) {
-      profilePictureUrl = sanitizeUrl(profilePictureUrl);
-      if (profilePictureUrl === '') {
-        throw new Error('Invalid or potentially dangerous URL provided for profilePictureUrl');
-      }
-    }
+    const { nickname, profilePictureUrl, bio } = profileData;
     
     // Validate nickname if provided
     if (nickname !== undefined) {
@@ -91,7 +61,6 @@ class ProfileService {
     }
     if (profilePictureUrl !== undefined) {
       updateFields.push('profilePictureUrl = ?');
-      // Don't sanitize URLs as they have different rules
       updateValues.push(profilePictureUrl);
     }
     if (bio !== undefined) {
@@ -125,7 +94,7 @@ class ProfileService {
       throw new Error('Invalid field');
     }
 
-    // Special validation for different field types
+    // Special validation for nickname updates
     if (field === 'nickname') {
       const validation = validateNickname(value);
       if (!validation.isValid) {
@@ -141,15 +110,6 @@ class ProfileService {
       if (existingProfile) {
         throw new Error('Nickname already taken by another user');
       }
-    } else if (field === 'profilePictureUrl') {
-      // Sanitize URL to prevent malicious content
-      value = sanitizeUrl(value);
-      if (value === '') {
-        throw new Error('Invalid or potentially dangerous URL provided for profilePictureUrl');
-      }
-    } else if (field === 'bio') {
-      // Sanitize bio content
-      value = sanitizeInput(value);
     }
 
     const result = await dbRun(

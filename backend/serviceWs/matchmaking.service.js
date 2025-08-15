@@ -54,7 +54,7 @@ class MatchMakingService {
 	async startMatch(room) {
 		for (let player of room.players) {
 			if (player.id && player.wsclient) {
-				log("[startMatch] player: " + player.nick, DEBUG);
+				// log("[startMatch] player: " + player.nick, DEBUG);
 				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room, player.pnumber));
 			}
 		}

@@ -14,6 +14,10 @@ services:
       - transcendence_net
     volumes:
       - ./db.sqlite:/workspaces/ft_transcendence/db.sqlite
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./logs_backend:/workspaces/ft_transcendence/logs_backend
+
     healthcheck:
       test: ["CMD", "/workspaces/ft_transcendence/healthcheck.sh"]
       interval: 10s
@@ -189,7 +193,7 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
     volumes:
-      - ./devops/mylogs/logstash-tutorial-dataset:/usr/share/filebeat/mylogs/logstash-tutorial-dataset.log
+      - ./logs_backend:/usr/share/filebeat/logs_backend
       - ./devops/filebeat/config/filebeat.example.yml:/usr/share/filebeat/filebeat.yml
     depends_on:
       kibana:

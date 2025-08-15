@@ -38,7 +38,7 @@ class WebsocketService {
 				sender: '__server',
 				message: `id ${connection.userId} left`
 			});
-			await sleep (WebsocketService.WS_TIMEOUT_DISCONNECT);
+			await sleep (this.WS_TIMEOUT_DISCONNECT);
 			this.matchMakingService.disconnectPlayerFromAllRooms(connection);
 		});
 	}

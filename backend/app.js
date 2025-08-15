@@ -41,17 +41,29 @@ import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import ws from '@fastify/websocket';
+import { log, setLoggerApp } from './utils/logger.utils.js';
 
 // Initialize SSL configuration
 const sslOptions = getSSLOptions();
-const fastifyOptions = { logger: true };
+
+// // logging setup
+const fastifyOptions = {
+  logger: {
+    level: process.env.LOG_LEVEL,
+    transport: {
+      target: 'pino/file',
+      options: { destination: 'logs_backend/app.log' }
+    }
+  }
+};
 
 if (sslOptions) {
   fastifyOptions.https = sslOptions;
 }
 
 const app = fastify(fastifyOptions);
-
+setLoggerApp(app, process.env.CONSOLE_LOG);
+log("logging setup :)");
 // register websocket
 await app.register(ws)
 
@@ -89,6 +101,7 @@ await app.register(matchRoutes);
 await app.register(websocketRoutes);
 await app.register(healthRoutes);
 
+
 async function bootstrap() {
   try {
     await initialize();
@@ -98,15 +111,15 @@ async function bootstrap() {
     
     await app.listen({ port, host: '0.0.0.0' });
     
-    console.log(`🚀 Server running on ${protocol}://localhost:${port}`);
+    log(`🚀 Server running on ${protocol}://localhost:${port}`, "info");
     
     if (sslOptions) {
-      console.log('🔐 HTTPS enabled with self-signed certificate');
-      console.log('⚠️  Browsers will show security warnings for development certificates');
+      log('🔐 HTTPS enabled with self-signed certificate', "info");
+      log('⚠️  Browsers will show security warnings for development certificates', "info");
     }
     
   } catch (err) {
-    app.log.error(err);
+    log(err, "error");
     process.exit(1);
   }
 }

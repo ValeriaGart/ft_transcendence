@@ -55,6 +55,8 @@ export class Tournament {
 	
 	public battleOne(): void {
 		this.resetSide();
+		this._players[this._p1].setHost(true);
+		this._players[this._p2].setHost(false);
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 1);
@@ -63,6 +65,8 @@ export class Tournament {
 	
 	public battleTwo(): void {
 		this.resetSide();
+		this._players[this._p3].setHost(true);
+		this._players[this._p4].setHost(false);
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 2);
@@ -113,6 +117,8 @@ export class Tournament {
 		}
 
 
+		this._players[this._p3].setHost(true);
+		this._players[this._p4].setHost(false);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 3);
 		this.logPlayerStatus();
@@ -120,6 +126,8 @@ export class Tournament {
 
 	public battleFour(): void {
 		this.resetSide();
+		this._players[this._p1].setHost(true);
+		this._players[this._p2].setHost(false);
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 4);

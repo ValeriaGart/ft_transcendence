@@ -139,24 +139,41 @@ export class PongGame {
 			return;
 		}
 		if (this._gameStats.pnumber == this._p2.getPnumber()) {
-			this._gameStats.ballPosition = msg.ballPosition;
-			this._gameStats.ballVelocity = msg.ballVelocity;
 			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
 			this._gameStats.scores = msg.scores;
+			if (this._gameStats.ballPosition.x <= this._engine._canvas.width / 2) {
+				this._gameStats.ballPosition = msg.ballPosition;
+				this._gameStats.ballVelocity = msg.ballVelocity;
+			}
 		}
 		if (this._gameStats.pnumber == this._p1.getPnumber()) {
 			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
+			if (this._gameStats.ballPosition.x > this._engine._canvas.width / 2) {
+				this._gameStats.ballPosition = msg.ballPosition;
+				this._gameStats.ballVelocity = msg.ballVelocity;
+			}
 		}
 	}
 
 	private sendFinishMessage() {
-		const msg = {
-			"type": 5,
-			"roomId": this._engine._roomID,
-			"status": "finished"
+		if (this._gameStats.pnumber == this._p1.getPnumber() && this._mode == GameMode.BEST_OF && this._oppMode == OpponentMode.ONLINE) {
+			const msg = {
+				"type": 6,
+				"roomId": this._engine._roomID,
+				"players": [{ "nick": this._p1.getName(), "score": this._gameStats.scores.left }, { "nick": this._p2.getName(), "score": this._gameStats.scores.right }]
+			}
+			console.log('Sending finish & save match msg:', JSON.stringify(msg));
+			this._engine._ws.sendMessage(JSON.stringify(msg));
 		}
-		console.log('Sending finish match msg:', JSON.stringify(msg));
-		this._engine._ws.sendMessage(JSON.stringify(msg));
+		else {
+			const msg = {
+				"type": 5,
+				"roomId": this._engine._roomID,
+				"status": "finished"
+			}
+			console.log('Sending finish match msg:', JSON.stringify(msg));
+			this._engine._ws.sendMessage(JSON.stringify(msg));
+		}
 	}
 
 	private checkWinCondition(): boolean {

@@ -99,6 +99,14 @@ export function validatePassword(password) {
     errors.push(`Password must be at least ${AUTH_CONFIG.PASSWORD.MIN_LENGTH} characters long`);
   }
   
+  if (password.length > AUTH_CONFIG.PASSWORD.MAX_LENGTH) {
+    errors.push(`Password must be no more than ${AUTH_CONFIG.PASSWORD.MAX_LENGTH} characters long`);
+  }
+  
+  if (password.includes(' ')) {
+    errors.push('Password must not contain spaces');
+  }
+  
   if (AUTH_CONFIG.PASSWORD.REQUIRE_UPPERCASE && !/[A-Z]/.test(password)) {
     errors.push('Password must contain at least one uppercase letter');
   }
@@ -109,10 +117,6 @@ export function validatePassword(password) {
   
   if (AUTH_CONFIG.PASSWORD.REQUIRE_NUMBERS && !/\d/.test(password)) {
     errors.push('Password must contain at least one number');
-  }
-  
-  if (AUTH_CONFIG.PASSWORD.REQUIRE_SPECIAL && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push('Password must contain at least one special character');
   }
   
   return {

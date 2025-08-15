@@ -4,6 +4,7 @@ import InvitationService from "./invitation.service.js";
 import RoomUtilsService from "./roomutils.service.js";
 import RoomValidationService from "./roomvalidation.service.js";
 import MatchService from "../services/match.service.js";
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 const timeoutSec = 30;
 
@@ -13,11 +14,11 @@ function sleep(ms) {
 
 class MatchMakingService {
     constructor(websocketService) {
+		log("[MatchMakingService constructor]", DEBUG);
 		this.EmojiService = new EmojiService();
 		this.WebsocketService = websocketService;
 		this.RoomService = new RoomService(this.WebsocketService, this.EmojiService);
 		
-		console.log("[MatchMakingService] constructor");
     }
 
 	createStartMatchMessage(room, playernumber) {

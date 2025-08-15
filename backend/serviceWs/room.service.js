@@ -1,10 +1,10 @@
-
 import ProfileService from "../services/profile.service.js";
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 
 class RoomService {
 	constructor(websocketService, emojiService) {
-		console.log("[RoomService] constructor");
+		log("[RoomService constructor]", DEBUG);
 		this.rooms = [];
 		this.WebsocketService = websocketService;
 		this.EmojiService = emojiService;

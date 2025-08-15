@@ -11,10 +11,10 @@ class WebsocketService {
 	static WS_TIMEOUT_DISCONNECT = 5000;
 	
 	constructor(websocketServer) {
+		log("[WebsocketService constructor]", DEBUG);
         this.websocketServer = websocketServer;
 		this.matchMakingService = new MatchMakingService(this);
 		this.invitationService = new InvitationService(this);
-
 
     }
 

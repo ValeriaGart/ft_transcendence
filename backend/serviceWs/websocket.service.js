@@ -56,7 +56,7 @@ class WebsocketService {
 				}
 
 				if (parsedMessage.type === 1) {
-					log("[handleMessage] type 1: message")
+					log("[handleMessage] type 1: message", DEBUG)
 					if (!parsedMessage.message) {
 						throw new Error ("Parsing: Invalid message: 'message' field is missing or empty");
 					}
@@ -67,18 +67,18 @@ class WebsocketService {
 					}, connection);
 				}
 				else if (parsedMessage.type === 2) {
-					log("[handleMessage] type 2: online friend status");
+					log("[handleMessage] type 2: online friend status", DEBUG);
 					this.onlineFriends(connection);
 				}
 				else if (parsedMessage.type === 3) {
-					log("[handleMessage] type 3: match invitation");
+					log("[handleMessage] type 3: match invitation", DEBUG);
 					if (!parsedMessage.players || !parsedMessage.gameMode || !parsedMessage.oppMode) {
 						throw new Error ("Parsing: Invalid message: 'players', 'matchType' or 'oppMode' field is missing or empty");
 					}
 					this.matchMakingService.matchMakingInit(connection, parsedMessage);
 				}
 				else if (parsedMessage.type === 4) {
-					log("[handleMessage] type 4: accept match invitation");
+					log("[handleMessage] type 4: accept match invitation", DEBUG);
 					if (!parsedMessage.roomId || !parsedMessage.acceptance) {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'acceptance' field is missing or empty");
 					}
@@ -86,31 +86,31 @@ class WebsocketService {
 					this.invitationService.matchMakingAcceptInvitation(connection, parsedMessage);
 				}
 				else if (parsedMessage.type === 5) {
-					log("[handleMessage] type 5: cancel or finish match (without saving to database)");
+					log("[handleMessage] type 5: cancel or finish match (without saving to database)", DEBUG);
 					if (!parsedMessage.roomId || !parsedMessage.status) {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'status' field is missing or empty");
 					}
 					this.matchMakingService.cancelMatch(connection, parsedMessage);
 				}
 				else if (parsedMessage.type === 6) {
-					log("[handleMessage] type 6: finish match, saving to database");
+					log("[handleMessage] type 6: finish match, saving to database", DEBUG);
 					if (!parsedMessage.roomId || !parsedMessage.players) {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'players' field is missing or empty");
 					}
 					this.matchMakingService.saveFinishMatch(connection, parsedMessage);
 				}
 				else if (parsedMessage.type === 7) {
-					log("[handleMessage] type 7: remote game messaging");
+					// log("[handleMessage] type 7: remote game messaging", DEBUG);
 					if (!parsedMessage.roomId || !parsedMessage._gameState) {
 						throw new Error ("Parsing: Invalid message: 'roomId' or 'gameState' field is missing or empty");
 					}
 					this.matchMakingService.remoteMessageForwarding(parsedMessage.roomId, parsedMessage._gameState, connection);
 				}
 				else {
-					log("[handleMessage] unknown type");
+					log("[handleMessage] unknown type", WARN);
 				}
 			} catch (error) {
-				log("Error occurring in WebsocketService: " + error.message, "error");
+				log("Error occurring in WebsocketService: " + error.message, ERROR);
 				await this.sendMessageToClient(connection, {
 					type: "ERROR",
 					sender: "__server",
@@ -171,11 +171,11 @@ class WebsocketService {
 
 	async sendMessageToClient(client, message) {
 		if (!client) {
-			log("Don't send undefined clients to sendMessageToClient function :(", ERROR);
+			log("Don't send undefined clients to sendMessageToClient function :(", WARN);
 			return ;
 		}
 		if (!message) {
-			log("Don't send undefined message to sendMessageToClient function :(", ERROR);
+			log("Don't send undefined message to sendMessageToClient function :(", WARN);
 			return ;
 		}
 		client.send(JSON.stringify(message));

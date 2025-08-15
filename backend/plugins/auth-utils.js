@@ -122,7 +122,32 @@ export function validatePassword(password) {
 }
 
 export function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // More comprehensive email validation
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+  
+  if (email.length > 254) {
+    return false;
+  }
+  
+  const localPart = email.split('@')[0];
+  if (localPart.length > 64) {
+    return false;
+  }
+  
+  const parts = email.split('@');
+  if (parts.length !== 2) {
+    return false;
+  }
+  const domainPart = parts[1];
+  if (domainPart.length > 253) {
+    return false;
+  }
+  
+  // Regex validation
   return emailRegex.test(email);
 }
 

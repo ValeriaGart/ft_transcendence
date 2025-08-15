@@ -1,13 +1,13 @@
 import RoomUtilsService from "./roomutils.service.js";
 import sleep from "../utils/sleep.utils.js";
-import { log } from '../utils/logger.utils.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 class InvitationService {
 	constructor(websocketService) {
+		log("[InvitationService constructor]", DEBUG);
 		this.websocketService = websocketService;
 		this.matchMakingService = websocketService.matchMakingService;
 		this.roomService = this.matchMakingService.RoomService;
-		log("[InvitationService] constructor");
 		
 	}
 
@@ -29,7 +29,7 @@ class InvitationService {
 	}
 
 	static async sendInvitation(websocketService, room) {
-		console.log("[InvitationService] sending invitations");
+		log("[InvitationService] sending invitations", DEBUG);
 
 		const pendingPlayers = RoomUtilsService.getAllPendingPlayerNicksRoom(room);
 		for (let p of room.players) {
@@ -46,29 +46,29 @@ class InvitationService {
 
 	
 	async matchMakingAcceptInvitation(connection, message) {
-		console.log("[InvitationService] accept invitation");
+		log("[InvitationService] accept invitation", DEBUG);
 		let room = await RoomUtilsService.roomExists(this.roomService.rooms, message.roomId);
 		if (!room) {
-			console.log("[InvitationService] room doesn't exist");
+			log("[InvitationService] room doesn't exist", INFO);
 			await this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to doesn't exist.`));
 			return ;
 		}
 		else {
-			console.log("[InvitationService] room exists");
+			log("[InvitationService] room exists", DEBUG);
 		}
 		
  		let areUEvenInvitedBro = await RoomUtilsService.isPlayerInvited(room, connection);
 		if (areUEvenInvitedBro === false) {
-			console.log("[InvitationService] bro wasn't even invited");
+			log("[InvitationService] bro wasn't even invited", INFO);
 			await this.websocketService.sendMessageToClient(connection, this.websocketService.createErrorMessage(`The room you want to reply invitation to did not invite you.`));
 			return ;
 		}
 		else {
-			console.log("[InvitationService] bro was invited");
+			log("[InvitationService] bro was invited", DEBUG);
 		}
 
 		RoomUtilsService.setPlayerAcceptance(room, connection.userId, message.acceptance);
-		console.log(`userId ${connection.userId} replied this to invitation: ${message.acceptance}.`);
+		log(`userId ${connection.userId} replied this to invitation: ${message.acceptance}.`, DEBUG);
 	}
 
 	static async allAccepted(room) {
@@ -85,6 +85,7 @@ class InvitationService {
 
 
 	static async allAcceptedPromiseHandler(room, timeoutSec) {
+		log("[InvitationService] allAcceptedPromiseHandler", DEBUG);
 		let count = 0;
 		const promiseAllAccepted = new Promise (async (resolve, reject) => {
 			while (true) {

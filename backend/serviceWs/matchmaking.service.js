@@ -4,6 +4,7 @@ import InvitationService from "./invitation.service.js";
 import RoomUtilsService from "./roomutils.service.js";
 import RoomValidationService from "./roomvalidation.service.js";
 import MatchService from "../services/match.service.js";
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 const timeoutSec = 30;
 
@@ -13,11 +14,11 @@ function sleep(ms) {
 
 class MatchMakingService {
     constructor(websocketService) {
+		log("[MatchMakingService constructor]", DEBUG);
 		this.EmojiService = new EmojiService();
 		this.WebsocketService = websocketService;
 		this.RoomService = new RoomService(this.WebsocketService, this.EmojiService);
 		
-		console.log("[MatchMakingService] constructor");
     }
 
 	createStartMatchMessage(room, playernumber) {
@@ -53,7 +54,7 @@ class MatchMakingService {
 	async startMatch(room) {
 		for (let player of room.players) {
 			if (player.id && player.wsclient) {
-				console.log("[startMatch] player: ", player.nick);
+				// log("[startMatch] player: " + player.nick, DEBUG);
 				await this.WebsocketService.sendMessageToClient(player.wsclient, this.createStartMatchMessage(room, player.pnumber));
 			}
 		}
@@ -62,10 +63,10 @@ class MatchMakingService {
 	
 
 	async matchMakingInit(connection, message) {
-		console.log("[matchMakingInit] start");
+		log("[matchMakingInit] start", DEBUG);
 		
 		if (RoomValidationService.roomValidation(message) === false) {
-			console.log("[matchMakingInit] Room could not be validated");
+			log("[matchMakingInit] Room could not be validated", WARN);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
@@ -77,7 +78,7 @@ class MatchMakingService {
 		if (this.RoomService.rooms.length > 0)
 		{
 			if (await RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
-				console.log("[matchMakingInit] some of the players are busy, cancelling match");
+				log("[matchMakingInit] some of the players are busy, cancelling match", INFO);
 				await this.WebsocketService.sendMessageToClient(connection, {
 					type: "ERROR",
 					sender: "__server",
@@ -94,7 +95,7 @@ class MatchMakingService {
 			roomStorage = newRoom;
 
 		} catch (error) {
-			console.error("Error: ", error.message);
+			log("Error: " + error.message, ERROR);
 
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
@@ -119,7 +120,7 @@ class MatchMakingService {
 
 			await this.startMatch(newRoom);
 		} catch (error) {
-			console.error("Error: ", error.message);
+			log("Error: " + error.message, ERROR);
 
 			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, roomStorage, this.createCancelMatchMessage(roomStorage));
 			this.RoomService.destroyRoom(roomStorage.id);
@@ -129,6 +130,7 @@ class MatchMakingService {
 	
 	
 	async cancelMatch(connection, message) {
+		log("[matchMakingService] cancelmatch", DEBUG);
 		try {
 
 			let room = await RoomUtilsService.roomExists(this.RoomService.rooms, message.roomId);
@@ -148,7 +150,7 @@ class MatchMakingService {
 			}
 			await this.RoomService.destroyRoom(room.id);
 		} catch (error) {
-			console.error(error.message);
+			log(error.message, ERROR);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
@@ -156,9 +158,11 @@ class MatchMakingService {
 			});
 
 		}
+		log(`[MatchMakingService] match was ${message.status}`, INFO);
 	}
 	
 	async saveFinishMatch(connection, message) {
+		log("[matchMakingService] saveFinishMatch", DEBUG);
 		let room;
 		try {
 
@@ -171,7 +175,7 @@ class MatchMakingService {
 			}
 			
 		} catch (error) {
-			console.error(error.message);
+			log(error.message, ERROR);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
@@ -191,7 +195,7 @@ class MatchMakingService {
 			const nicks = message.players.map(player => player.nick);
 			const [p1_nick, p2_nick] = nicks;
 			if (p1_nick !== player1.nick || p2_nick !== player2.nick) {
-				console.log(`player1 room: ${player1.nick} message: ${p1_nick}\nplayer2 room: ${player2.nick} message: ${p2_nick}`);
+				log(`player1 room: ${player1.nick} message: ${p1_nick}\nplayer2 room: ${player2.nick} message: ${p2_nick}`, WARN);
 				throw new Error ("[saveFinishMatch] player nicks don't match up with room data");
 			}
 				
@@ -202,7 +206,7 @@ class MatchMakingService {
 			await MatchService.insertMatch(player1.wsclient.userId, player2.wsclient.userId, p1_score, p2_score, room.gameMode);
 		
 		} catch (error) {
-			console.error(error.message);
+			log(error.message, ERROR);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
@@ -216,12 +220,13 @@ class MatchMakingService {
 	}
 
 	async disconnectPlayerFromAllRooms(connection) {
+		log("[matchMakingService] disconnectPlayerFromAllRooms", DEBUG);
 		let rooms = this.RoomService.rooms;
 		let deleteRooms = [];
 		for (let r of rooms) {
 			for (let p of r.players) {
 				if (p.id === connection.userId && p.wsclient === connection) {
-					console.log(`[disconnect] disconnected user ${p.id} from room ${r.id}, cancelling room`);
+					log(`[disconnect] disconnected user ${p.id} from room ${r.id}, cancelling room`, INFO);
 					deleteRooms.push(r);
 				}
 			}
@@ -233,6 +238,7 @@ class MatchMakingService {
 	}
 
 	reconnectPlayerToAllRooms(connection) {
+		log("[matchMakingService] reconnectPlayerToAllRooms", DEBUG);
 		let rooms = this.RoomService.rooms;
 		for (let r of rooms) {
 			RoomUtilsService.reconnectPlayerToRoom(r, connection);
@@ -243,7 +249,7 @@ class MatchMakingService {
 	async remoteMessageForwarding(roomId, gamestate, connection) {
 		let room = RoomUtilsService.roomExists(this.RoomService.rooms, roomId);
 		if (!room) {
-			console.log("error, room doesn't exist");
+			log("[MatchMakingService] remoteMessageForwarding: Room doesn't exist", WARN);
 			return ;
 		}
 		await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, room, gamestate, connection);

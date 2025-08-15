@@ -38,6 +38,8 @@ import authRoutes from './routes/auth.routes.js';
 import websocketRoutes from './routes/websocket.routes.js';
 import healthRoutes from './routes/health.routes.js';
 import authPlugin from './plugins/auth.js';
+import { xssProtectionPlugin } from './middlewares/xss-protection.js';
+import { cspPlugin } from './middlewares/csp.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import ws from '@fastify/websocket';
@@ -81,6 +83,12 @@ await app.register(cors, {
 
 // Register auth plugin
 await app.register(authPlugin);
+
+// Register XSS protection middleware
+await app.register(xssProtectionPlugin);
+
+// Register CSP middleware
+await app.register(cspPlugin);
 
 // Global rate limiting with sensible defaults
 await app.register(import('@fastify/rate-limit'), {

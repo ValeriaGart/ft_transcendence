@@ -1,4 +1,5 @@
 import UserService from '../services/user.service.js';
+import { sanitizeInput } from '../utils/sanitization.utils.js';
 
 class UserController {
   static async getAllUsers(request, reply) {
@@ -113,7 +114,13 @@ class UserController {
 
   static async createUser(request, reply) {
     try {
-      const user = await UserService.createUser(request.body);
+      // Sanitize user input individually
+      const sanitizedBody = { ...request.body };
+      if (sanitizedBody.email) sanitizedBody.email = sanitizeInput(sanitizedBody.email);
+      if (sanitizedBody.name) sanitizedBody.name = sanitizeInput(sanitizedBody.name);
+      // Note: passwordString is not sanitized as it's hashed, not displayed
+      
+      const user = await UserService.createUser(sanitizedBody);
       reply.code(201);
       return {
         success: true,
@@ -134,7 +141,14 @@ class UserController {
   static async updateUser(request, reply) {
     try {
       const { id } = request.params;
-      const user = await UserService.updateUser(id, request.body);
+      
+      // Sanitize user input individually
+      const sanitizedBody = { ...request.body };
+      if (sanitizedBody.email) sanitizedBody.email = sanitizeInput(sanitizedBody.email);
+      if (sanitizedBody.name) sanitizedBody.name = sanitizeInput(sanitizedBody.name);
+      // Note: passwordString is not sanitized as it's hashed, not displayed
+      
+      const user = await UserService.updateUser(id, sanitizedBody);
       
       return {
         success: true,
@@ -162,12 +176,15 @@ class UserController {
       const { id } = request.params;
       const { email, passwordString } = request.body;
       
+      // Sanitize inputs
+      const sanitizedEmail = email ? sanitizeInput(email) : undefined;
+      
       let user;
       
-      if (email && passwordString) {
-        user = await UserService.updateUser(id, { email, passwordString });
-      } else if (email) {
-        user = await UserService.updateUserEmail(id, email);
+      if (sanitizedEmail && passwordString) {
+        user = await UserService.updateUser(id, { email: sanitizedEmail, passwordString });
+      } else if (sanitizedEmail) {
+        user = await UserService.updateUserEmail(id, sanitizedEmail);
       } else if (passwordString) {
         user = await UserService.updateUserPassword(id, passwordString);
       } else {
@@ -199,7 +216,11 @@ class UserController {
   static async loginUser(request, reply) {
     try {
       const { email, passwordString } = request.body;
-      const user = await UserService.authenticateUser(email, passwordString);
+      
+      // Sanitize email input
+      const sanitizedEmail = sanitizeInput(email);
+      
+      const user = await UserService.authenticateUser(sanitizedEmail, passwordString);
       
       if (!user) {
         reply.code(401);

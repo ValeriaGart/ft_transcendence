@@ -1,21 +1,3 @@
-// Add this to the VERY top of the first file loaded in your app
-/* import apmInit from 'elastic-apm-node';
-const apm = apmInit.start({
-  // Override service name from package.json
-  // Allowed characters: a-z, A-Z, 0-9, -, _, and space
-  serviceName: 'apm',
-
-  // Use if APM Server requires a token
-  secretToken: '',
-
-  // Use if APM Server uses API keys for authentication
-  apiKey: '',
-
-  // Set custom APM Server URL (default: http://127.0.0.1:8200)
-  serverUrl: 'http://0.0.0.0:8200',
-})
- */
-
 import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -62,8 +44,10 @@ if (sslOptions) {
 }
 
 const app = fastify(fastifyOptions);
+// finish logging setup
 setLoggerApp(app, process.env.CONSOLE_LOG);
 log("logging setup :)");
+
 // register websocket
 await app.register(ws)
 

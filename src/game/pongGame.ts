@@ -156,7 +156,7 @@ export class PongGame {
 	}
 
 	private sendFinishMessage() {
-		if (this._gameStats.pnumber == this._p1.getPnumber()) {
+		if (this._gameStats.pnumber == this._p1.getPnumber() && this._mode == GameMode.BEST_OF && this._oppMode == OpponentMode.ONLINE) {
 			const msg = {
 				"type": 6,
 				"roomId": this._engine._roomID,

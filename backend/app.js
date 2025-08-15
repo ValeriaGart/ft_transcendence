@@ -2,16 +2,9 @@ import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import fs from 'fs'; 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-try {
-  fs.writeFileSync('/tmp/ft_transcendence.pid', process.pid.toString());
-} catch (err) {
-  console.error('Failed to write PID file:', err);
-}
 
 // Load environment variables FIRST, before other imports
 config({ path: path.resolve(__dirname, '../.env') });
@@ -45,26 +38,13 @@ const fastifyOptions = {
     }
   }
 };
-process.on('SIGHUP', () => {
-  logStream.end();
-  logStream = fs.createWriteStream('logs_backend/app.log', { flags: 'a' });
-  logger = {
-    level: process.env.LOG_LEVEL,
-    transport: {
-      target: 'pino/file',
-      options: { destination: 'logs_backend/app.log' }
-    }
-  };
-  logger.info('Log file reopened after SIGHUP');
-});
 
 if (sslOptions) {
   fastifyOptions.https = sslOptions;
 }
 
 const app = fastify(fastifyOptions);
-
-// set up logger
+// finish logging setup
 setLoggerApp(app, process.env.CONSOLE_LOG);
 log("logging setup :)");
 

@@ -1,3 +1,5 @@
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
+
 class RoomUtilsService {
 	static async getAllAcceptedPlayerNicksRoom(room) {
 		const playerNicksRoom = [];
@@ -26,14 +28,11 @@ class RoomUtilsService {
 	static async playersBusy(rooms, players) {
 		for (let room of rooms) {
 			const playerNicks = await this.getAllAcceptedPlayerNicksRoom(room);
-			// console.log("[playersBusy] accepted playerNicks: ", playerNicks);
 			for (let player of players) {
 				if (player.ai === true) {
 					continue ;
 				}
-				console.log("[playersBusy] checking player: ", player.nick);
 				if (playerNicks.includes(player.nick)) {
-					console.log("someone is busy: ", player.nick);
 					return true; // Player is busy
 				}
 			}
@@ -81,7 +80,7 @@ class RoomUtilsService {
 
 
 	static async sendMessageToAllPlayers(websocketService, room, message, connection = null) {
-    console.log("[sendMessageToAllPlayers]");
+    log("[RoomUtils] sendMessageToAllPlayers", DEBUG);
 
 		for (let p of room.players) {
 			if (p.ai == true) {
@@ -99,13 +98,11 @@ class RoomUtilsService {
 		for (let p of room.players) {
 			if (p.id === connection.userId) {
 				p.wsclient = connection;
-				console.log(`[reconnect] reconnected user ${p.id} to room ${room.id}`);
-				break ;
+				log(`[reconnectPlayerToRoom] reconnected user ${p.id} to room ${room.id}`, DEBUG);
+				return ;
 			}
 		}
 	}
-
-	
 }
 
 export default RoomUtilsService;

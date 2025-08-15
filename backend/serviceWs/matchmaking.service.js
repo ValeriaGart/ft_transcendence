@@ -158,6 +158,7 @@ class MatchMakingService {
 			});
 
 		}
+		log(`[MatchMakingService] match was ${message.status}`, INFO);
 	}
 	
 	async saveFinishMatch(connection, message) {
@@ -237,6 +238,7 @@ class MatchMakingService {
 	}
 
 	reconnectPlayerToAllRooms(connection) {
+		log("[matchMakingService] reconnectPlayerToAllRooms", DEBUG);
 		let rooms = this.RoomService.rooms;
 		for (let r of rooms) {
 			RoomUtilsService.reconnectPlayerToRoom(r, connection);

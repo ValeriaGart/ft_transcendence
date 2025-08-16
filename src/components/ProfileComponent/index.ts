@@ -214,13 +214,24 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       let profilePictureUrl = 'profile_no.svg';
       if (profileData.profilePictureUrl) {
         console.log('ProfileComponent: Processing profilePictureUrl:', profileData.profilePictureUrl);
-        if (profileData.profilePictureUrl.startsWith('http://') || profileData.profilePictureUrl.startsWith('https://')) {
-          // External URL - use default profile picture
-          console.log('ProfileComponent: External URL detected, using default profile picture');
+        if (profileData.profilePictureUrl.startsWith('http://') || 
+            profileData.profilePictureUrl.startsWith('https://') ||
+            profileData.profilePictureUrl.startsWith('javascript:') ||
+            profileData.profilePictureUrl.startsWith('data:') ||
+            profileData.profilePictureUrl.includes('<') ||
+            profileData.profilePictureUrl.includes('>')) {
+          // External URL or dangerous content - use default profile picture
+          console.log('ProfileComponent: External URL or dangerous content detected, using default profile picture');
           profilePictureUrl = 'profile_no.svg';
         } else {
           const urlParts = profileData.profilePictureUrl.split('/');
-          profilePictureUrl = urlParts[urlParts.length - 1];
+          const filename = urlParts[urlParts.length - 1];
+          // Only allow safe filename characters
+          if (/^[a-zA-Z0-9_.-]+\.(svg|png|jpg|jpeg|gif)$/.test(filename)) {
+            profilePictureUrl = filename;
+          } else {
+            profilePictureUrl = 'profile_no.svg';
+          }
           console.log('ProfileComponent: Using local filename:', profilePictureUrl);
         }
       }

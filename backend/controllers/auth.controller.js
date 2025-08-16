@@ -6,6 +6,7 @@ import {
   validateEmail,
   AUTH_CONFIG 
 } from '../plugins/auth-utils.js';
+import { sanitizeInput } from '../utils/sanitization.utils.js';
 
 class AuthController {
   static async googleSignup(request, reply) {
@@ -110,7 +111,11 @@ class AuthController {
     try {
       const { email, password, name } = request.body;
 
-      if (!validateEmail(email)) {
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeInput(email);
+      const sanitizedName = sanitizeInput(name);
+
+      if (!validateEmail(sanitizedEmail)) {
         reply.code(400);
         return { error: 'Invalid email format' };
       }
@@ -121,16 +126,16 @@ class AuthController {
         return { error: 'Password validation failed', details: passwordValidation.errors };
       }
 
-      const existingUser = await AuthService.findUserByEmail(email);
+      const existingUser = await AuthService.findUserByEmail(sanitizedEmail);
       if (existingUser) {
         reply.code(409);
         return { error: 'User with this email already exists' };
       }
 
       const user = await AuthService.createPasswordUser({
-        email,
+        email: sanitizedEmail,
         password,
-        name: name || email.split('@')[0] // Use email prefix as default name
+        name: sanitizedName || sanitizedEmail.split('@')[0] // Use email prefix as default name
       });
       return {
         success: true,
@@ -151,12 +156,15 @@ class AuthController {
     try {
       const { email, password } = request.body;
 
-      if (!validateEmail(email)) {
+      // Sanitize email input
+      const sanitizedEmail = sanitizeInput(email);
+
+      if (!validateEmail(sanitizedEmail)) {
         reply.code(400);
         return { error: 'Invalid email format' };
       }
 
-      const user = await AuthService.findUserByEmail(email);
+      const user = await AuthService.findUserByEmail(sanitizedEmail);
       if (!user) {
         reply.code(401);
         return { error: 'Invalid email or password' };

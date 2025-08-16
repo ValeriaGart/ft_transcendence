@@ -2,8 +2,9 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
-import { authService, type User } from "../../lib/auth";
+import { authService } from "../../lib/auth";
 import { WebSocketService } from "../../lib/webSocket";
+import { escapeHtml } from "../../utils/html-escape";
 
 interface StartGamePopUpState {
   showError: boolean;
@@ -129,9 +130,10 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           console.log('Match was cancelled (declined or timed out).');
           // Keep popup open but replace content with decline message and who declined if available
           const declinedByNick = this.state.invitationData?.players?.find((p: any) => p.accepted === 'declined')?.nick;
+          const baseMessage = parsedData.message || 'Invitation declined or match was cancelled.';
           const message = declinedByNick
-            ? `Invitation declined by ${declinedByNick}.`
-            : (parsedData.message || 'Invitation declined or match was cancelled.');
+            ? `Invitation declined by ${escapeHtml(declinedByNick)}.`
+            : escapeHtml(baseMessage);
 
           const content = this.element.querySelector('.text-center') as HTMLElement | null;
           if (content) {
@@ -318,7 +320,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
       const players = Array.isArray(invitationData.players) ? invitationData.players : [];
       const isTournament = players.length === 4;
       const title = isTournament ? 'Tournament Invitation' : '1v1 Invitation';
-      const listHtml = players.map((p: any) => `<li class="text-[#81C3C3]">${p.nick}${p.ai ? ' (AI)' : ''}</li>`).join('');
+      const listHtml = players.map((p: any) => `<li class="text-[#81C3C3]">${escapeHtml(p.nick)}${p.ai ? ' (AI)' : ''}</li>`).join('');
       popupContent.innerHTML = `
         <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">${title}</h2>
         

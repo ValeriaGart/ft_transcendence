@@ -330,7 +330,7 @@ export class SignUpPage extends Component<SignUpPageState> {
             window.handleGoogleCredentialResponse = this.handleCredentialResponse.bind(this);
 
             window.google.accounts.id.initialize({
-                client_id: '921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com',
+                client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
                 callback: window.handleGoogleCredentialResponse,
                 auto_select: false,
                 cancel_on_tap_outside: true,

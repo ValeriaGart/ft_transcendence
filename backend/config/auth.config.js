@@ -2,7 +2,7 @@
 export const AUTH_CONFIG = {
   JWT: {
     SECRET: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
-    EXPIRES_IN: '1h',
+    EXPIRES_IN: '7d',
     ALGORITHM: 'HS256',
     ISSUER: 'ft-transcendence',
     AUDIENCE: 'ft-transcendence-users'
@@ -26,10 +26,9 @@ export const AUTH_CONFIG = {
     COOKIE_NAME: 'auth-token',
     COOKIE_OPTIONS: {
       httpOnly: true,
-      secure: process.env.SSL_ENABLED === 'true',
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 1000, // 1 hour
-      path: '/' // Accessible across the entire domain
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     }
   },
 

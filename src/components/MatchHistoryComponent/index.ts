@@ -14,6 +14,10 @@ interface MatchHistoryComponentState {
   totalPages: number;
   stats: MatchStats | null;
   currentUser: User | null;
+  hasMatches: boolean;
+  noMatches: boolean;
+  showPagination: boolean;
+  hasStats: boolean;
 }
 
 export class MatchHistoryComponent extends Component<MatchHistoryComponentState> {
@@ -27,16 +31,32 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
     totalMatches: 0,
     totalPages: 0,
     stats: null,
-    currentUser: null
+    currentUser: null,
+    hasMatches: false,
+    noMatches: false,
+    showPagination: false,
+    hasStats: false
   }
 
   constructor() {
     super();
+    // Ensure blitz-if and blitz-for react to state changes
+    this.markStructural(
+      'loading',
+      'error',
+      'stats',
+      'matches',
+      'paginatedMatches',
+      'hasMatches',
+      'noMatches',
+      'showPagination',
+      'hasStats'
+    );
     this.loadMatchHistory();
   }
 
   private async loadMatchHistory(): Promise<void> {
-    this.setState({ loading: true, error: null });
+    this.setState({ loading: true, error: null, hasMatches: false, noMatches: false });
 
     try {
       const currentUser = authService.getCurrentUser();
@@ -61,7 +81,11 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
         totalPages: Math.max(1, Math.ceil(matchesData.length / this.state.pageSize)),
         stats: statsData,
         currentUser,
-        loading: false
+        loading: false,
+        hasMatches: matchesData.length > 0,
+        noMatches: matchesData.length === 0,
+        showPagination: Math.ceil(matchesData.length / this.state.pageSize) > 1,
+        hasStats: Boolean(statsData)
       });
 
     } catch (error) {
@@ -239,7 +263,10 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
       const newPage = this.state.currentPage - 1;
       this.setState({ 
         currentPage: newPage,
-        paginatedMatches: this.computePaginatedMatches(this.state.matches, newPage, this.state.pageSize)
+        paginatedMatches: this.computePaginatedMatches(this.state.matches, newPage, this.state.pageSize),
+        showPagination: this.state.totalPages > 1,
+        hasMatches: this.state.matches.length > 0,
+        noMatches: this.state.matches.length === 0
       });
     }
   }
@@ -249,7 +276,10 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
       const newPage = this.state.currentPage + 1;
       this.setState({ 
         currentPage: newPage,
-        paginatedMatches: this.computePaginatedMatches(this.state.matches, newPage, this.state.pageSize)
+        paginatedMatches: this.computePaginatedMatches(this.state.matches, newPage, this.state.pageSize),
+        showPagination: this.state.totalPages > 1,
+        hasMatches: this.state.matches.length > 0,
+        noMatches: this.state.matches.length === 0
       });
     }
   }

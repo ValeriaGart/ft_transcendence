@@ -1,24 +1,10 @@
 import { dbRun, dbGet, dbAll } from '../config/database.js';
-import { validateNickname, nicknameExists, generateUniqueNickname, cleanNickname } from '../utils/nickname.utils.js';
 
 class ProfileService {
   static async getAllProfiles() {
     const profiles = await dbAll('SELECT * FROM profiles');
     return profiles;
   }
-
-
-  static async getIdByNick(nick) {
-    const id = await dbGet(
-      'SELECT userId FROM profiles WHERE nickname = ?',
-      [nick]
-    );
-    if (!id) {
-      throw new Error (`[ProfileService] No such user with nickname ${nick} found`)
-    }
-    return id;
-  }
-
 
   static async getProfileById(id) {
     const profile = await dbGet('SELECT * FROM profiles WHERE id = ?', [id]);
@@ -33,25 +19,7 @@ class ProfileService {
   static async updateProfile(id, profileData) {
     const { nickname, profilePictureUrl, bio } = profileData;
     
-    // Validate nickname if provided
-    if (nickname !== undefined) {
-      const validation = validateNickname(nickname);
-      if (!validation.isValid) {
-        throw new Error(`Nickname validation failed: ${validation.errors.join(', ')}`);
-      }
-      
-      // Check if nickname already exists for another user
-      const existingProfile = await dbGet(
-        'SELECT userId FROM profiles WHERE nickname = ? AND userId != ?',
-        [nickname, id]
-      );
-      
-      if (existingProfile) {
-        throw new Error('Nickname already taken by another user');
-      }
-    }
-    
-    // Build dynamic update query based on provided fields
+    // Build dynamic update query based on provided fields (added by ai)
     const updateFields = [];
     const updateValues = [];
     
@@ -74,10 +42,15 @@ class ProfileService {
     
     updateFields.push('updatedAt = CURRENT_TIMESTAMP');
     updateValues.push(id);
+    //end of added by ai
     
     const result = await dbRun(
+      /*'UPDATE profiles SET nickname = ?, profilePictureUrl = ?, bio = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
+      [nickname, profilePictureUrl, bio, id] */
+      //added by ai:
       `UPDATE profiles SET ${updateFields.join(', ')} WHERE id = ?`,
       updateValues
+      //end of added by ai
     );
     
     if (result.changes === 0) {
@@ -94,24 +67,6 @@ class ProfileService {
       throw new Error('Invalid field');
     }
 
-    // Special validation for nickname updates
-    if (field === 'nickname') {
-      const validation = validateNickname(value);
-      if (!validation.isValid) {
-        throw new Error(`Nickname validation failed: ${validation.errors.join(', ')}`);
-      }
-      
-      // Check if nickname already exists for another user
-      const existingProfile = await dbGet(
-        'SELECT userId FROM profiles WHERE nickname = ? AND userId != ?',
-        [value, id]
-      );
-      
-      if (existingProfile) {
-        throw new Error('Nickname already taken by another user');
-      }
-    }
-
     const result = await dbRun(
       `UPDATE profiles SET ${field} = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
       [value, id]
@@ -122,15 +77,6 @@ class ProfileService {
     }
     
     return this.getProfileById(id);
-  }
-
-  static async suggestNickname(baseNickname) {
-    try {
-      const cleanedNickname = cleanNickname(baseNickname);
-      return await generateUniqueNickname(cleanedNickname);
-    } catch (error) {
-      throw new Error('Failed to generate nickname suggestion');
-    }
   }
 }
 

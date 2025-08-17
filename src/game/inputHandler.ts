@@ -3,15 +3,25 @@ import { GameState, OpponentMode } from './types.ts';
 
 export class InputHandler {
 	private _engine: GameEngine;
-	public _oppMode: OpponentMode = OpponentMode.SINGLE;
+	private _oppMode: OpponentMode = OpponentMode.SINGLE;
+	private _keyDownHandler: (event: KeyboardEvent) => void;
+	private _keyUpHandler: (event: KeyboardEvent) => void;
 
 	constructor(engine: GameEngine) {
 		this._engine = engine;
+		this._keyDownHandler = this.handleKeyDown.bind(this);
+		this._keyUpHandler = this.handleKeyUp.bind(this);
 	}
 
 	public setupEventListeners(): void {
-		window.addEventListener('keydown', this.handleKeyDown.bind(this));
-		window.addEventListener('keyup', this.handleKeyUp.bind(this));
+		window.addEventListener('keydown', this._keyDownHandler);
+		window.addEventListener('keyup', this._keyUpHandler);
+	}
+
+	public cleanupEventListeners(): void {
+		window.removeEventListener('keydown', this._keyDownHandler);
+		window.removeEventListener('keyup', this._keyUpHandler);
+		console.log('InputHandler event listeners cleaned up');
 	}
 
 	private handleKeyDown(event: KeyboardEvent): void {
@@ -141,22 +151,13 @@ export class InputHandler {
 			this._engine._gameStateMachine.transition(GameState.GAME);
 		}
 		if (event.key == 'Enter') {
-			const msg = {
-				"type": 5,
-				"roomId": this._engine._roomID,
-				"status": "cancelled"
-			}
-			console.log('Sending cancel match msg:', JSON.stringify(msg));
-			this._engine._ws.sendMessage(JSON.stringify(msg));
 			this._engine._gameStateMachine.transition(GameState.SELECT);
-			this._engine.endGameLoop();
 		}
 	}
 		
 	private handleGameOverScreen(event: KeyboardEvent): void {
 		if (event.key == 'Enter') {
 			this._engine._gameStateMachine.transition(GameState.SELECT);
-			this._engine.endGameLoop();
 		}
 	}
 

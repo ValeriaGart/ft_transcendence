@@ -130,19 +130,19 @@ export class SignInPage extends Component<SignInPageState> {
 
     private async handleCredentialResponse(response: any): Promise<void> {
         try {
-            console.log('Google credential response received for signin');
+            console.log('Google credential response received');
 
-            const result = await authService.googleSignin(response.credential);
-            console.log('Google signin result:', result);
+            const result = await authService.googleLogin(response.credential);
+            console.log('Google login result:', result);
 
             if (result.success) {
-                console.log('Google signin successful');
+                console.log('Google login successful');
                 this.setState({ isGoogleLoading: false });
                 Router.getInstance().navigate("/greatsuccess");
             } else {
-                console.error('Google signin failed:', result.error);
+                console.error('Google login failed:', result.error);
                 this.setState({ isGoogleLoading: false });
-                this.showError(result.error || 'Google signin failed');
+                this.showError(result.error || 'Google login failed');
             }
 
         } catch (error) {

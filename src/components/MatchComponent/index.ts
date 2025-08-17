@@ -1,9 +1,9 @@
 import { Component } from "@blitz-ts/Component";
-import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
 import { authService, type User } from "../../lib/auth";
 import { WebSocketService } from "../../lib/webSocket";
+import { sanitizeForTemplate } from "../../utils/sanitization";
 
 interface Friendship {
   id: number;
@@ -186,43 +186,6 @@ export class MatchComponent extends Component<MatchComponentState> {
     });
     
     console.log('Event listener attached using component system');
-  }
-
-  /**
-   * Start AI match
-   */
-  private async startAiMatch(): Promise<void> {
-    console.log('Starting AI match...');
-    
-    try {
-      // Get current user's profile to get their nickname
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser) {
-        console.error('User not authenticated');
-        return;
-      }
-
-      // Fetch current user's profile to get nickname
-      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
-      if (!profileResponse.ok) {
-        console.error('Failed to get user profile');
-        return;
-      }
-
-      const profileData = await profileResponse.json();
-      const userNickname = profileData.nickname || `User${currentUser.id}`;
-
-      if (!userNickname || userNickname.trim() === '') {
-        console.error('User nickname not set');
-        return;
-      }
-
-      console.log('Using nickname for AI match:', userNickname);
-      // AI popup is handled by always-mounted StartGamePopUp via 'open-ai-popup' event
-      console.log('AI popup will be opened by StartGamePopUp');
-    } catch (error) {
-      console.error('Error sending AI match request:', error);
-    }
   }
 
   /**
@@ -746,72 +709,12 @@ export class MatchComponent extends Component<MatchComponentState> {
         playButton.textContent = 'Play vs AI';
       } else if (count === 1) {
         const fid = this.state.selectedFriendIds[0];
-        const friendName = this.state.userProfiles[fid]?.nickname || `User ${fid}`;
+        const friendName = sanitizeForTemplate(this.state.userProfiles[fid]?.nickname || `User ${fid}`);
         playButton.textContent = `Play vs ${friendName}`;
       } else {
         playButton.textContent = `Start Tournament (${count + 1}/4)`;
       }
     }
-  }
-
-  /**
-   * Handle AI match start button click
-   * Navigates to AI game page
-   */
-  private async handleStartAiMatch(): Promise<void> {
-    try {
-      console.log('Starting AI match...');
-
-      // Get current user's profile to get their nickname
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser) {
-        this.showError('You must be logged in to start a game');
-        return;
-      }
-
-      // Fetch current user's profile to get nickname
-      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
-      if (!profileResponse.ok) {
-        this.showError('Failed to get user profile');
-        return;
-      }
-
-      const profileData = await profileResponse.json();
-      const userNickname = profileData.nickname || `User${currentUser.id}`;
-
-      if (!userNickname || userNickname.trim() === '') {
-        this.showError('Please set a nickname in your profile before starting a game');
-        return;
-      }
-
-      console.log('Using nickname for AI match:', userNickname);
-
-      const ws = WebSocketService.getInstance();
-
-      const msg = {
-        "type": 3,
-        "players": [
-          {"nick": userNickname, "ai": false},
-          {"nick": "CPU", "ai": true},
-        ],
-        "gameMode": "bestof",
-        "oppMode": "single"
-        };
-
-      console.log('Sending AI match request:', JSON.stringify(msg));
-      ws.sendMessage(JSON.stringify(msg));
-      
-      // Navigate to the game page
-      const router = Router.getInstance();
-      router.navigate('/user/game');
-    } catch (error) {
-      console.error('Error starting AI match:', error);
-      this.setState({
-        error: 'Failed to start AI match. Please try again.'
-      });
-    }
-
-    console.log('AI Match started');
   }
 
   /**
@@ -869,8 +772,9 @@ export class MatchComponent extends Component<MatchComponentState> {
 
        // Get the other user's nickname
        const otherUserId = isInitiator ? friendship.recipient_id : friendship.initiator_id;
+       const safeUserId = Number.isInteger(otherUserId) ? otherUserId : 0;
        const otherUserProfile = this.state.userProfiles?.[otherUserId];
-       const displayName = otherUserProfile?.nickname || `User ${otherUserId}`;
+       const displayName = sanitizeForTemplate(otherUserProfile?.nickname || `User ${otherUserId}`);
 
        // Check if friend is online
        const isOnline = this.state.onlineFriends.includes(otherUserId);
@@ -921,8 +825,8 @@ export class MatchComponent extends Component<MatchComponentState> {
       
       return `
         <div class="flex items-center justify-start p-2 mb-1 ${cursorStyle} hover:bg-[#f2e6ff] transition-colors duration-200 ${friendItemClass} ${borderStyle} ${selectedClass}" 
-             data-friend-id="${otherUserId}"
-              ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})"` : ''}>
+             data-friend-id="${safeUserId}"
+             ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${safeUserId})"` : ''}>
           <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">

@@ -18,39 +18,25 @@ const apm = apmInit.start({
 
 import { config } from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Load environment variables FIRST, before other imports
-config({ path: path.resolve(__dirname, '../.env') });
+config({ path: path.resolve('../.env') });
 
 import fastify from 'fastify';
 import { initialize } from './config/database.js';
-import getSSLOptions from './config/ssl.config.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import friendRoutes from './routes/friend.routes.js';
 import matchRoutes from './routes/match.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import websocketRoutes from './routes/websocket.routes.js';
-import healthRoutes from './routes/health.routes.js';
 import authPlugin from './plugins/auth.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
+
 import ws from '@fastify/websocket';
 
-// Initialize SSL configuration
-const sslOptions = getSSLOptions();
-const fastifyOptions = { logger: true };
-
-if (sslOptions) {
-  fastifyOptions.https = sslOptions;
-}
-
-const app = fastify(fastifyOptions);
+const app = fastify({ logger: true });
 
 // register websocket
 await app.register(ws)
@@ -87,24 +73,12 @@ await app.register(profileRoutes);
 await app.register(friendRoutes);
 await app.register(matchRoutes);
 await app.register(websocketRoutes);
-await app.register(healthRoutes);
 
 async function bootstrap() {
   try {
     await initialize();
-    
-    const port = sslOptions ? (process.env.HTTPS_PORT || 3443) : (process.env.HTTP_PORT || 3000);
-    const protocol = sslOptions ? 'https' : 'http';
-    
-    await app.listen({ port, host: '0.0.0.0' });
-    
-    console.log(`🚀 Server running on ${protocol}://localhost:${port}`);
-    
-    if (sslOptions) {
-      console.log('🔐 HTTPS enabled with self-signed certificate');
-      console.log('⚠️  Browsers will show security warnings for development certificates');
-    }
-    
+    await app.listen({ port: 3000, host: '0.0.0.0' });
+    app.log.info('Server running on http://localhost:3000');
   } catch (err) {
     app.log.error(err);
     process.exit(1);

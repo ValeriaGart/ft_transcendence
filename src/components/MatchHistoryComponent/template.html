@@ -1,128 +1,71 @@
-<div class="flex flex-col items-center justify-start min-h-full w-full p-6 bg-gradient-to-b from-gray-900 to-black text-white">
+<div class="flex flex-col items-center justify-start h-[420px] w-[350px] mb-[10%] p-6  text-white">
     <!-- Header -->
-    <div class="w-full max-w-6xl mb-8">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-[#ffffff] font-['Irish_Grover'] text-2xl lg:text-3xl">Match History</h1>
-            <button 
-                id="refresh-matches" 
-                class="px-4 py-2 bg-[#B784F2] text-white font-['Irish_Grover'] text-sm rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
-                blitz-if="!loading"
-            >
-                Refresh
-            </button>
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B784F2]" blitz-if="loading"></div>
-        </div>
-
+    <div class="mt-2 md:-mt-2 flex flex-col items-center justify-start h-full w-full">
+        <h1 class="text-[#ffffff] font-['Irish_Grover'] text-2xl lg:text-3xl mb-4">Match History</h1>
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" blitz-if="stats">
-            <div class="bg-gray-800 rounded-lg p-4 text-center flex flex-col items-center justify-center">
+        <div class="flex flex-row gap-x-4 mb-2 flex-shrink-0" blitz-if="stats">
+            <div class="bg-[#ffffff] border-[#81C3C3] p-2 border-4 rounded-lg text-center flex flex-col items-center justify-center">
                 <div class="text-2xl font-bold text-[#B784F2]">{{stats.totalMatches}}</div>
-                <div class="text-sm text-gray-400 text-center">Total Matches</div>
+                <div class="text-sm text-[#81C3C3] text-center">Total Matches</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 text-center flex flex-col items-center justify-center">
+            <div class="bg-[#ffffff] border-[#81C3C3] p-2 border-4 rounded-lg text-center flex flex-col items-center justify-center">
                 <div class="text-2xl font-bold text-green-400">{{stats.wins}}</div>
-                <div class="text-sm text-gray-400 text-center">Wins</div>
+                <div class="text-sm text-[#81C3C3] text-center">Wins</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 text-center flex flex-col items-center justify-center">
+            <div class="bg-[#ffffff] border-[#81C3C3] p-2 border-4 rounded-lg ext-center flex flex-col items-center justify-center">
                 <div class="text-2xl font-bold text-red-400">{{stats.losses}}</div>
-                <div class="text-sm text-gray-400 text-center">Losses</div>
+                <div class="text-sm text-[#81C3C3] text-center">Losses</div>
             </div>
         </div>
-    </div>
+        <!-- Logs area fills remaining height -->
+        <div id="matches-log-field" class="w-full md:w-[135%] flex-1 min-h-[200px] md:min-h-[240px] border-[#81C3C3] p-2 border-4 rounded-lg bg-[#ffffff] overflow-y-auto">
+            <!-- Loading State -->
+            <div class="text-center py-2" blitz-if="loading">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B784F2] mx-auto mb-2"></div>
+                <div class="text-sm text-[#81C3C3] font-['Irish_Grover']">Loading matches...</div>
+            </div>
 
-    <!-- Loading State -->
-    <div class="flex items-center justify-center h-64" blitz-if="loading">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[#B784F2] mx-auto mb-4"></div>
-            <div class="text-xl text-[#81C3C3] font-['Irish_Grover']">Loading matches...</div>
-        </div>
-    </div>
+            <!-- Error State -->
+            <div class="text-center py-2" blitz-if="error">
+                <div class="text-xl text-red-400 font-['Irish_Grover'] mb-1">Error</div>
+                <div class="text-[#81C3C3]">{{error}}</div>
+            </div>
 
-    <!-- Error State -->
-    <div class="flex items-center justify-center h-64" blitz-if="error">
-        <div class="text-center">
-            <div class="text-6xl mb-4">⚠️</div>
-            <div class="text-xl text-red-400 font-['Irish_Grover'] mb-2">Error</div>
-            <div class="text-gray-400">{{error}}</div>
-        </div>
-    </div>
+            <!-- No Matches -->
+            <div class="text-center py-2" blitz-if="noMatches">
+                <img src="/art/pong.svg" alt="Pong" class="w-12 h-12 mb-2 inline-block" />
+                <div class="text-lg text-[#81C3C3] font-['Irish_Grover'] mb-1">No matches yet!</div>
+                <div class="text-[#81C3C3]">Start playing to see your match history here.</div>
+            </div>
 
-    <!-- No Matches -->
-    <div class="flex items-center justify-center h-64" blitz-if="!loading && paginatedMatches.length === 0 && !error">
-        <div class="text-center">
-            <div class="text-6xl mb-4">🏓</div>
-            <div class="text-xl text-[#81C3C3] font-['Irish_Grover'] mb-2">No matches yet!</div>
-            <div class="text-gray-400">Start playing to see your match history here.</div>
-        </div>
-    </div>
-
-    <!-- Match List -->
-    <div class="w-full max-w-6xl" blitz-if="!loading && paginatedMatches.length > 0">
-        <!-- Match Cards -->
-        <div class="space-y-4 mb-8">
-            <blitz-for items="paginatedMatches" item="match" index="index">
-                <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors duration-200">
-                    <div class="flex items-center justify-between">
-                        <!-- Match Result -->
-                        <div class="flex items-center space-x-4">
-                            <div class="flex items-center justify-center w-16 h-16 rounded-full {{match.resultBadgeClass}}">
-                                <span class="text-white font-bold text-sm">{{match.resultText}}</span>
+            <!-- Match List -->
+            <div class="space-y-2" blitz-if="hasMatches">
+                <blitz-for items="paginatedMatches" item="match" index="index">
+                    <div class="flex items-center justify-between bg-gray-100 rounded-md p-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-full {{match.resultBadgeClass}}">
+                                <span class="text-white font-bold text-xs">{{match.resultText}}</span>
                             </div>
-                            
-                            <!-- Match Details -->
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-2 mb-2">
-                                    <span class="text-lg font-semibold text-white">vs {{match.opponentNickname}}</span>
-                                    <span class="text-sm text-gray-400 bg-gray-700 px-2 py-1 rounded">{{match.type}}</span>
-                                </div>
-                                <div class="flex items-center space-x-4 text-sm text-gray-400">
-                                    <span>{{match.formattedDate}}</span>
-                                    <span blitz-if="match.gameFinishedAt">Game ID: {{match.id}}</span>
-                                </div>
+                            <div class="flex flex-col text-left">
+                                <span class="text-sm font-semibold text-gray-800">vs {{match.opponentNickname}}</span>
+                                <span class="text-xs text-gray-500">{{match.formattedDate}}</span>
                             </div>
                         </div>
-
-                        <!-- Score -->
-                        <div class="text-right">
-                            <div class="text-2xl font-bold">
-                                <span class="{{match.isWin ? 'text-green-400' : 'text-red-400'}}">
-                                    {{match.playerScore}}
-                                </span>
-                                <span class="text-gray-500 mx-2">-</span>
-                                <span class="{{match.isLoss ? 'text-green-400' : 'text-red-400'}}">
-                                    {{match.opponentScore}}
-                                </span>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1">
-                                {{match.gameFinishedAt ? 'Completed' : 'In Progress'}}
-                            </div>
+                        <div class="text-right text-sm font-bold">
+                            <span class="{{match.isWin ? 'text-green-600' : 'text-red-600'}}">{{match.playerScore}}</span>
+                            <span class="text-gray-500 mx-1">-</span>
+                            <span class="{{match.isLoss ? 'text-green-600' : 'text-red-600'}}">{{match.opponentScore}}</span>
                         </div>
                     </div>
-                </div>
-            </blitz-for>
+                </blitz-for>
+            </div>
         </div>
 
-        <!-- Pagination -->
-        <div class="flex items-center justify-between" blitz-if="totalPages > 1">
-            <button 
-                id="prev-page"
-                class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-            >
-                Previous
-            </button>
-            
-            <div class="flex items-center space-x-2">
-                <span class="text-[#81C3C3] font-['Irish_Grover']">
-                    Page {{currentPage}} of {{totalPages}}
-                </span>
-            </div>
-            
-            <button 
-                id="next-page"
-                class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-            >
-                Next
-            </button>
+        <!-- Controls under logs -->
+        <div class="w-full md:w-[135%] mt-2 flex items-center justify-between flex-shrink-0">
+            <button id="prev-page" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Prev page</button>
+            <button id="refresh-matches" class="px-3 py-1 bg-[#B784F2] text-white rounded hover:opacity-90">Reload logs</button>
+            <button id="next-page" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Next page</button>
         </div>
-    </div>
+        </div>
 </div>

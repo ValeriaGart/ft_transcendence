@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import { dbRun, dbGet } from '../config/database.js';
 import { AUTH_CONFIG } from '../config/auth.config.js';
-import { generateNicknameFromUserData, validateNickname, generateUniqueNickname } from '../utils/nickname.utils.js';
 
 class AuthService {
   static async findUserByEmail(email) {
@@ -42,36 +41,20 @@ class AuthService {
 
   static async createGoogleUser(userData) {
     try {
-      await dbRun('BEGIN TRANSACTION');
-
       const result = await dbRun(
-        `INSERT INTO users (email, googleId, emailVerified, lastLoginAt)
-         VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
+        `INSERT INTO users (email, name, googleId, profilePicture, emailVerified, lastLoginAt)
+         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
         [
           userData.email,
+          userData.name,
           userData.googleId,
+          userData.profilePicture,
           userData.emailVerified ? 1 : 0
         ]
       );
 
-      // Generate unique nickname from email prefix
-      const baseNickname = userData.email.split('@')[0];
-      const uniqueNickname = await generateUniqueNickname(baseNickname);
-
-      await dbRun(
-        'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
-        [result.lastID, uniqueNickname, 'profile_no.svg', null]
-      );
-
-      await dbRun('COMMIT');
-      
       return await this.findUserById(result.lastID);
     } catch (error) {
-      try {
-        await dbRun('ROLLBACK');
-      } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError);
-      }
       console.error('Error creating Google user:', error);
       throw error;
     }
@@ -79,41 +62,30 @@ class AuthService {
 
   static async createPasswordUser(userData) {
     try {
-      await dbRun('BEGIN TRANSACTION');
-
       // Hash password
       const passwordHash = await bcrypt.hash(userData.password, AUTH_CONFIG.PASSWORD.SALT_ROUNDS);
 
       const result = await dbRun(
-        `INSERT INTO users (email, passwordHash, lastLoginAt)
-         VALUES (?, ?, CURRENT_TIMESTAMP)`,
-        [userData.email, passwordHash]
+        `INSERT INTO users (email, name, passwordHash, lastLoginAt)
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
+        [userData.email, userData.name, passwordHash]
       );
-
-      // Generate unique nickname using the utility function
-      const baseNickname = userData.name || userData.email.split('@')[0];
-      const uniqueNickname = await generateUniqueNickname(baseNickname);
-      
-      await dbRun(
-        'INSERT INTO profiles (userId, nickname, profilePictureUrl, bio) VALUES (?, ?, ?, ?)',
-        [
-          result.lastID, 
-          uniqueNickname,
-          'profile_no.svg', 
-          null 
-        ]
-      );
-
-      await dbRun('COMMIT');
 
       return await this.findUserById(result.lastID);
     } catch (error) {
-      try {
-        await dbRun('ROLLBACK');
-      } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError);
-      }
       console.error('Error creating password user:', error);
+      throw error;
+    }
+  }
+
+  static async updateUserGoogleId(userId, googleId) {
+    try {
+      await dbRun(
+        'UPDATE users SET googleId = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
+        [googleId, userId]
+      );
+    } catch (error) {
+      console.error('Error updating user Google ID:', error);
       throw error;
     }
   }
@@ -193,6 +165,16 @@ class AuthService {
       const values = [];
 
       // Only update provided fields
+      if (updateData.name !== undefined) {
+        fields.push('name = ?');
+        values.push(updateData.name);
+      }
+
+      if (updateData.profilePicture !== undefined) {
+        fields.push('profilePicture = ?');
+        values.push(updateData.profilePicture);
+      }
+
       if (updateData.emailVerified !== undefined) {
         fields.push('emailVerified = ?');
         values.push(updateData.emailVerified ? 1 : 0);
@@ -220,7 +202,7 @@ class AuthService {
   static async changePassword(userId, newPassword) {
     try {
       const passwordHash = await bcrypt.hash(newPassword, AUTH_CONFIG.PASSWORD.SALT_ROUNDS);
-      
+
       await dbRun(
         'UPDATE users SET passwordHash = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
         [passwordHash, userId]

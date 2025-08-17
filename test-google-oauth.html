@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google OAuth Test</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <h1>Google OAuth Test</h1>
+    <div id="g_id_onload"
+         data-client_id="921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+    
+    <div id="result"></div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("Google OAuth Response:", response);
+            document.getElementById('result').innerHTML = 
+                '<h3>Success!</h3><p>Google OAuth is working. Credential length: ' + response.credential.length + '</p>';
+            
+            // Test sending to backend
+            fetch('http://localhost:3000/auth/google', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    credential: response.credential
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("Backend response:", data);
+                document.getElementById('result').innerHTML += 
+                    '<h4>Backend Response:</h4><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                console.error("Backend error:", error);
+                document.getElementById('result').innerHTML += 
+                    '<h4>Backend Error:</h4><pre>' + error.message + '</pre>';
+            });
+        }
+    </script>
+</body>
+</html> 

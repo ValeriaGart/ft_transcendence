@@ -1,7 +1,6 @@
 import FriendController from '../controllers/friend.controller.js';
 import {
 	requestFriendSchema,
-	acceptFriendSchema,
 	friendStatusSchema
 } from '../schemas/friend.schemas.js';
 
@@ -28,7 +27,7 @@ async function routes(fastify, options) {
 
 	fastify.patch('/friend/me', {
 		schema: {
-			body: acceptFriendSchema
+			body: requestFriendSchema
 		},
 		preHandler: [fastify.authenticate]
 	}, FriendController.acceptFriend);

@@ -50,7 +50,6 @@ class RoomService {
 		};
 
 		/* determine ID of real players and set accepted variable accordingly */
-		let pnumber_count = 1;
 		for (let p of room.players) {
 			if (p.ai != true) {
 				const dbResult = await ProfileService.getIdByNick(p.nick);
@@ -65,13 +64,11 @@ class RoomService {
 				else {
 					p.accepted = "pending";
 				}
-				
+
 			}
 			else {
 				p.accepted = "accepted";
 			}
-			p.pnumber = pnumber_count;
-			pnumber_count++;
 		}
 
 		this.rooms.push(room);

@@ -2,9 +2,8 @@ import { Component } from "@blitz-ts/Component";
 import { Router } from "@blitz-ts/router";
 import { authService } from "../../lib/auth";
 import { ErrorManager } from "../Error";
-import { getApiUrl } from "../../config/api";
 import { ConfirmDialogManager } from "../ConfirmDialog";
-import { NicknameUtils } from "../../utils/nickname.utils";
+import { getApiUrl } from "../../config/api";
 
 interface SettingsPageState {
   currentPage: 'page1' | 'page2' | 'confirm' | 'password_change';
@@ -151,7 +150,6 @@ export class SettingsPage extends Component<SettingsPageState> {
     this.addEventListener('#confirm_button_page1', 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Confirm button clicked from page 1, switching to confirm page');
       
       const usernameInput = this.element.querySelector('#username') as HTMLInputElement;
       const emailInput = this.element.querySelector('#email') as HTMLInputElement;
@@ -162,12 +160,6 @@ export class SettingsPage extends Component<SettingsPageState> {
       const currentUsername = usernameInput ? usernameInput.value.trim() : '';
       const originalUsername = this.state.originalValues.username || '';
       if (currentUsername !== originalUsername) {
-        // Validate username before adding to pending changes
-        const validation = NicknameUtils.validateNickname(currentUsername);
-        if (!validation.isValid) {
-          this.showError(`Invalid username: ${validation.errors.join(', ')}`);
-          return;
-        }
         pendingChanges.username = currentUsername;
       }
       
@@ -207,12 +199,6 @@ export class SettingsPage extends Component<SettingsPageState> {
       const currentUsername = usernameInput ? usernameInput.value.trim() : '';
       const originalUsername = this.state.originalValues.username || '';
       if (currentUsername !== originalUsername) {
-        // Validate username before adding to pending changes
-        const validation = NicknameUtils.validateNickname(currentUsername);
-        if (!validation.isValid) {
-          this.showError(`Invalid username: ${validation.errors.join(', ')}`);
-          return;
-        }
         pendingChanges.username = currentUsername;
       }
       
@@ -427,7 +413,7 @@ export class SettingsPage extends Component<SettingsPageState> {
           throw new Error('No user logged in');
         }
         
-        const verifyResponse = await fetch(getApiUrl('/users/login'), {
+        const verifyResponse = await fetch('http://localhost:3000/users/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -444,7 +430,7 @@ export class SettingsPage extends Component<SettingsPageState> {
         }
         
         // Current password is valid, now change the password TODO
-        const changePasswordResponse = await authService.authenticatedFetch(getApiUrl(`/users/${currentUser.id}`), {
+        const changePasswordResponse = await authService.authenticatedFetch(`http://localhost:3000/users/${currentUser.id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -601,7 +587,7 @@ export class SettingsPage extends Component<SettingsPageState> {
 
   private async loadProfileData(): Promise<void> {
     try {
-      const response = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      const response = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
       if (response.ok) {
         const profileData = await response.json();
         
@@ -649,7 +635,7 @@ export class SettingsPage extends Component<SettingsPageState> {
         throw new Error('No user logged in');
       }
 
-      const userResponse = await authService.authenticatedFetch(getApiUrl(`/users/${currentUser.id}`), {
+      const userResponse = await authService.authenticatedFetch(`http://localhost:3000/users/${currentUser.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -681,7 +667,7 @@ export class SettingsPage extends Component<SettingsPageState> {
       }
       
       // Get the user's profile first
-      const profileResponse = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+      const profileResponse = await authService.authenticatedFetch('http://localhost:3000/profiles/me');
       if (!profileResponse.ok) {
         throw new Error('Failed to get profile data');
       }
@@ -698,7 +684,7 @@ export class SettingsPage extends Component<SettingsPageState> {
       }
       
       // Update the profile
-      const updateResponse = await authService.authenticatedFetch(getApiUrl(`/profiles/${profileData.id}`), {
+      const updateResponse = await authService.authenticatedFetch(`http://localhost:3000/profiles/${profileData.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -720,7 +706,8 @@ export class SettingsPage extends Component<SettingsPageState> {
     
   protected onUnmount(): void {
     console.log('SettingsPage onUnmount called');
-    // Cleanup any subscriptions or timers here
+    // Remove any error components
+    ErrorManager.removeError();
   }
 
   render() {}

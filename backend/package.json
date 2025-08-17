@@ -1,0 +1,29 @@
+{
+  "name": "ft-transcendence-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend API for ft_transcendence project",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "fastify": "^4.24.3",
+    "@fastify/cors": "^8.4.0",
+    "@fastify/cookie": "^9.2.0",
+    "@fastify/rate-limit": "^8.0.0",
+    "dotenv": "^16.3.1",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "google-auth-library": "^9.0.0",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": ["fastify", "api", "oauth", "google"],
+  "author": "",
+  "license": "ISC"
+} 

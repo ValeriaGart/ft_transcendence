@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Google Auth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .button {
+            background: #4285f4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .button:hover {
+            background: #3367d6;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Google Auth Test</h1>
+        
+        <h2>Backend Status</h2>
+        <div id="backend-status">Checking...</div>
+        
+        <h2>Google Auth Test</h2>
+        <div id="google-signin"></div>
+        
+        <h2>Manual Test</h2>
+        <button class="button" onclick="testBackend()">Test Backend Only</button>
+        <div id="test-result"></div>
+    </div>
+
+    <script>
+        // Test backend connectivity
+        async function checkBackend() {
+            try {
+                const response = await fetch('http://localhost:3000/');
+                const data = await response.json();
+                document.getElementById('backend-status').innerHTML = 
+                    `<div class="result success">✅ Backend is running: ${JSON.stringify(data)}</div>`;
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = 
+                    `<div class="result error">❌ Backend connection failed: ${error.message}</div>`;
+            }
+        }
+
+        // Test backend only
+        async function testBackend() {
+            try {
+                const response = await fetch('http://localhost:3000/auth/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ credential: 'test-token' })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('test-result').innerHTML = 
+                        `<div class="result success">✅ Backend Google Auth endpoint working: ${JSON.stringify(data)}</div>`;
+                } else {
+                    document.getElementById('test-result').innerHTML = 
+                        `<div class="result error">❌ Backend Google Auth endpoint error: ${JSON.stringify(data)}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('test-result').innerHTML = 
+                    `<div class="result error">❌ Network error: ${error.message}</div>`;
+            }
+        }
+
+        // Initialize Google Sign-in with a different approach
+        async function initializeGoogleSignIn() {
+            try {
+                // Load Google Identity Services
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+                
+                script.onload = () => {
+                    if (window.google) {
+                        // Try with a different configuration
+                        window.google.accounts.id.initialize({
+                            client_id: '921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com',
+                            callback: handleCredentialResponse,
+                            auto_select: false,
+                            cancel_on_tap_outside: true,
+                            context: 'signin',
+                            ux_mode: 'popup'
+                        });
+                        
+                        // Try to render the button
+                        try {
+                            window.google.accounts.id.renderButton(
+                                document.getElementById('google-signin'),
+                                { theme: 'outline', size: 'large', type: 'standard' }
+                            );
+                            document.getElementById('test-result').innerHTML = 
+                                `<div class="result success">✅ Google Sign-in button rendered successfully!</div>`;
+                        } catch (renderError) {
+                            document.getElementById('test-result').innerHTML = 
+                                `<div class="result error">❌ Failed to render Google button: ${renderError.message}</div>`;
+                        }
+                    } else {
+                        document.getElementById('test-result').innerHTML = 
+                            `<div class="result error">❌ Google Identity Services not available</div>`;
+                    }
+                };
+                
+                script.onerror = () => {
+                    document.getElementById('test-result').innerHTML = 
+                        `<div class="result error">❌ Failed to load Google Identity Services</div>`;
+                };
+                
+                document.head.appendChild(script);
+            } catch (error) {
+                document.getElementById('test-result').innerHTML = 
+                    `<div class="result error">❌ Failed to initialize Google Sign-in: ${error.message}</div>`;
+            }
+        }
+
+        // Handle Google credential response
+        async function handleCredentialResponse(response) {
+            try {
+                document.getElementById('test-result').innerHTML = 
+                    `<div class="result info">🔄 Processing Google credential...</div>`;
+                
+                const authResponse = await fetch('http://localhost:3000/auth/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ credential: response.credential })
+                });
+                
+                const data = await authResponse.json();
+                
+                if (authResponse.ok) {
+                    document.getElementById('test-result').innerHTML = 
+                        `<div class="result success">✅ Google Sign-in successful! User: ${data.user.name} (${data.user.email})</div>`;
+                } else {
+                    document.getElementById('test-result').innerHTML = 
+                        `<div class="result error">❌ Google Sign-in failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('test-result').innerHTML = 
+                    `<div class="result error">❌ Network error during Google Sign-in: ${error.message}</div>`;
+            }
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            checkBackend();
+            initializeGoogleSignIn();
+        };
+    </script>
+</body>
+</html> 

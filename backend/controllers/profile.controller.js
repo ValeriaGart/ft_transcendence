@@ -1,7 +1,6 @@
 import ProfileService from '../services/profile.service.js';
 import { validateNickname, cleanNickname, nicknameExists } from '../utils/nickname.utils.js';
 import { dbGet } from '../config/database.js';
-import { sanitizeInput, sanitizeUrl } from '../utils/sanitization.utils.js';
 
 class ProfileController {
   static async getAllProfiles(request, reply) {
@@ -35,13 +34,8 @@ class ProfileController {
     try {
       const { id } = request.params;
       
-      // Sanitize profile inputs individually
-      const sanitizedBody = { ...request.body };
-      if (sanitizedBody.nickname) sanitizedBody.nickname = sanitizeInput(sanitizedBody.nickname);
-      if (sanitizedBody.bio) sanitizedBody.bio = sanitizeInput(sanitizedBody.bio);
-      if (sanitizedBody.profilePictureUrl) sanitizedBody.profilePictureUrl = sanitizeUrl(sanitizedBody.profilePictureUrl);
-      
-      const profile = await ProfileService.updateProfile(id, sanitizedBody);
+      // No need to sanitize again - XSS middleware already handled this
+      const profile = await ProfileService.updateProfile(id, request.body);
       
       return {
         success: true,
@@ -82,9 +76,9 @@ class ProfileController {
       const { nickname, profilePictureUrl, bio } = request.body;
 
       const updateFields = {};
-      if (nickname !== undefined && nickname !== null) updateFields.nickname = sanitizeInput(nickname);
-      if (profilePictureUrl !== undefined) updateFields.profilePictureUrl = sanitizeUrl(profilePictureUrl);
-      if (bio !== undefined) updateFields.bio = sanitizeInput(bio);
+      if (nickname !== undefined && nickname !== null) updateFields.nickname = nickname;
+      if (profilePictureUrl !== undefined) updateFields.profilePictureUrl = profilePictureUrl;
+      if (bio !== undefined) updateFields.bio = bio;
 
       if (Object.keys(updateFields).length === 0){
         reply.code(400);

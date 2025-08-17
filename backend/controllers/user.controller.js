@@ -1,5 +1,4 @@
 import UserService from '../services/user.service.js';
-import { sanitizeInput } from '../utils/sanitization.utils.js';
 
 class UserController {
   static async getAllUsers(request, reply) {
@@ -114,13 +113,8 @@ class UserController {
 
   static async createUser(request, reply) {
     try {
-      // Sanitize user input individually
-      const sanitizedBody = { ...request.body };
-      if (sanitizedBody.email) sanitizedBody.email = sanitizeInput(sanitizedBody.email);
-      if (sanitizedBody.name) sanitizedBody.name = sanitizeInput(sanitizedBody.name);
-      // Note: passwordString is not sanitized as it's hashed, not displayed
-      
-      const user = await UserService.createUser(sanitizedBody);
+      // XSS middleware already sanitized the input
+      const user = await UserService.createUser(request.body);
       reply.code(201);
       return {
         success: true,
@@ -142,13 +136,8 @@ class UserController {
     try {
       const { id } = request.params;
       
-      // Sanitize user input individually
-      const sanitizedBody = { ...request.body };
-      if (sanitizedBody.email) sanitizedBody.email = sanitizeInput(sanitizedBody.email);
-      if (sanitizedBody.name) sanitizedBody.name = sanitizeInput(sanitizedBody.name);
-      // Note: passwordString is not sanitized as it's hashed, not displayed
-      
-      const user = await UserService.updateUser(id, sanitizedBody);
+      // XSS middleware already sanitized the input
+      const user = await UserService.updateUser(id, request.body);
       
       return {
         success: true,
@@ -176,15 +165,13 @@ class UserController {
       const { id } = request.params;
       const { email, passwordString } = request.body;
       
-      // Sanitize inputs
-      const sanitizedEmail = email ? sanitizeInput(email) : undefined;
-      
+      // XSS middleware already sanitized the input
       let user;
       
-      if (sanitizedEmail && passwordString) {
-        user = await UserService.updateUser(id, { email: sanitizedEmail, passwordString });
-      } else if (sanitizedEmail) {
-        user = await UserService.updateUserEmail(id, sanitizedEmail);
+      if (email && passwordString) {
+        user = await UserService.updateUser(id, { email, passwordString });
+      } else if (email) {
+        user = await UserService.updateUserEmail(id, email);
       } else if (passwordString) {
         user = await UserService.updateUserPassword(id, passwordString);
       } else {
@@ -217,10 +204,8 @@ class UserController {
     try {
       const { email, passwordString } = request.body;
       
-      // Sanitize email input
-      const sanitizedEmail = sanitizeInput(email);
-      
-      const user = await UserService.authenticateUser(sanitizedEmail, passwordString);
+      // XSS middleware already sanitized the input
+      const user = await UserService.authenticateUser(email, passwordString);
       
       if (!user) {
         reply.code(401);

@@ -1,6 +1,5 @@
-import FriendService from '../services/friend.service.js'
-import ProfileService from '../services/profile.service.js'
-import { sanitizeInput } from '../utils/sanitization.utils.js';
+import FriendService from '../services/friend.service.js';
+import ProfileService from '../services/profile.service.js';
 
 class FriendController {
 	static async getAllFriendships(request, reply) {
@@ -47,17 +46,15 @@ class FriendController {
 			const userId = request.user.userId;
 			const { friend_nickname } = request.body;
 
-			// Sanitize the nickname input
-			const sanitizedNickname = sanitizeInput(friend_nickname);
-
+			// XSS middleware already sanitized the input
 			try {
-				const { userId: friendId } = await ProfileService.getIdByNick(sanitizedNickname);
+				const { userId: friendId } = await ProfileService.getIdByNick(friend_nickname);
 				return await FriendService.requestFriend(userId, friendId);
 			} catch (error) {
-				console.warn(`[FriendController] Error resolving nickname '${sanitizedNickname}': `, error.message);
+				console.warn(`[FriendController] Error resolving nickname '${friend_nickname}': `, error.message);
 				if (typeof error.message === 'string' && error.message.includes('No such user')) {
 					reply.code(404);
-					return { error: 'User not found', details: `No user found with nickname '${sanitizedNickname}'` };
+					return { error: 'User not found', details: `No user found with nickname '${friend_nickname}'` };
 				} else {
 					reply.code(500);
 					return { error: 'Failed to resolve user', details: error.message };

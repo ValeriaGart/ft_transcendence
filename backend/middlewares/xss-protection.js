@@ -59,7 +59,7 @@ export function xssProtectionMiddleware(request, reply, done) {
     }
 
     // Sanitize headers that might contain user data
-    const headersToSanitize = ['user-agent', 'referer', 'origin'];
+    const headersToSanitize = ['user-agent', 'referer'];
     for (const header of headersToSanitize) {
       if (request.headers[header]) {
         request.headers[header] = sanitizeInput(request.headers[header]);

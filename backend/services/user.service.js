@@ -52,7 +52,7 @@ class UserService {
         return false;
       }
       
-      log('Password comparison result:' + { userId, isValid: result }, DEBUG);
+      log(`Password comparison result: ${JSON.stringify({ userId, isValid: result })}`, DEBUG);
       
       return result;
     } catch (error) {

@@ -36,7 +36,7 @@ class AuthService {
         [googleId]
       );
     } catch (error) {
-      log('Error finding user by Google ID: ', WARN);
+      log('Error finding user by Google ID: ' + error, WARN);
       throw error;
     }
   }

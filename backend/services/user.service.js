@@ -1,5 +1,6 @@
 import { dbRun, dbGet, dbAll } from '../config/database.js';
 import { hashPassword, verifyPassword } from '../utils/password-utils.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 class UserService {
   static async getAllUsers() {
@@ -31,7 +32,7 @@ class UserService {
       );
       
       if (!user || !user.passwordHash) {
-        console.log('Password verification failed: no user or no password hash');
+        log('Password verification failed: no user or no password hash', INFO);
         return false;
       }
       
@@ -41,21 +42,21 @@ class UserService {
         // bcrypt hash - import bcrypt and verify
         const bcrypt = await import('bcrypt');
         result = await bcrypt.default.compare(password, user.passwordHash);
-        console.log('Using bcrypt verification for user:', userId);
+        log('Using bcrypt verification for user: ' + userId, DEBUG);
       } else if (user.passwordHash.startsWith('$argon2')) {
         // Argon2 hash - use our utility
         result = await verifyPassword(user.passwordHash, password);
-        console.log('Using Argon2 verification for user:', userId);
+        log('Using Argon2 verification for user: ' + userId, DEBUG);
       } else {
-        console.log('Unknown hash format for user:', userId, 'Hash prefix:', user.passwordHash.substring(0, 10));
+        log('Unknown hash format for user: ' + userId + ', Hash prefix: ' + user.passwordHash.substring(0, 10), WARN);
         return false;
       }
       
-      console.log('Password comparison result:', { userId, isValid: result });
+      log('Password comparison result:' + { userId, isValid: result }, DEBUG);
       
       return result;
     } catch (error) {
-      console.error('Error verifying user password:', error);
+      log('Error verifying user password:' + error, WARN);
       return false;
     }
   }
@@ -95,7 +96,7 @@ class UserService {
 			try {
 				await dbRun('ROLLBACK');
 			} catch (rollbackError) {
-				console.error('Rollback failed:', rollbackError);
+				log('Rollback failed: ' + rollbackError, ERROR);
 			}
       throw error;
     }

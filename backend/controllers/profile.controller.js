@@ -1,6 +1,7 @@
 import ProfileService from '../services/profile.service.js';
 import { validateNickname, cleanNickname, nicknameExists } from '../utils/nickname.utils.js';
 import { dbGet } from '../config/database.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 class ProfileController {
   static async getAllProfiles(request, reply) {
@@ -168,7 +169,7 @@ class ProfileController {
       
       return suggestions;
     } catch (error) {
-      console.error('Error generating nickname suggestions:', error);
+      log(`Error generating nickname suggestions: ${error}`, WARN);
       return [];
     }
   }

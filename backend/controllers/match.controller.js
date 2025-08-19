@@ -72,7 +72,7 @@ class MatchController {
 				total: matchHistory.length
 			};
 		} catch (error) {
-			log('Controller error:' + error, DEBUG); // Debug log
+			log('Controller error: ' + error, DEBUG); // Debug log
 			reply.code(500);
 			return { error: 'Failed to retrieve match history', details: error.message };
 		}

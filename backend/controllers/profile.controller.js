@@ -169,7 +169,7 @@ class ProfileController {
       
       return suggestions;
     } catch (error) {
-      log('Error generating nickname suggestions:' + error, WARN);
+      log(`Error generating nickname suggestions: ${error}`, WARN);
       return [];
     }
   }

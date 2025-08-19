@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { AUTH_CONFIG } from '../config/auth.config.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 const googleClient = new OAuth2Client(AUTH_CONFIG.GOOGLE.CLIENT_ID);
 
@@ -22,7 +23,7 @@ export async function verifyGoogleToken(idToken) {
       emailVerified: payload['email_verified']
     };
   } catch (error) {
-    console.error('Google token verification failed:', error);
+    log('Google token verification failed: ' + error, WARN);
     return null;
   }
 }

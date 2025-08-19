@@ -91,7 +91,7 @@ class InvitationService {
 			while (true) {
 				await sleep (1000);
 				count++;
-				// console.log(count) // 👉👉👉👉👉👉👉👉👉👉👉👉👉 dont forget
+				// log(count, DEBUG) // 👉👉👉👉👉👉👉👉👉👉👉👉👉 dont forget
 				let ret = await this.allAccepted(room);
 				if (ret === 1) {
 					resolve("[InvitationService] Promise 'All Players Accepted' resolved.");

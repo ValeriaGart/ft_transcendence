@@ -2,6 +2,7 @@ import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
 import { dbGet } from '../config/database.js';
 import { AUTH_CONFIG } from '../config/auth.config.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 async function authPlugin(fastify, options) {
   // Register JWT plugin with fallback secret
@@ -17,19 +18,20 @@ async function authPlugin(fastify, options) {
     try {
       // Check if token is in cookie, if so, add it to authorization header
       if (!request.headers.authorization && request.cookies && request.cookies['auth-token']) {
-        console.log("[auth.js] auth-token");
+        log("[auth.js] cookie auth-token", DEBUG);
         request.headers.authorization = `Bearer ${request.cookies['auth-token']}`;
       }
       else if (!request.headers.authorization && request.cookies && request.cookies['authToken']) {
-        console.log("[auth.js] authToken");
+        log("[auth.js] cookie authToken", DEBUG);
         request.headers.authorization = `Bearer ${request.cookies['authToken']}`;
       }
       else {
-        console.log("[auth.js] NO COOKIE");
+        log("[auth.js] using http(s) header instead of cookie", DEBUG);
       }
       
       await request.jwtVerify();
     } catch (err) {
+      log("[auth.js] Unauthorized: " + err.message, WARN);
       reply.code(401).send({ 
         error: 'Unauthorized', 
         message: 'Invalid or missing token' 

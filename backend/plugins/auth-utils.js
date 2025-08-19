@@ -110,6 +110,14 @@ export function validatePassword(password) {
     errors.push(`Password must be at least ${config.PASSWORD.MIN_LENGTH} characters long`);
   }
   
+  if (password.length > config.PASSWORD.MAX_LENGTH) {
+    errors.push(`Password must be no more than ${config.PASSWORD.MAX_LENGTH} characters long`);
+  }
+  
+  if (password.includes(' ')) {
+    errors.push('Password must not contain spaces');
+  }
+  
   if (config.PASSWORD.REQUIRE_UPPERCASE && !/[A-Z]/.test(password)) {
     errors.push('Password must contain at least one uppercase letter');
   }

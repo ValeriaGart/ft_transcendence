@@ -22,7 +22,7 @@ class FriendController {
 			const friend = await FriendService.getAllFriendshipsUserId(friend_id);
 			return friend;
 		} catch (error) {
-			log(`[FriendController] Error in getAllFriendshipsUserId: ` + error.message, WARN);
+			log(`[FriendController] Error in getAllFriendshipsUserId: ${error.message}`, WARN);
 			reply.code(500);
 			return { error: 'Failed to fetch all friendships', details: error.message };
 		}

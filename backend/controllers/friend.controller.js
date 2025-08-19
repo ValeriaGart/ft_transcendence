@@ -36,7 +36,7 @@ class FriendController {
 			const friendstatus = await FriendService.getFriendshipStatus(friend_id1, friend_id2);
 			return friendstatus;
 		} catch (error) {
-			log(`[FriendController] Error in getFriendshipStatus: ` + error.message, WARN);
+			log(`[FriendController] Error in getFriendshipStatus: ${error.message}`, WARN);
 			reply.code(500);
 			return { error: 'Failed to get status on friendship', details: error.message };
 		}

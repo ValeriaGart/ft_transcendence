@@ -1,4 +1,5 @@
 import MatchService from '../services/match.service.js'
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 class MatchController {
 	static async getAllMatches(request, reply) {
@@ -29,7 +30,7 @@ class MatchController {
 	
 	static async getCurrentUserMatches(request, reply) {
 		try {
-			// console.log('Request Body:', request.user.userId); // Log the request body
+			// log('Request Body:' + request.user.userId); // Log the request body
 			const match = await MatchService.getCurrentUserMatches(request.user.userId);
 			if (!match) {
 				reply.code(404);
@@ -61,9 +62,9 @@ class MatchController {
 	static async getMatchHistoryWithNicknames(request, reply) {
 		try {
 			const { id } = request.params;
-			console.log('Received ID param:', id, 'Type:', typeof id); // Debug log
+			log('Received ID param:' + id + ' Type:' + typeof id, DEBUG); // Debug log
 			const matchHistory = await MatchService.getMatchHistoryWithNicknames(id);
-			console.log('Service returned:', matchHistory.length, 'matches'); // Debug log
+			log('Service returned:' + matchHistory.length + ' matches', DEBUG); // Debug log
 			
 			return {
 				userId: parseInt(id),
@@ -71,7 +72,7 @@ class MatchController {
 				total: matchHistory.length
 			};
 		} catch (error) {
-			console.error('Controller error:', error); // Debug log
+			log('Controller error:' + error, DEBUG); // Debug log
 			reply.code(500);
 			return { error: 'Failed to retrieve match history', details: error.message };
 		}
@@ -112,7 +113,7 @@ class MatchController {
 	
 	static async initiateMatch(request, reply) {
 		try {
-			// console.log('Request Body:', request.body); // Log the request body
+			// log('Request Body:' + request.body, DEBUG); // Log the request body
 			const { player1, player2, matchtype } = request.body; // Correctly access the body
 			const match = await MatchService.initiateMatch(player1, player2, matchtype);
 			return match;
@@ -124,7 +125,7 @@ class MatchController {
 
 	static async finishMatch(request, reply) {
 		try {
-			// console.log('Request Body:', request.body); // Log the request body
+			// log('Request Body:' + request.body, DEBUG); // Log the request body
 			const { player1_score, player2_score, match_id } = request.body; // Correctly access the body
 			const match = await MatchService.finishMatch(player1_score, player2_score, match_id);
 			return match;
@@ -136,7 +137,7 @@ class MatchController {
 	
 	static async deleteMatch(request, reply) {
 		try {
-			// console.log('Request Body:', request.body); // Log the request body
+			// log('Request Body:' + request.body, DEBUG); // Log the request body
 			const { id } = request.params; // Correctly access the body
 			const match = await MatchService.deleteMatch(id);
 			return match;

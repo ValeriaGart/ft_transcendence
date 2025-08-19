@@ -51,7 +51,7 @@ class FriendController {
 				const { userId: friendId } = await ProfileService.getIdByNick(friend_nickname);
 				return await FriendService.requestFriend(userId, friendId);
 			} catch (error) {
-				log(`[FriendController] Error resolving nickname '${friend_nickname}': ` + error.message, WARN);
+				log(`[FriendController] Error resolving nickname '${friend_nickname}': ${error.message}`, WARN);
 				if (typeof error.message === 'string' && error.message.includes('No such user')) {
 					reply.code(404);
 					return { error: 'User not found', details: `No user found with nickname '${friend_nickname}'` };

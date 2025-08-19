@@ -121,6 +121,9 @@ export class PongGame {
 	}
 
 	private broadcastGameState(): void {
+		if (this._gameStats.pnumber != this._p1.getPnumber() && this._gameStats.pnumber != this._p2.getPnumber()) {
+			return;
+		}
 		const msg = {
 			"type": 7,
 			"roomId": this._engine._roomID,

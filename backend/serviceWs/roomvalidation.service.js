@@ -1,6 +1,6 @@
 import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
-let validGameModes = ["bestof", "infinite"];
+let validGameModes = ["bestof", "infinite","tournament"];
 let validOppModes = ["single", "online"];
 
 class RoomValidationService {

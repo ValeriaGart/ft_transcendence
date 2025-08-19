@@ -15,9 +15,12 @@ export class Tournament {
 	private _p2: number;
 	private _p3: number;
 	private _p4: number;
+	private _pnumbers: number[];
 
 	private _mode: GameMode;
 	private _oppMode: OpponentMode;
+
+	// private _start: boolean = false;
 
 	constructor(engine: GameEngine, p1: Player, p2: Player, p3: Player, p4: Player, mode: GameMode,oppMode: OpponentMode) {
 		this._engine = engine;
@@ -26,8 +29,17 @@ export class Tournament {
 		this._mode = mode;
 		this._oppMode = oppMode;
 
+		this._engine._ws.ws.onmessage = (message) => {
+			this.parseMessage(message);
+		}
+
 
 		this._players = [p1, p2, p3, p4];
+
+		// this._p1 = 0;
+		// this._p2 = 1;
+		// this._p3 = 2;
+		// this._p4 = 3;
 
 		if (oppMode == OpponentMode.SINGLE) {
 			this._p1 = 0;
@@ -50,13 +62,47 @@ export class Tournament {
 		while (this._p4 == this._p1 || this._p4 == this._p2 || this._p4 == this._p3) {
 			this._p4++;
 		}
+
+		this._pnumbers = [this._p1, this._p2, this._p3, this._p4];
 		this.logPlayerStatus();
 	}
+
+	private broadcastGameState(): void {
+		console.log("host has sent message");
+		const msg = {
+			"type": 7,
+			"roomId": this._engine._roomID,
+			"_gameState": this._pnumbers
+		};
+		const gameStateString = JSON.stringify(msg);
+		this._engine._ws.sendMessage(gameStateString);
+	}
+
+	private parseMessage(message: MessageEvent): void {
+		var msg = JSON.parse(message.data);
+		console.log('client has reveived message: ', msg);
+		this._p1 = msg[0];
+		this._p2 = msg[1];
+		this._p3 = msg[2];
+		this._p4 = msg[3];
+	}
+
+	private async waitForTimer() {
+		await new Promise(resolve => setTimeout(resolve, 1000));
+	}
+
+	public async preBattleOne() {
+		if (this._engine._urp == 1) {
+			this.broadcastGameState();
+		}
+		else {
+			await this.waitForTimer();
+		}
+		this.battleOne();
+	}
 	
-	public battleOne(): void {
+	public battleOne() {
 		this.resetSide();
-		this._players[this._p1].setHost(true);
-		this._players[this._p2].setHost(false);
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 1);
@@ -65,8 +111,6 @@ export class Tournament {
 	
 	public battleTwo(): void {
 		this.resetSide();
-		this._players[this._p3].setHost(true);
-		this._players[this._p4].setHost(false);
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 2);
@@ -117,8 +161,6 @@ export class Tournament {
 		}
 
 
-		this._players[this._p3].setHost(true);
-		this._players[this._p4].setHost(false);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], 3);
 		this.logPlayerStatus();
@@ -126,8 +168,6 @@ export class Tournament {
 
 	public battleFour(): void {
 		this.resetSide();
-		this._players[this._p1].setHost(true);
-		this._players[this._p2].setHost(false);
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], 4);

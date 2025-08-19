@@ -93,7 +93,7 @@ export class GameEngine {
 			var p4: Player = new Player(this._p4Nick ?? 'bot1', 4, this._p4AI, this._p4ID);
 
 			this._tournament = new Tournament(this, p1, p2, p3, p4, mode, oppMode);
-			this._tournament.battleOne();
+			this._tournament.preBattleOne();
 		}
 	}
 

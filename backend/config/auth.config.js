@@ -11,7 +11,7 @@ export function getAuthConfig() {
     },
 
     GOOGLE: {
-      CLIENT_ID: process.env.VITE_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '921980179970-65l8tisfd4qls4497e846eg7mbj96lhg.apps.googleusercontent.com',
+      CLIENT_ID: process.env.VITE_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '',
       CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || ''
     },
 

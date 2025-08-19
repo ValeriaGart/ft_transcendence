@@ -254,7 +254,6 @@ export class Router {
       
       // If user is authenticated and trying to access a redirect route, redirect to /user
       if (isAuthenticated && authenticatedUserRedirectRoutes.includes(pathWithoutQuery)) {
-        console.log('Router: Authenticated user accessing restricted route, redirecting to /user');
         this.navigate('/user');
         return;
       }
@@ -282,7 +281,9 @@ export class Router {
     try {
       const token = localStorage.getItem('auth_token');
       const user = localStorage.getItem('auth_user');
-      return !!(token && user);
+      const isAuthenticated = !!(token && user);
+      
+      return isAuthenticated;
     } catch (error) {
       console.error('Error checking authentication status:', error);
       return false;

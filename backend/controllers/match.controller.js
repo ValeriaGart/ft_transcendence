@@ -62,7 +62,7 @@ class MatchController {
 	static async getMatchHistoryWithNicknames(request, reply) {
 		try {
 			const { id } = request.params;
-			log('Received ID param:' + id + ' Type:' + typeof id, DEBUG); // Debug log
+			log('Received ID param: ' + id + ' Type: ' + typeof id, DEBUG); // Debug log
 			const matchHistory = await MatchService.getMatchHistoryWithNicknames(id);
 			log('Service returned:' + matchHistory.length + ' matches', DEBUG); // Debug log
 			

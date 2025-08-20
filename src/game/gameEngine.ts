@@ -93,27 +93,32 @@ export class GameEngine {
 			var p4: Player = new Player(this._p4Nick ?? 'bot1', 4, this._p4AI, this._p4ID);
 
 			this._tournament = new Tournament(this, p1, p2, p3, p4, mode, oppMode);
-			this._tournament.preBattleOne();
+			this._tournament.preBattle(1);
 		}
 	}
 
 	public startRoundTwo(): void {
-		this._tournament?.battleTwo();
+		this._pongGame = null;
+		this._tournament?.preBattle(2);
 	}
-
+	
 	public startTournamentMiddle(): void {
+		this._pongGame = null;
 		this._tournament?.tournamentMiddle();
 	}
-
+	
 	public startRoundThree(): void {
-		this._tournament?.battleThree();
+		this._pongGame = null;
+		this._tournament?.preBattle(3);
 	}
-
+	
 	public startRoundFour(): void {
-		this._tournament?.battleFour();
+		this._pongGame = null;
+		this._tournament?.preBattle(4);
 	}
-
+	
 	public endTournament(): void {
+		this._pongGame = null;
 		this._tournament?.winScreen();
 	}
 	

@@ -81,12 +81,13 @@ export class CollisionHandler {
 			y: this._pongGame._engine._canvas.height / 2
 		};
 
-		const randomDirection = getRandomDirection()
-		const randomAngle = getRandomAngle();
+		// const randomDirection = getRandomDirection()
+		// const randomAngle = getRandomAngle();
 		const speed = BALL_SPEED;
-		this._pongGame._gameStats.ballVelocity = {
-			x: randomDirection * Math.cos(randomAngle) * speed,
-			y: Math.sin(randomAngle) * speed
-		};
+		// this._pongGame._gameStats.ballVelocity = {
+		// 	x: randomDirection * Math.cos(randomAngle) * speed,
+		// 	y: Math.sin(randomAngle) * speed
+		// };
+		this._pongGame._gameStats.ballVelocity = { x: -1 * speed, y: 0 * speed};
 	}
 }

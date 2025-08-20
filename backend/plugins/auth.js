@@ -1,15 +1,17 @@
 import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
 import { dbGet } from '../config/database.js';
-import { AUTH_CONFIG } from '../config/auth.config.js';
 import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
+import { getAuthConfig } from '../config/auth.config.js';
 
 async function authPlugin(fastify, options) {
+  const config = getAuthConfig();
+  
   // Register JWT plugin with fallback secret
   await fastify.register(jwt, {
-    secret: AUTH_CONFIG.JWT.SECRET,
+    secret: config.JWT.SECRET,
     sign: {
-      expiresIn: AUTH_CONFIG.JWT.EXPIRES_IN
+      expiresIn: config.JWT.EXPIRES_IN
     }
   });
 
@@ -18,15 +20,10 @@ async function authPlugin(fastify, options) {
     try {
       // Check if token is in cookie, if so, add it to authorization header
       if (!request.headers.authorization && request.cookies && request.cookies['auth-token']) {
-        log("[auth.js] cookie auth-token", DEBUG);
         request.headers.authorization = `Bearer ${request.cookies['auth-token']}`;
       }
       else if (!request.headers.authorization && request.cookies && request.cookies['authToken']) {
-        log("[auth.js] cookie authToken", DEBUG);
         request.headers.authorization = `Bearer ${request.cookies['authToken']}`;
-      }
-      else {
-        log("[auth.js] using http(s) header instead of cookie", DEBUG);
       }
       
       await request.jwtVerify();

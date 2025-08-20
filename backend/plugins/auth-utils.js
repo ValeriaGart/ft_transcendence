@@ -1,16 +1,23 @@
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
-import { AUTH_CONFIG } from '../config/auth.config.js';
 import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
+import { getAuthConfig } from '../config/auth.config.js';
 
-const googleClient = new OAuth2Client(AUTH_CONFIG.GOOGLE.CLIENT_ID);
+// Create OAuth2Client dynamically to use current environment variables
+function getGoogleClient() {
+  const config = getAuthConfig();
+  return new OAuth2Client(config.GOOGLE.CLIENT_ID);
+}
 
 
 export async function verifyGoogleToken(idToken) {
   try {
+    const config = getAuthConfig();
+    
+    const googleClient = getGoogleClient();
     const ticket = await googleClient.verifyIdToken({
       idToken: idToken,
-      audience: AUTH_CONFIG.GOOGLE.CLIENT_ID
+      audience: config.GOOGLE.CLIENT_ID
     });
     
     const payload = ticket.getPayload();
@@ -29,18 +36,19 @@ export async function verifyGoogleToken(idToken) {
 }
 
 export function generateJWT(user) {
+  const config = getAuthConfig();
   const payload = {
     userId: user.id,
     email: user.email,
     name: user.name,
     iat: Math.floor(Date.now() / 1000),
-    iss: AUTH_CONFIG.JWT.ISSUER,
-    aud: AUTH_CONFIG.JWT.AUDIENCE
+    iss: config.JWT.ISSUER,
+    aud: config.JWT.AUDIENCE
   };
   
-  const token = jwt.sign(payload, AUTH_CONFIG.JWT.SECRET, {
-    expiresIn: AUTH_CONFIG.JWT.EXPIRES_IN,
-    algorithm: AUTH_CONFIG.JWT.ALGORITHM
+  const token = jwt.sign(payload, config.JWT.SECRET, {
+    expiresIn: config.JWT.EXPIRES_IN,
+    algorithm: config.JWT.ALGORITHM
   });
   
   return token;
@@ -48,10 +56,11 @@ export function generateJWT(user) {
 
 export function verifyJWT(token) {
   try {
-    const decoded = jwt.verify(token, AUTH_CONFIG.JWT.SECRET, {
-      algorithms: [AUTH_CONFIG.JWT.ALGORITHM],
-      issuer: AUTH_CONFIG.JWT.ISSUER,
-      audience: AUTH_CONFIG.JWT.AUDIENCE
+    const config = getAuthConfig();
+    const decoded = jwt.verify(token, config.JWT.SECRET, {
+      algorithms: [config.JWT.ALGORITHM],
+      issuer: config.JWT.ISSUER,
+      audience: config.JWT.AUDIENCE
     });
     
     return decoded;
@@ -62,7 +71,8 @@ export function verifyJWT(token) {
 
 export function extractTokenFromRequest(request) {
   // Try to get token from cookie first
-  const cookieToken = request.cookies[AUTH_CONFIG.SESSION.COOKIE_NAME];
+  const config = getAuthConfig();
+  const cookieToken = request.cookies[config.SESSION.COOKIE_NAME];
   if (cookieToken) {
     return cookieToken;
   }
@@ -94,30 +104,35 @@ export function authenticateRequest(request, reply) {
 }
 
 export function validatePassword(password) {
+  const config = getAuthConfig();
   const errors = [];
   
-  if (password.length < AUTH_CONFIG.PASSWORD.MIN_LENGTH) {
-    errors.push(`Password must be at least ${AUTH_CONFIG.PASSWORD.MIN_LENGTH} characters long`);
+  if (password.length < config.PASSWORD.MIN_LENGTH) {
+    errors.push(`Password must be at least ${config.PASSWORD.MIN_LENGTH} characters long`);
   }
   
-  if (password.length > AUTH_CONFIG.PASSWORD.MAX_LENGTH) {
-    errors.push(`Password must be no more than ${AUTH_CONFIG.PASSWORD.MAX_LENGTH} characters long`);
+  if (password.length > config.PASSWORD.MAX_LENGTH) {
+    errors.push(`Password must be no more than ${config.PASSWORD.MAX_LENGTH} characters long`);
   }
   
   if (password.includes(' ')) {
     errors.push('Password must not contain spaces');
   }
   
-  if (AUTH_CONFIG.PASSWORD.REQUIRE_UPPERCASE && !/[A-Z]/.test(password)) {
+  if (config.PASSWORD.REQUIRE_UPPERCASE && !/[A-Z]/.test(password)) {
     errors.push('Password must contain at least one uppercase letter');
   }
   
-  if (AUTH_CONFIG.PASSWORD.REQUIRE_LOWERCASE && !/[a-z]/.test(password)) {
+  if (config.PASSWORD.REQUIRE_LOWERCASE && !/[a-z]/.test(password)) {
     errors.push('Password must contain at least one lowercase letter');
   }
   
-  if (AUTH_CONFIG.PASSWORD.REQUIRE_NUMBERS && !/\d/.test(password)) {
+  if (config.PASSWORD.REQUIRE_NUMBERS && !/\d/.test(password)) {
     errors.push('Password must contain at least one number');
+  }
+  
+  if (config.PASSWORD.REQUIRE_SPECIAL && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push('Password must contain at least one special character');
   }
   
   return {
@@ -155,5 +170,3 @@ export function validateEmail(email) {
   // Regex validation
   return emailRegex.test(email);
 }
-
-export { AUTH_CONFIG };

@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
 import { dbGet } from '../config/database.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 import { getAuthConfig } from '../config/auth.config.js';
 
 async function authPlugin(fastify, options) {
@@ -27,6 +28,7 @@ async function authPlugin(fastify, options) {
       
       await request.jwtVerify();
     } catch (err) {
+      log("[auth.js] Unauthorized: " + err.message, WARN);
       reply.code(401).send({ 
         error: 'Unauthorized', 
         message: 'Invalid or missing token' 

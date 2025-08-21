@@ -57,7 +57,7 @@ export class Tournament {
 		}
 
 		this._pnumbers = [1234567890 ,this._p1, this._p2, this._p3, this._p4];
-		this.logPlayerStatus();
+		// this.logPlayerStatus();
 	}
 
 	private broadcastGameState(): void {
@@ -133,7 +133,7 @@ export class Tournament {
 	public async battleOne() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
-		this.logPlayerStatus();
+		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
 			while (this._ready < 3) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
@@ -147,7 +147,7 @@ export class Tournament {
 	public async battleTwo(){
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
-		this.logPlayerStatus();
+		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
 			while (this._ready < 3) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
@@ -206,7 +206,7 @@ export class Tournament {
 	public async battleThree() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
-		this.logPlayerStatus();
+		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
 			while (this._ready < 3) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
@@ -220,7 +220,7 @@ export class Tournament {
 	public async battleFour() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
-		this.logPlayerStatus();
+		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
 			while (this._ready < 3) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
@@ -232,7 +232,7 @@ export class Tournament {
 	}
 
 	public winScreen(): void {
-		this.logPlayerStatus();
+		// this.logPlayerStatus();
 		this._engine._gameStateMachine.transition(GameState.GAME_OVER);
 		this._p1 = 0;
 		this._p2 = 0;

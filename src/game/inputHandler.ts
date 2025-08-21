@@ -120,7 +120,16 @@ export class InputHandler {
 				if (event.key == 'ArrowDown') gameStats.right = +1;
 			}
 			
-			if (event.key == 'Escape') {
+			if (event.key == 'Escape'){
+				// if (this._engine._pongGame._oppMode == OpponentMode.ONLINE) {
+				// 	const msg = {
+				// 		"type": 7,
+				// 		"roomId": this._engine._roomID,
+				// 		"_gameState": "pause"
+				// 	};
+				// 	const gameStateString = JSON.stringify(msg);
+				// 	this._engine._ws.sendMessage(gameStateString);
+				// }
 				this._engine._gameStateMachine.transition(GameState.PAUSED);
 			}
 		}

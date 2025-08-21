@@ -250,14 +250,22 @@ export class Tournament {
 			}
 		}
 
+		const msg = {
+			"type": 5,
+			"roomId": this._engine._roomID,
+			"status": "finished"
+		}
+		console.log('Sending finish tournament msg:', JSON.stringify(msg));
+		this._engine._ws.sendMessage(JSON.stringify(msg));
+
 		this._winScreen.drawWinScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), this._players[this._p3].getName())
 	}
 
 	private logPlayerStatus() {
-		console.log("p1 > name:", this._players[this._p1].getName(), "| position:", this._players[this._p1].getPosition(), "| side:", this._players[this._p1].getSide(), "| isbot:", this._players[this._p1].isBot());
-		console.log("p2 > name:", this._players[this._p2].getName(), "| position:", this._players[this._p2].getPosition(), "| side:", this._players[this._p2].getSide(), "| isbot:", this._players[this._p2].isBot());
-		console.log("p3 > name:", this._players[this._p3].getName(), "| position:", this._players[this._p3].getPosition(), "| side:", this._players[this._p3].getSide(), "| isbot:", this._players[this._p3].isBot());
-		console.log("p4 > name:", this._players[this._p4].getName(), "| position:", this._players[this._p4].getPosition(), "| side:", this._players[this._p4].getSide(), "| isbot:", this._players[this._p4].isBot());
+		console.log("contestant1 > name:", this._players[this._p1].getName(), "| position:", this._players[this._p1].getPosition(), "| side:", this._players[this._p1].getSide(), "| isbot:", this._players[this._p1].isBot());
+		console.log("contestant2 > name:", this._players[this._p2].getName(), "| position:", this._players[this._p2].getPosition(), "| side:", this._players[this._p2].getSide(), "| isbot:", this._players[this._p2].isBot());
+		console.log("contestant3 > name:", this._players[this._p3].getName(), "| position:", this._players[this._p3].getPosition(), "| side:", this._players[this._p3].getSide(), "| isbot:", this._players[this._p3].isBot());
+		console.log("contestant4 > name:", this._players[this._p4].getName(), "| position:", this._players[this._p4].getPosition(), "| side:", this._players[this._p4].getSide(), "| isbot:", this._players[this._p4].isBot());
 	}
 
 	private resetSide() {

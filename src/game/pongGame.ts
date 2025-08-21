@@ -148,7 +148,13 @@ export class PongGame {
 			return;
 		}
 		var msg = JSON.parse(message.data);
+		if (msg == "pause") {
+			this._engine._gameStateMachine.transition(GameState.PAUSED);
+		}
 		// console.log('client has reveived message: ', msg);
+		if (msg.type == "CANCELMATCH") {
+			this._engine.endGameLoop();
+		}
 		if (!msg.ballPosition) {
 			return;
 		}

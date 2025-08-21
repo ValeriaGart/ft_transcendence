@@ -77,28 +77,28 @@ export class PreBattleScreen {
 			message1 = p1.getName() + ": WINNER";
 		}
 		else {
-			message1 = p1.getName() + ": LOOSER";
+			message1 = p1.getName() + ": LOSER";
 		}
 
 		if (p2.getPosition() == 3) {
 			message2 = p2.getName() + ": WINNER";
 		}
 		else {
-			message2 = p2.getName() + ": LOOSER";
+			message2 = p2.getName() + ": LOSER";
 		}
 
 		if (p3.getPosition() == 3) {
 			message3 = p3.getName() + ": WINNER";
 		}
 		else {
-			message3 = p3.getName() + ": LOOSER";
+			message3 = p3.getName() + ": LOSER";
 		}
 
 		if (p4.getPosition() == 3) {
 			message4 = p4.getName() + ": WINNER";
 		}
 		else {
-			message4 = p4.getName() + ": LOOSER";
+			message4 = p4.getName() + ": LOSER";
 		}
 
 		this._engine._ctx.fillText(message1, this._engine._canvas.width / 4, 350);

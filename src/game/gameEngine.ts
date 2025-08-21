@@ -8,7 +8,6 @@ import { Player } from './player.ts';
 import { Tournament } from './tournament.ts';
 import { OpponentScreen } from './opponentSelectScreen.ts';
 import { WebSocketService } from "../lib/webSocket";
-import { Router } from '@blitz-ts/router.ts';
 
 export class GameEngine {
 	//standard classes
@@ -148,8 +147,8 @@ export class GameEngine {
 		this._p4Nick = msg.players[3]?.nick || null;
 		this._p1AI = msg.players[0].ai;
 		this._p2AI = msg.players[1].ai;
-		this._p3AI = msg.players[2]?.ai || true;
-		this._p4AI = msg.players[3]?.ai || true;
+		this._p3AI = msg.players[2]?.ai;
+		this._p4AI = msg.players[3]?.ai;
 		this._p1ID = msg.players[0].pnumber;
 		this._p2ID = msg.players[1].pnumber;
 		this._p3ID = msg.players[2]?.pnumber || 0;

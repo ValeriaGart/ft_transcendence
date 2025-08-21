@@ -421,19 +421,19 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     const isTournament = (this.state.pendingInviteType === 'tournament')
       || (Array.isArray(this.state.invitationData?.players) && this.state.invitationData.players.length === 4);
 
-    if (isTournament) {
-      // TEMP: in tournament case, behave like decline to avoid backend crash path
-      const cancelMessage = {
-        type: 5,
-        roomId: this.state.pendingRoomId,
-        status: 'cancel'
-      };
-      console.log('Tournament accept treated as cancel:', cancelMessage);
-      ws.sendMessage(JSON.stringify(cancelMessage));
-      this.closePopup(false);
-      setTimeout(() => window.location.reload(), 100);
-      return;
-    }
+    // if (isTournament) {
+    //   // TEMP: in tournament case, behave like decline to avoid backend crash path
+    //   const cancelMessage = {
+    //     type: 5,
+    //     roomId: this.state.pendingRoomId,
+    //     status: 'cancel'
+    //   };
+    //   console.log('Tournament accept treated as cancel:', cancelMessage);
+    //   ws.sendMessage(JSON.stringify(cancelMessage));
+    //   this.closePopup(false);
+    //   setTimeout(() => window.location.reload(), 100);
+    //   return;
+    // }
 
     // Normal 1v1 accept flow
     const acceptMessage = {

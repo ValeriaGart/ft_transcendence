@@ -80,7 +80,7 @@ class RoomUtilsService {
 
 
 	static async sendMessageToAllPlayers(websocketService, room, message, connection = null) {
-    log("[RoomUtils] sendMessageToAllPlayers", DEBUG);
+    // log("[RoomUtils] sendMessageToAllPlayers", DEBUG);
 
 		for (let p of room.players) {
 			if (p.ai == true) {

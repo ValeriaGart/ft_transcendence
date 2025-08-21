@@ -28,11 +28,14 @@ export class PongGame {
 	public _oppMode: OpponentMode = OpponentMode.SINGLE;
 	public _p1: Player;
 	public _p2: Player;
+	public _p3: Player | null = null;
+	public _p4: Player | null = null;
 	private _round: number = 0;
 	private _lastAIUpdateTimeMs: number = 0;
 	private _lastBroadcastTimeMs: number = 0;
+	private _running: boolean = true;
 
-	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1?: Player, p2?: Player, round?: number) {
+	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1?: Player, p2?: Player, p3?: Player, p4?: Player, round?: number) {
 		this._engine = engine;
 		this._mode = mode || this._mode
 		this._oppMode = opponent || this._oppMode;
@@ -40,6 +43,12 @@ export class PongGame {
 		this._p1.setSide('left');
 		this._p2 = p2 || new Player("default", 0, true, 2);
 		this._p2.setSide('right');
+		this._p3 = p3 || null;
+		if (this._p3)
+			this._p3.setSide('default');
+		this._p4 = p4 || null;
+		if (this._p4)
+			this._p4.setSide('default');
 		this._round = round || this._round;
 
 		console.log('game running in mode: ', this._mode, " : ", this._oppMode);
@@ -102,7 +111,7 @@ export class PongGame {
 						this._engine.startRoundTwo();
 						break;
 					case 2:
-						this._engine.startRoundThree();
+						this._engine.startTournamentMiddle();
 						break;
 					case 3:
 						this._engine.startRoundFour();
@@ -121,6 +130,9 @@ export class PongGame {
 	}
 
 	private broadcastGameState(): void {
+		if ((this._gameStats.pnumber != this._p1.getPnumber() && this._gameStats.pnumber != this._p2.getPnumber()) || this._running == false) {
+			return;
+		}
 		const msg = {
 			"type": 7,
 			"roomId": this._engine._roomID,
@@ -132,9 +144,17 @@ export class PongGame {
 	}
 
 	private parseMessage(message: MessageEvent): void {
+		if (this._running == false) {
+			return;
+		}
 		var msg = JSON.parse(message.data);
-		console.log('client has reveived message: ', msg);
-		console.log("stats in msg: ", msg.ballPosition);
+		if (msg == "pause") {
+			this._engine._gameStateMachine.transition(GameState.PAUSED);
+		}
+		// console.log('client has reveived message: ', msg);
+		if (msg.type == "CANCELMATCH") {
+			this._engine.endGameLoop();
+		}
 		if (!msg.ballPosition) {
 			return;
 		}
@@ -146,12 +166,19 @@ export class PongGame {
 				this._gameStats.ballVelocity = msg.ballVelocity;
 			}
 		}
-		if (this._gameStats.pnumber == this._p1.getPnumber()) {
+		else if (this._gameStats.pnumber == this._p1.getPnumber()) {
 			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
 			if (this._gameStats.ballPosition.x > this._engine._canvas.width / 2) {
 				this._gameStats.ballPosition = msg.ballPosition;
 				this._gameStats.ballVelocity = msg.ballVelocity;
 			}
+		}
+		else {
+			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
+			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
+			this._gameStats.scores = msg.scores;
+			this._gameStats.ballPosition = msg.ballPosition;
+			this._gameStats.ballVelocity = msg.ballVelocity;
 		}
 	}
 
@@ -165,19 +192,20 @@ export class PongGame {
 			console.log('Sending finish & save match msg:', JSON.stringify(msg));
 			this._engine._ws.sendMessage(JSON.stringify(msg));
 		}
-		else {
-			const msg = {
-				"type": 5,
-				"roomId": this._engine._roomID,
-				"status": "finished"
-			}
-			console.log('Sending finish match msg:', JSON.stringify(msg));
-			this._engine._ws.sendMessage(JSON.stringify(msg));
-		}
+		// else {
+		// 	const msg = {
+		// 		"type": 5,
+		// 		"roomId": this._engine._roomID,
+		// 		"status": "finished"
+		// 	}
+		// 	console.log('Sending finish match msg:', JSON.stringify(msg));
+		// 	this._engine._ws.sendMessage(JSON.stringify(msg));
+		// }
 	}
 
 	private checkWinCondition(): boolean {
 		if (this._gameStats.scores.left >= 3) {
+			this._running = false;
 			this._p1.setPosition(this._p1.getPosition() - 1)
 			console.log('winner: ', this._p1.getName(), " pos: ", this._p1.getPosition());
 			if (this._mode == GameMode.TOURNAMENT) {
@@ -190,6 +218,7 @@ export class PongGame {
 		}
 		
 		if (this._gameStats.scores.right >= 3) {
+			this._running = false;
 			this._p2.setPosition(this._p2.getPosition() - 1)
 			console.log('winner: ', this._p2.getName(), " pos: ", this._p2.getPosition());
 			if (this._mode == GameMode.TOURNAMENT) {

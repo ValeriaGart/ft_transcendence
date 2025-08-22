@@ -18,7 +18,7 @@ class MatchMakingService {
 		this.EmojiService = new EmojiService();
 		this.WebsocketService = websocketService;
 		this.RoomService = new RoomService(this.WebsocketService, this.EmojiService);
-		
+		this.RoomMax = 3;
     }
 
 	createStartMatchMessage(room, playernumber) {
@@ -64,7 +64,11 @@ class MatchMakingService {
 
 	async matchMakingInit(connection, message) {
 		log("[matchMakingInit] start", DEBUG);
-		
+		if (this.RoomService.rooms.length >= this.RoomMax) {
+			log("[matchMakingInit] Already too many rooms in progress, cancelling room creation", WARN);
+			await this.WebsocketService.sendMessageToClient(connection, this.WebsocketService.createErrorMessage(`Already too many rooms in progress, please wait for a less busy time to play.`));
+			return ;
+		}
 		if (RoomValidationService.roomValidation(message) === false) {
 			log("[matchMakingInit] Room could not be validated", WARN);
 			await this.WebsocketService.sendMessageToClient(connection, {

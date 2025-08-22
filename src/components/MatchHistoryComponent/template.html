@@ -18,7 +18,7 @@
             </div>
         </div>
         <!-- Logs area fills remaining height -->
-        <div id="matches-log-field" class="w-full md:w-[135%] flex-1 min-h-[200px] md:min-h-[240px] border-[#81C3C3] p-2 border-4 rounded-lg bg-[#ffffff] overflow-y-auto">
+        <div id="matches-log-field" class="w-full md:w-[135%] flex-1 min-h-[200px] md:min-h-[240px] border-[#81C3C3] p-2 border-4 rounded-lg bg-[#ffffff] overflow-y-auto relative flex flex-col pb-12">
             <!-- Loading State -->
             <div class="text-center py-2" blitz-if="loading">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B784F2] mx-auto mb-2"></div>
@@ -59,13 +59,10 @@
                     </div>
                 </blitz-for>
             </div>
-        </div>
-
-        <!-- Controls under logs -->
-        <div class="w-full md:w-[135%] mt-2 flex items-center justify-between flex-shrink-0">
-            <button id="prev-page" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Prev page</button>
-            <button id="refresh-matches" class="px-3 py-1 bg-[#B784F2] text-white rounded hover:opacity-90">Reload logs</button>
-            <button id="next-page" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Next page</button>
-        </div>
+            <div class="w-full flex items-center justify-between absolute bottom-0 left-0 right-0 bg-[#ffffff] p-2 z-10">
+                <button id="prev-page" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 cursor-pointer">Prev page</button>
+                <button id="refresh-matches" class="px-3 py-1 bg-[#B784F2] text-white rounded hover:opacity-90 cursor-pointer">Reload logs</button>
+                <button id="next-page" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 cursor-pointer">Next page</button>
+            </div>
         </div>
 </div>

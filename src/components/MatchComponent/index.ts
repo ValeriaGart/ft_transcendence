@@ -1,9 +1,9 @@
 import { Component } from "@blitz-ts/Component";
-import { Router } from "@blitz-ts";
 import { getApiUrl } from "../../config/api";
 import { ErrorManager } from "../Error";
 import { authService, type User } from "../../lib/auth";
 import { WebSocketService } from "../../lib/webSocket";
+import { sanitizeForTemplate } from "../../utils/sanitization";
 
 interface Friendship {
   id: number;
@@ -187,8 +187,6 @@ export class MatchComponent extends Component<MatchComponentState> {
     
     console.log('Event listener attached using component system');
   }
-
-  // removed unused startAiMatch (replaced by window 'request-ai-start' flow)
 
   /**
    * Start 1v1 match with selected friend
@@ -460,7 +458,7 @@ export class MatchComponent extends Component<MatchComponentState> {
         
         // Filter friendships to only include the current user's friendships
         const currentUser = authService.getCurrentUser();
-      const currentUserId = currentUser?.id;
+        const currentUserId = currentUser?.id;
         
         if (!currentUserId) {
           this.showError('Could not get current user ID');
@@ -711,15 +709,13 @@ export class MatchComponent extends Component<MatchComponentState> {
         playButton.textContent = 'Play vs AI';
       } else if (count === 1) {
         const fid = this.state.selectedFriendIds[0];
-        const friendName = this.state.userProfiles[fid]?.nickname || `User ${fid}`;
+        const friendName = sanitizeForTemplate(this.state.userProfiles[fid]?.nickname || `User ${fid}`);
         playButton.textContent = `Play vs ${friendName}`;
       } else {
         playButton.textContent = `Start Tournament (${count + 1}/4)`;
       }
     }
   }
-
-  // removed unused handleStartAiMatch (Play button uses setupStartAiMatchButton flow)
 
   /**
    * Render friendships list in the friend-list container
@@ -776,8 +772,9 @@ export class MatchComponent extends Component<MatchComponentState> {
 
        // Get the other user's nickname
        const otherUserId = isInitiator ? friendship.recipient_id : friendship.initiator_id;
+       const safeUserId = Number.isInteger(otherUserId) ? otherUserId : 0;
        const otherUserProfile = this.state.userProfiles?.[otherUserId];
-       const displayName = otherUserProfile?.nickname || `User ${otherUserId}`;
+       const displayName = sanitizeForTemplate(otherUserProfile?.nickname || `User ${otherUserId}`);
 
        // Check if friend is online
        const isOnline = this.state.onlineFriends.includes(otherUserId);
@@ -823,17 +820,17 @@ export class MatchComponent extends Component<MatchComponentState> {
       const selectedClass = isSelected ? 'bg-[#f2e6ff]' : '';
       const borderStyle = isSelected ? 'border-2 border-[#B784F2]' : '';
       
-      const cursorStyle = 'cursor-default';
+      const cursorStyle = canSelect ? 'cursor-pointer' : 'cursor-default';
       const friendItemClass = canSelect ? 'friend-item' : '';
       
-       return `
+      return `
         <div class="flex items-center justify-start p-2 mb-1 ${cursorStyle} hover:bg-[#f2e6ff] transition-colors duration-200 ${friendItemClass} ${borderStyle} ${selectedClass}" 
-             data-friend-id="${otherUserId}"
-             ${canSelect ? `onclick=\"window.matchComponent && window.matchComponent.handleFriendSelection(${otherUserId})\"` : ''}>
+             data-friend-id="${safeUserId}"
+             ${canSelect ? `onclick="window.matchComponent && window.matchComponent.handleFriendSelection(${safeUserId})"` : ''}>
           <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">
-                <span class="hover:underline cursor-pointer" style="text-decoration-color:#B784F2" ${canSelect ? `data-nick="${displayName}"` : ''}>${displayName}</span>
+                ${displayName}
                 <div class="w-2 h-2 rounded-full ${onlineStatusColor} flex-shrink-0" style="background-color: ${isOnline ? '#AEDFAD' : '#FFA9A3'};" title="${onlineStatusText}"></div>
               </div>
               <div class="text-[#81C3C3] text-xs opacity-50 ">
@@ -873,21 +870,6 @@ export class MatchComponent extends Component<MatchComponentState> {
         }
       }
     });
-
-    // Add navigation on nickname click for accepted friends
-    const container = friendListContainer.querySelector('div.w-full');
-    if (container) {
-      container.querySelectorAll('span[data-nick]').forEach((el) => {
-        el.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const nickname = (e.currentTarget as HTMLElement).getAttribute('data-nick') || '';
-          if (!nickname) return;
-          const router = Router.getInstance();
-          router.navigate(`/user/${encodeURIComponent(nickname)}`);
-        });
-      });
-    }
 
 
   }

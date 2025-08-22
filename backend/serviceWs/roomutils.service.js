@@ -67,6 +67,9 @@ class RoomUtilsService {
 	static async setPlayerAcceptance(room, playerId, acceptance) {
 
 		for (let p of room.players) {
+			if (p.ai === true) {
+				continue ;
+			}
 			if (p.wsclient.userId === playerId) {
 				if (acceptance == "accept" || acceptance == "accepted" || acceptance == "accepts") {
 					p.accepted = "accepted";

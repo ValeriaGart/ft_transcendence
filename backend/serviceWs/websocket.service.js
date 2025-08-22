@@ -132,7 +132,7 @@ class WebsocketService {
 		try {
 			friendslist.push( await FriendService.getAllFriendshipsUserId(connection.userId));
 		} catch (error) {
-			log("DB ERROR: " + error.message, ERROR);
+			log("DB ERROR: " + error.message, WARN);
 		}
 		
 		const flatFriendslist = friendslist.flat();

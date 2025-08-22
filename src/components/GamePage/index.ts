@@ -112,7 +112,7 @@ export class GamePage extends Component {
         msg = JSON.parse(message.data);
 
         if (msg.type !== "STARTMATCH") {
-            console.error("Unexpected message type:", msg.type);
+            // console.error("Unexpected message type:", msg.type);
             return false;
         }
         return true;

@@ -3,9 +3,9 @@ import {
   verifyGoogleToken, 
   generateJWT, 
   validatePassword, 
-  validateEmail,
-  AUTH_CONFIG 
+  validateEmail
 } from '../plugins/auth-utils.js';
+import { getAuthConfig } from '../config/auth.config.js';
 
 class AuthController {
   static async googleSignup(request, reply) {
@@ -86,8 +86,9 @@ class AuthController {
       await AuthService.updateLastLogin(user.id);
 
       const token = generateJWT(user);
+      const config = getAuthConfig();
 
-      reply.setCookie(AUTH_CONFIG.SESSION.COOKIE_NAME, token, AUTH_CONFIG.SESSION.COOKIE_OPTIONS);
+      reply.setCookie(config.SESSION.COOKIE_NAME, token, config.SESSION.COOKIE_OPTIONS);
 
       return {
         success: true,
@@ -189,8 +190,9 @@ class AuthController {
       await AuthService.updateLastLogin(user.id);
 
       const token = generateJWT(user);
+      const config = getAuthConfig();
 
-      reply.setCookie(AUTH_CONFIG.SESSION.COOKIE_NAME, token, AUTH_CONFIG.SESSION.COOKIE_OPTIONS);
+      reply.setCookie(config.SESSION.COOKIE_NAME, token, config.SESSION.COOKIE_OPTIONS);
 
       return {
         success: true,
@@ -209,11 +211,12 @@ class AuthController {
 
   static async logout(request, reply) {
     try {
-      reply.clearCookie(AUTH_CONFIG.SESSION.COOKIE_NAME, {
+      const config = getAuthConfig();
+      reply.clearCookie(config.SESSION.COOKIE_NAME, {
         path: '/',
         httpOnly: true,
-        secure: AUTH_CONFIG.SESSION.COOKIE_OPTIONS.secure,
-        sameSite: AUTH_CONFIG.SESSION.COOKIE_OPTIONS.sameSite
+        secure: config.SESSION.COOKIE_OPTIONS.secure,
+        sameSite: config.SESSION.COOKIE_OPTIONS.sameSite
       });
 
       return { success: true, message: 'Logged out successfully' };
@@ -236,8 +239,9 @@ class AuthController {
       }
 
       const token = generateJWT(user);
+      const config = getAuthConfig();
 
-      reply.setCookie(AUTH_CONFIG.SESSION.COOKIE_NAME, token, AUTH_CONFIG.SESSION.COOKIE_OPTIONS);
+      reply.setCookie(config.SESSION.COOKIE_NAME, token, config.SESSION.COOKIE_OPTIONS);
 
       return {
         success: true,

@@ -46,3 +46,26 @@ see the logs!
 ```
 echo "new logs 1234" >> ./mylogs/logstash-tutorial-dataset
 ```
+
+
+# logrotate
+
+## postrotate debug scripts
+```
+	postrotate
+		echo "postrotate message"
+		if [ -f /tmp/ft_transcendence.pid ] && [ -s /tmp/ft_transcendence.pid ]; then
+			PID=$(cat /tmp/ft_transcendence.pid)
+			echo "PID from file: $PID"
+			ps aux | grep "$PID"
+			if kill -0 "$PID" 2>/dev/null; then
+				echo "logrotate send kill HUP"
+				kill -HUP "$PID"
+			else
+				echo "logrotate not send kill"
+			fi
+		else
+			echo "PID file missing or empty"
+		fi
+	endscript
+```

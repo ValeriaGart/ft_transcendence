@@ -1,4 +1,6 @@
-let validGameModes = ["bestof", "infinite"];
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
+
+let validGameModes = ["bestof", "infinite","tournament"];
 let validOppModes = ["single", "online"];
 
 class RoomValidationService {
@@ -75,7 +77,7 @@ class RoomValidationService {
 			this.oppModeFieldCheck(message.oppMode);
 
 		} catch (error) {
-			console.error("Error: ", error.message);
+			log("Error: " + error.message, WARN);
 			return (false);
 		}
 

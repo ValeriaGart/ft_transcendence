@@ -1,10 +1,11 @@
-
+import { OrganizeImportsMode } from "typescript";
 import ProfileService from "../services/profile.service.js";
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 
 class RoomService {
 	constructor(websocketService, emojiService) {
-		console.log("[RoomService] constructor");
+		log("[RoomService constructor]", DEBUG);
 		this.rooms = [];
 		this.WebsocketService = websocketService;
 		this.EmojiService = emojiService;
@@ -13,6 +14,7 @@ class RoomService {
 
 
 		createUniqueId() {
+		log("[RoomService] createUniqueId", DEBUG);
 		let id;
 		let isUnique = true;
 		let count = 0;
@@ -24,7 +26,7 @@ class RoomService {
 			}
 			for (let r of this.rooms) {
 				if (id === r.id) {
-					console.log("duplicate, renewing id");
+					log("duplicate, renewing id", WARN);
 					isUnique = false ;
 					count++;
 					break ;
@@ -42,6 +44,7 @@ class RoomService {
 		
 	
 	async createRoom(connection, message) {
+		log("[RoomService] createRoom", DEBUG);
 		const room = {
 			id: this.createUniqueId(),
 			gameMode: message.gameMode,
@@ -75,13 +78,13 @@ class RoomService {
 		}
 
 		this.rooms.push(room);
-		console.log("[RoomService] new room was created");
+		log("[RoomService] new room was created", INFO);
 
 		/* printing rooms for debugging */
-		console.debug(JSON.stringify(this.rooms, (key, value) => {
+		log(JSON.stringify(this.rooms, (key, value) => {
 			if (key === "wsclient") return undefined; // Exclude wsclient
 			return value;
-		}, 2));
+		}, 2), DEBUG);
 		
 		return (room);
 	}
@@ -89,20 +92,25 @@ class RoomService {
 		
 	async destroyRoom(todeleteId) {
 		let count = 0;
-		console.debug("[RoomService] rooms[] length: ", this.rooms.length);
+		let og_roomlen = this.rooms.length;
+		// log("[RoomService] rooms[] length: " + og_roomlen, DEBUG);
+
 		for (let r of this.rooms) {
 			if (r.id === todeleteId) {
-				console.log("deleting ", todeleteId);
+				log("deleting room: " + todeleteId, DEBUG);
 				this.rooms.splice(count, 1);
 				continue ;
 			}
 			count++;
 		}
-		console.debug("[RoomService] rooms[] length after destroyRoom function: ", this.rooms.length);
+
+		if (this.rooms.length != og_roomlen) {
+			log("[RoomService] destroyRoom deleted " + (og_roomlen - this.rooms.length) + " room", DEBUG);
 		}
-	
-
-
+		else {
+			log("[RoomService] destroyRoom did not delete any rooms", WARN);
+		}
+	}
 }
 
 export default RoomService;

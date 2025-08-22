@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { dbRun, dbGet } from '../config/database.js';
 import { AUTH_CONFIG } from '../config/auth.config.js';
 import { generateNicknameFromUserData, validateNickname, generateUniqueNickname } from '../utils/nickname.utils.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 class AuthService {
   static async findUserByEmail(email) {
@@ -11,7 +12,7 @@ class AuthService {
         [email]
       );
     } catch (error) {
-      console.error('Error finding user by email:', error);
+      log('Error finding user by email: ' + error, WARN);
       throw error;
     }
   }
@@ -23,7 +24,7 @@ class AuthService {
         [id]
       );
     } catch (error) {
-      console.error('Error finding user by ID:', error);
+      log('Error finding user by ID: ' + error, WARN);
       throw error;
     }
   }
@@ -35,7 +36,7 @@ class AuthService {
         [googleId]
       );
     } catch (error) {
-      console.error('Error finding user by Google ID:', error);
+      log('Error finding user by Google ID: ' + error, WARN);
       throw error;
     }
   }
@@ -70,9 +71,9 @@ class AuthService {
       try {
         await dbRun('ROLLBACK');
       } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError);
+        log('Rollback failed: ' + rollbackError, ERROR);
       }
-      console.error('Error creating Google user:', error);
+      log('Error creating Google user: ' + error, WARN);
       throw error;
     }
   }
@@ -111,9 +112,9 @@ class AuthService {
       try {
         await dbRun('ROLLBACK');
       } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError);
+        log('Rollback failed: ' + rollbackError, ERROR);
       }
-      console.error('Error creating password user:', error);
+      log('Error creating password user: ' + error, WARN);
       throw error;
     }
   }
@@ -125,7 +126,7 @@ class AuthService {
         [userId]
       );
     } catch (error) {
-      console.error('Error updating last login:', error);
+      log('Error updating last login: ' + error, ERROR);
       throw error;
     }
   }
@@ -134,7 +135,7 @@ class AuthService {
     try {
       return await bcrypt.compare(password, hash);
     } catch (error) {
-      console.error('Error verifying password:', error);
+      log('Error verifying password: ' + error, WARN);
       return false;
     }
   }
@@ -166,7 +167,7 @@ class AuthService {
         );
       }
     } catch (error) {
-      console.error('Error incrementing failed login attempts:', error);
+      log('Error incrementing failed login attempts: ' + error, ERROR);
       throw error;
     }
   }
@@ -182,7 +183,7 @@ class AuthService {
         [userId]
       );
     } catch (error) {
-      console.error('Error resetting failed login attempts:', error);
+      log('Error resetting failed login attempts: ' + error, ERROR);
       throw error;
     }
   }
@@ -212,7 +213,7 @@ class AuthService {
 
       return await this.findUserById(userId);
     } catch (error) {
-      console.error('Error updating user:', error);
+      log('Error updating user: ' + error, ERROR);
       throw error;
     }
   }
@@ -228,7 +229,7 @@ class AuthService {
 
       return true;
     } catch (error) {
-      console.error('Error changing password:', error);
+      log('Error changing password: ' + error, ERROR);
       throw error;
     }
   }
@@ -240,7 +241,7 @@ class AuthService {
         [userId]
       );
     } catch (error) {
-      console.error('Error deactivating user:', error);
+      log('Error deactivating user: ' + error, ERROR);
       throw error;
     }
   }

@@ -8,7 +8,6 @@ import { Player } from './player.ts';
 import { Tournament } from './tournament.ts';
 import { OpponentScreen } from './opponentSelectScreen.ts';
 import { WebSocketService } from "../lib/webSocket";
-import { Router } from '@blitz-ts/router.ts';
 
 export class GameEngine {
 	//standard classes
@@ -93,27 +92,32 @@ export class GameEngine {
 			var p4: Player = new Player(this._p4Nick ?? 'bot1', 4, this._p4AI, this._p4ID);
 
 			this._tournament = new Tournament(this, p1, p2, p3, p4, mode, oppMode);
-			this._tournament.battleOne();
+			this._tournament.preBattle(1);
 		}
 	}
 
 	public startRoundTwo(): void {
-		this._tournament?.battleTwo();
+		this._pongGame = null;
+		this._tournament?.preBattle(2);
 	}
-
+	
 	public startTournamentMiddle(): void {
+		this._pongGame = null;
 		this._tournament?.tournamentMiddle();
 	}
-
+	
 	public startRoundThree(): void {
-		this._tournament?.battleThree();
+		this._pongGame = null;
+		this._tournament?.preBattle(3);
 	}
-
+	
 	public startRoundFour(): void {
-		this._tournament?.battleFour();
+		this._pongGame = null;
+		this._tournament?.preBattle(4);
 	}
-
+	
 	public endTournament(): void {
+		this._pongGame = null;
 		this._tournament?.winScreen();
 	}
 	
@@ -143,8 +147,8 @@ export class GameEngine {
 		this._p4Nick = msg.players[3]?.nick || null;
 		this._p1AI = msg.players[0].ai;
 		this._p2AI = msg.players[1].ai;
-		this._p3AI = msg.players[2]?.ai || true;
-		this._p4AI = msg.players[3]?.ai || true;
+		this._p3AI = msg.players[2]?.ai;
+		this._p4AI = msg.players[3]?.ai;
 		this._p1ID = msg.players[0].pnumber;
 		this._p2ID = msg.players[1].pnumber;
 		this._p3ID = msg.players[2]?.pnumber || 0;

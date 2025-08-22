@@ -14,6 +14,10 @@ const colors = {
 };
 const reset = '\x1b[0m';
 
+export const DEBUG = "debug";
+export const INFO = "info";
+export const WARN = "warn";
+export const ERROR = "error";
 
 function log_dev(message, level = "info") {
 	switch (level) {

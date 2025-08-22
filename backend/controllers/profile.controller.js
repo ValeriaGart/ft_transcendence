@@ -1,6 +1,7 @@
 import ProfileService from '../services/profile.service.js';
 import { validateNickname, cleanNickname, nicknameExists } from '../utils/nickname.utils.js';
 import { dbGet } from '../config/database.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 
 class ProfileController {
   static async getAllProfiles(request, reply) {
@@ -33,6 +34,8 @@ class ProfileController {
   static async updateProfile(request, reply) {
     try {
       const { id } = request.params;
+      
+      // No need to sanitize again - XSS middleware already handled this
       const profile = await ProfileService.updateProfile(id, request.body);
       
       return {
@@ -85,7 +88,7 @@ class ProfileController {
 
       // Pre-validate nickname if provided (including empty strings)
       if (nickname !== undefined && nickname !== null) {
-        const validation = validateNickname(nickname);
+        const validation = validateNickname(updateFields.nickname);
         if (!validation.isValid) {
           reply.code(400);
           return { 
@@ -168,7 +171,7 @@ class ProfileController {
       
       return suggestions;
     } catch (error) {
-      console.error('Error generating nickname suggestions:', error);
+      log(`Error generating nickname suggestions: ${error}`, WARN);
       return [];
     }
   }

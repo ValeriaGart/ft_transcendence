@@ -1,7 +1,26 @@
 /**
+ * Escapes HTML special characters to prevent XSS attacks
+ * @param {string} unsafe - The potentially unsafe string
+ * @returns {string} HTML-escaped string safe for insertion into DOM
+ */
+function escapeHtml(unsafe: string | null | undefined): string {
+  if (unsafe === null || unsafe === undefined) {
+    return '';
+  }
+  
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
  * Parses a template string and replaces variables and control structures with their values
  * Supports:
- * - Variable interpolation using {{variable}} syntax
+ * - Variable interpolation using {{variable}} syntax (HTML-safe by default)
+ * - Raw HTML interpolation using {{{variable}}} syntax (unsafe, use with caution)
  * - For loops using blitz-for directive
  * - Conditional rendering using blitz-if and blitz-else directives
  * - Nested property access using dot notation
@@ -16,7 +35,7 @@ export function parseTemplate(template: string, state: Record<string, any>): str
   let processedTemplate = template;
   const forRegex = /<([^>]+)\s+blitz-for="([^"]+)"([^>]*)>([\s\S]*?)<\/\1>/g;
   
-  processedTemplate = processedTemplate.replace(forRegex, (match, tagName, expression, rest, content) => {
+  processedTemplate = processedTemplate.replace(forRegex, (_, tagName, expression, rest, content) => {
     // Parse the for expression (e.g. "item in items" or "(item, index) in items")
     const parts = expression.trim().split(/\s+in\s+/);
     if (parts.length !== 2) {
@@ -47,15 +66,15 @@ export function parseTemplate(template: string, state: Record<string, any>): str
     return collection.map((item: any, index: number) => {
       let repeatedContent = content;
       
-      // Replace item property references (e.g. {{item.name}})
+      // Replace item property references (e.g. {{item.name}}) with HTML escaping
       repeatedContent = repeatedContent.replace(new RegExp(`{{${itemName}\\.([^}]+)}}`, 'g'), (_: string, prop: string) => {
-        return item[prop] !== undefined ? String(item[prop]) : '';
+        return item[prop] !== undefined ? escapeHtml(String(item[prop])) : '';
       });
       
-      // Replace direct item references (e.g. {{item}})
-      repeatedContent = repeatedContent.replace(new RegExp(`{{${itemName}}}`, 'g'), String(item));
+      // Replace direct item references (e.g. {{item}}) with HTML escaping
+      repeatedContent = repeatedContent.replace(new RegExp(`{{${itemName}}}`, 'g'), escapeHtml(String(item)));
       
-      // Replace index references if index name is provided
+      // Replace index references if index name is provided (numbers are safe, no escaping needed)
       if (indexName) {
         repeatedContent = repeatedContent.replace(new RegExp(`{{${indexName}}}`, 'g'), String(index));
       }
@@ -79,7 +98,7 @@ export function parseTemplate(template: string, state: Record<string, any>): str
       const match = part.match(/<([^>]+)\s+(?:blitz-if="([^"]+)"|blitz-else)([^>]*)>|<(\/[^>]+)>|<([^>]+)>/);
       
       if (match) {
-        const [_, tagName, condition, rest, closingTag, normalTag] = match;
+        const [, _tagName, condition, _rest, closingTag, normalTag] = match;
 
         if (closingTag) {
           if (!skipContent) {
@@ -159,11 +178,21 @@ export function parseTemplate(template: string, state: Record<string, any>): str
     result += buffer;
   }
 
-  // Finally handle template variables
-  result = result.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+  // Finally handle template variables with HTML escaping
+  // Support both {{variable}} (HTML-safe) and {{{variable}}} (raw HTML)
+  
+  // First handle raw HTML variables {{{variable}}} (unsafe - use with caution)
+  result = result.replace(/\{\{\{([^}]+)\}\}\}/g, (_, key) => {
     const trimmedKey = key.trim();
     const value = trimmedKey.split('.').reduce((obj: any, prop: string) => obj?.[prop], state);
     return value !== undefined ? String(value) : '';
+  });
+  
+  // Then handle HTML-safe variables {{variable}} (safe by default)
+  result = result.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
+    const trimmedKey = key.trim();
+    const value = trimmedKey.split('.').reduce((obj: any, prop: string) => obj?.[prop], state);
+    return value !== undefined ? escapeHtml(String(value)) : '';
   });
 
   // Ensure blitz-slot elements are preserved

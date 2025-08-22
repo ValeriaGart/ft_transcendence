@@ -331,7 +331,7 @@ export class MatchComponent extends Component<MatchComponentState> {
       const msg = {
         type: 3,
         players,
-        gameMode: 'bestof',
+        gameMode: 'tournament',
         oppMode: 'online'
       };
       console.log('Sending tournament request:', JSON.stringify(msg));

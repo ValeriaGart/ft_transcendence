@@ -55,10 +55,12 @@ export class GameStateMachine {
 	}
 
 	private handleGameState() {
-		this._engine._pongGame.drawGameScreen();
+		if (this._engine._pongGame)
+			this._engine._pongGame.drawGameScreen();
 	}
 
 	private handlePausedState() {
-		this._engine._pongGame._pauseScreen.drawPauseScreen();
+		if (this._engine._pongGame)
+			this._engine._pongGame._pauseScreen.drawPauseScreen();
 	}
 }

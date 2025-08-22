@@ -111,6 +111,7 @@ class AuthController {
     try {
       const { email, password, name } = request.body;
 
+      // XSS middleware already sanitized the input
       if (!validateEmail(email)) {
         reply.code(400);
         return { error: 'Invalid email format' };
@@ -152,6 +153,7 @@ class AuthController {
     try {
       const { email, password } = request.body;
 
+      // XSS middleware already sanitized the input
       if (!validateEmail(email)) {
         reply.code(400);
         return { error: 'Invalid email format' };

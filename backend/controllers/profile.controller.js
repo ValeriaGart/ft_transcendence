@@ -34,6 +34,8 @@ class ProfileController {
   static async updateProfile(request, reply) {
     try {
       const { id } = request.params;
+      
+      // No need to sanitize again - XSS middleware already handled this
       const profile = await ProfileService.updateProfile(id, request.body);
       
       return {
@@ -86,7 +88,7 @@ class ProfileController {
 
       // Pre-validate nickname if provided (including empty strings)
       if (nickname !== undefined && nickname !== null) {
-        const validation = validateNickname(nickname);
+        const validation = validateNickname(updateFields.nickname);
         if (!validation.isValid) {
           reply.code(400);
           return { 

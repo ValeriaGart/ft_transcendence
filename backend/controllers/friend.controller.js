@@ -47,6 +47,7 @@ class FriendController {
 			const userId = request.user.userId;
 			const { friend_nickname } = request.body;
 
+			// XSS middleware already sanitized the input
 			try {
 				const { userId: friendId } = await ProfileService.getIdByNick(friend_nickname);
 				return await FriendService.requestFriend(userId, friendId);

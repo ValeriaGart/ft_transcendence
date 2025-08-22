@@ -113,6 +113,7 @@ class UserController {
 
   static async createUser(request, reply) {
     try {
+      // XSS middleware already sanitized the input
       const user = await UserService.createUser(request.body);
       reply.code(201);
       return {
@@ -134,6 +135,8 @@ class UserController {
   static async updateUser(request, reply) {
     try {
       const { id } = request.params;
+      
+      // XSS middleware already sanitized the input
       const user = await UserService.updateUser(id, request.body);
       
       return {
@@ -162,6 +165,7 @@ class UserController {
       const { id } = request.params;
       const { email, passwordString } = request.body;
       
+      // XSS middleware already sanitized the input
       let user;
       
       if (email && passwordString) {
@@ -199,6 +203,8 @@ class UserController {
   static async loginUser(request, reply) {
     try {
       const { email, passwordString } = request.body;
+      
+      // XSS middleware already sanitized the input
       const user = await UserService.authenticateUser(email, passwordString);
       
       if (!user) {

@@ -137,13 +137,15 @@ export class ViewProfileComponent extends Component<ViewProfileProps, ViewProfil
         if (!resp.ok) {
           const err = await resp.json().catch(() => ({}));
           console.error('Add friend failed', err);
-          this.showError(err?.details || 'Failed to send friend request');
+          const message = err?.message || err?.details || err?.error || `Request failed (${resp.status})`;
+          this.showError(message);
           return;
         }
         this.showError('Friend request sent');
       } catch (err) {
         console.error('Add friend error', err);
-        this.showError('Failed to send friend request');
+        const message = err instanceof Error ? err.message : 'Failed to send friend request';
+        this.showError(message);
       }
     });
   }

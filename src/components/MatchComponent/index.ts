@@ -820,7 +820,7 @@ export class MatchComponent extends Component<MatchComponentState> {
       const selectedClass = isSelected ? 'bg-[#f2e6ff]' : '';
       const borderStyle = isSelected ? 'border-2 border-[#B784F2]' : '';
       
-      const cursorStyle = canSelect ? 'cursor-pointer' : 'cursor-default';
+      const cursorStyle = 'cursor-default';
       const friendItemClass = canSelect ? 'friend-item' : '';
       
       return `
@@ -830,7 +830,7 @@ export class MatchComponent extends Component<MatchComponentState> {
           <div class="flex items-center ">
             <div>
               <div class="text-[#81C3C3] font-['Irish_Grover'] text-lg flex items-center gap-1">
-                ${displayName}
+                <span class="hover:underline hover:text-[#B784F2] cursor-pointer" onclick="event.stopPropagation(); window.blitzNavigate && window.blitzNavigate('/view/${encodeURIComponent(displayName)}');">${displayName}</span>
                 <div class="w-2 h-2 rounded-full ${onlineStatusColor} flex-shrink-0" style="background-color: ${isOnline ? '#AEDFAD' : '#FFA9A3'};" title="${onlineStatusText}"></div>
               </div>
               <div class="text-[#81C3C3] text-xs opacity-50 ">

@@ -9,6 +9,7 @@ import { UserPage } from "./components/UserPage";
 import { SettingsPage } from "./components/SettingsPage";
 import { GamePage } from "./components/GamePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ViewPage } from "./components/ViewPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { authService } from "./lib/auth";
 import { StartGamePopUp } from "./components/StartGamePopUp";
@@ -33,6 +34,8 @@ autoRegisterComponents().then(() => {
   }
   
 
+  // Expose a simple global navigation helper for inline templates
+  (window as any).blitzNavigate = (path: string) => Router.getInstance().navigate(path);
 });
 
 console.log('=== APP STARTUP DEBUG ===');
@@ -111,6 +114,10 @@ if (app) {
 				component: GamePage,
 			}
 		]
+	})
+	.addRoute({
+		path: "/view/:nickname",
+		component: ViewPage,
 	})
 
 	// Initialize the router after all routes are added

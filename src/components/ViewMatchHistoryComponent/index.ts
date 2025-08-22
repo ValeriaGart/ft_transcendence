@@ -1,6 +1,6 @@
 import { Component } from "@blitz-ts/Component";
 import { getApiUrl, API_CONFIG } from "../../config/api";
-import type { Match, MatchWithNicknames, MatchStats } from "../../types/match";
+import type { MatchWithNicknames, MatchStats } from "../../types/match";
 
 interface ViewMatchHistoryProps {
   nickname?: string;
@@ -29,7 +29,7 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
     loading: true,
     error: null,
     currentPage: 1,
-    pageSize: 10,
+    pageSize: 2,
     totalMatches: 0,
     totalPages: 0,
     stats: null,
@@ -52,12 +52,9 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
   }
 
   private addEventListeners(): void {
-    const refreshBtn = this.element.querySelector('#refresh-matches');
-    const prevBtn = this.element.querySelector('#prev-page');
-    const nextBtn = this.element.querySelector('#next-page');
-    if (refreshBtn) refreshBtn.addEventListener('click', () => this.loadForNickname());
-    if (prevBtn) prevBtn.addEventListener('click', () => this.previousPage());
-    if (nextBtn) nextBtn.addEventListener('click', () => this.nextPage());
+    this.addEventListener('#refresh-matches', 'click', (e) => { e.preventDefault(); this.loadForNickname(); });
+    this.addEventListener('#prev-page', 'click', (e) => { e.preventDefault(); this.previousPage(); });
+    this.addEventListener('#next-page', 'click', (e) => { e.preventDefault(); this.nextPage(); });
   }
 
   private async loadForNickname(): Promise<void> {
@@ -99,6 +96,7 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
         showPagination: Math.ceil(matchesData.length / this.state.pageSize) > 1,
         hasStats: Boolean(statsData),
       });
+      setTimeout(() => { this.updatePaginationButtons(); this.renderMatchesList(); }, 0);
     } catch (e) {
       console.error('Error loading viewed match history:', e);
       this.setState({ error: 'Failed to load match history', loading: false });
@@ -106,13 +104,41 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
   }
 
   private async fetchMatchesFor(userId: number): Promise<MatchWithNicknames[]> {
-    const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.MATCHES}?userId=${encodeURIComponent(userId)}`), {
-      credentials: 'include',
-    });
+    const response = await fetch(getApiUrl(`/match/history/${userId}`), { credentials: 'include' });
     if (!response.ok) throw new Error('Failed to fetch matches');
-    const matches: Match[] = await response.json();
-    if (!Array.isArray(matches)) return [];
-    return this.enhanceMatches(matches, userId);
+    const payload: any = await response.json();
+    const items: any[] = Array.isArray(payload?.matches) ? payload.matches : [];
+    // Only include finished online 1v1 (bestof) matches; AI games are not saved by backend flow
+    const filtered = items.filter((it: any) => String(it.matchType || '').toLowerCase() === 'bestof');
+    return filtered.map((item: any, idx: number) => {
+      const isWin = String(item.result || '').toLowerCase() === 'win';
+      const player1_nickname = String(item.player1_nickname || '');
+      const player2_nickname = String(item.player2_nickname || item.opponent || '');
+      const winner_nickname = String(item.winner_nickname || (isWin ? player1_nickname : player2_nickname) || '');
+      const formattedDate = this.formatDate(item.date || item.createdAt);
+      return {
+        id: Number(item.id) || idx,
+        type: String(item.matchType || 'bestof'),
+        player1_id: 0,
+        player2_id: 0,
+        winner_id: null,
+        player1_score: Number(item.playerScore) || 0,
+        player2_score: Number(item.opponentScore) || 0,
+        createdAt: item.date || item.createdAt || new Date().toISOString(),
+        gameFinishedAt: item.date || null,
+        player1_nickname,
+        player2_nickname,
+        winner_nickname,
+        opponentNickname: player2_nickname,
+        isWin,
+        isLoss: !isWin,
+        resultText: isWin ? 'W' : 'L',
+        resultBadgeClass: isWin ? 'bg-green-500' : 'bg-red-500',
+        playerScore: Number(item.playerScore) || 0,
+        opponentScore: Number(item.opponentScore) || 0,
+        formattedDate,
+      } as MatchWithNicknames;
+    });
   }
 
   private async fetchStats(userId: number): Promise<MatchStats> {
@@ -126,7 +152,8 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
     };
   }
 
-  private async enhanceMatches(matches: Match[], viewedUserId: number): Promise<MatchWithNicknames[]> {
+  // kept for reference; not used after switching to backend history mapping
+  /* private async enhanceMatches(matches: Match[], viewedUserId: number): Promise<MatchWithNicknames[]> {
     const enhanced: MatchWithNicknames[] = [];
     for (const match of matches) {
       try {
@@ -186,17 +213,9 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
       }
     }
     return enhanced;
-  }
+  } */
 
-  private async fetchUserProfile(userId: number): Promise<{ nickname: string } | null> {
-    try {
-      const response = await fetch(getApiUrl(`/profiles/user/${userId}`), { credentials: 'include' });
-      if (response.ok) return response.json();
-      return null;
-    } catch {
-      return null;
-    }
-  }
+  // no longer needed in the new mapping flow
 
   private formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -221,11 +240,13 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
         hasMatches: this.state.matches.length > 0,
         noMatches: this.state.matches.length === 0,
       });
+      setTimeout(() => { this.updatePaginationButtons(); this.renderMatchesList(); }, 0);
     }
   }
 
   public nextPage(): void {
-    if (this.state.currentPage < this.state.totalPages) {
+    const totalPages = Math.max(1, Math.ceil((this.state.matches || []).length / (this.state.pageSize || 2)));
+    if (this.state.currentPage < totalPages) {
       const newPage = this.state.currentPage + 1;
       this.setState({
         currentPage: newPage,
@@ -234,11 +255,12 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
         hasMatches: this.state.matches.length > 0,
         noMatches: this.state.matches.length === 0,
       });
+      setTimeout(() => { this.updatePaginationButtons(); this.renderMatchesList(); }, 0);
     }
   }
 
   render() {
-    setTimeout(() => this.updatePaginationButtons(), 0);
+    setTimeout(() => { this.updatePaginationButtons(); this.renderMatchesList(); }, 0);
   }
 
   private updatePaginationButtons(): void {
@@ -251,11 +273,43 @@ export class ViewMatchHistoryComponent extends Component<ViewMatchHistoryProps, 
       prevBtn.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
     }
     if (nextBtn) {
-      const isDisabled = this.state.currentPage === this.state.totalPages;
+      const totalPages = Math.max(1, Math.ceil((this.state.matches || []).length / (this.state.pageSize || 2)));
+      const isDisabled = this.state.currentPage >= totalPages;
       nextBtn.disabled = isDisabled;
       nextBtn.style.opacity = isDisabled ? '0.5' : '1';
       nextBtn.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
     }
+  }
+
+  private renderMatchesList(): void {
+    const container = this.element.querySelector('#matches-list') as HTMLElement | null;
+    if (!container) return;
+    const items = this.paginated();
+    container.innerHTML = items.map((m) => {
+      const badgeColor = m.isWin ? '#AEDFAD' : '#FFA9A3';
+      const resultBadge = `<div class="flex items-center justify-center w-8 h-8 rounded-full" style="background-color: ${badgeColor};"><span class="text-white font-bold text-xs">${m.resultText}</span></div>`;
+      const participants = `${m.player1_nickname || ''} vs ${m.player2_nickname || m.opponentNickname || ''}`.trim();
+      const winner = m.winner_nickname || (m.isWin ? m.player1_nickname : m.player2_nickname) || 'Unknown';
+      const score = `<span class="${m.isWin ? 'text-[#AEDFAD]' : 'text-[#FFA9A3]'}">${m.playerScore}</span><span class="text-gray-500 mx-1">-</span><span class="${m.isLoss ? 'text-[#AEDFAD]' : 'text-[#FFA9A3]'}">${m.opponentScore}</span>`;
+      return `
+        <div class="flex items-center justify-between bg-gray-100 rounded-md p-2">
+          <div class="flex items-center gap-3">
+            ${resultBadge}
+            <div class="flex flex-col text-left">
+              <span class="text-sm font-semibold text-[#81C3C3]">${participants}</span>
+              <span class="text-xs text-gray-500">Winner: ${winner}</span>
+              <span class="text-xs text-gray-500">${m.formattedDate}</span>
+            </div>
+          </div>
+          <div class="text-right text-sm font-bold">${score}</div>
+        </div>`;
+    }).join('');
+  }
+
+  private paginated(): MatchWithNicknames[] {
+    const startIndex = ((this.state.currentPage || 1) - 1) * (this.state.pageSize || 2);
+    const endIndex = startIndex + (this.state.pageSize || 2);
+    return (this.state.matches || []).slice(startIndex, endIndex);
   }
 }
 

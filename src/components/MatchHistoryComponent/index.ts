@@ -2,6 +2,7 @@ import { Component } from "@blitz-ts/Component";
 import { authService, type User } from '../../lib/auth';
 import { getApiUrl, API_CONFIG } from '../../config/api';
 import type { Match, MatchWithNicknames, MatchStats } from '../../types/match';
+import { sanitizeForTemplate } from '../../utils/sanitization';
 
 interface MatchHistoryComponentState {
   matches: MatchWithNicknames[];
@@ -27,7 +28,7 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
     loading: true,
     error: null,
     currentPage: 1,
-    pageSize: 10,
+    pageSize: 2,
     totalMatches: 0,
     totalPages: 0,
     stats: null,
@@ -46,7 +47,6 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
       'error',
       'stats',
       'matches',
-      'paginatedMatches',
       'hasMatches',
       'noMatches',
       'showPagination',
@@ -87,6 +87,10 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
         showPagination: Math.ceil(matchesData.length / this.state.pageSize) > 1,
         hasStats: Boolean(statsData)
       });
+      setTimeout(() => {
+        this.updatePaginationButtons();
+        this.renderMatchesList();
+      }, 0);
 
     } catch (error) {
       console.error('Error loading match history:', error);
@@ -98,24 +102,60 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
   }
 
   private async fetchMatches(): Promise<MatchWithNicknames[]> {
+    // Prefer backend-computed history for "non-AI bestof" matches
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) return [];
+
+    // Resolve current user's nickname once
+    const selfProfile = await this.fetchUserProfile(currentUser.id);
+    const selfNicknameRaw = (selfProfile?.nickname || `User${currentUser.id}`).trim();
+    const selfNickname = sanitizeForTemplate(selfNicknameRaw);
+
     const response = await authService.authenticatedFetch(
-      getApiUrl(API_CONFIG.ENDPOINTS.MATCH_HISTORY)
+      getApiUrl('/match/history/me')
     );
+    if (!response.ok) throw new Error('Failed to fetch match history');
+    const payload: any = await response.json();
+    const items: any[] = Array.isArray(payload?.matches) ? payload.matches : [];
+    const filtered = items.filter((it: any) => String(it.matchType || '').toLowerCase() === 'bestof');
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch matches');
-    }
+    // Map to display entries: opponent provided; winner based on result
+    const mapped: MatchWithNicknames[] = filtered.map((item: any, idx: number) => {
+      const isWin = String(item.result || '').toLowerCase() === 'win';
+      const opponentRaw = String(item.opponent || 'Unknown');
+      const player1_nickname = selfNickname;
+      const player2_nickname = sanitizeForTemplate(opponentRaw);
+      const winner_nickname = isWin ? player1_nickname : player2_nickname;
+      const formattedDate = this.formatDate(item.date || item.createdAt);
+      const participantsDisplay = sanitizeForTemplate(`${player1_nickname} vs ${player2_nickname}`);
+      const base: any = {
+        id: Number(item.id) || idx,
+        type: String(item.matchType || 'bestof'),
+        player1_id: 0,
+        player2_id: 0,
+        winner_id: null,
+        player1_score: Number(item.playerScore) || 0,
+        player2_score: Number(item.opponentScore) || 0,
+        createdAt: item.date || item.createdAt || new Date().toISOString(),
+        gameFinishedAt: item.date || null,
+        player1_nickname,
+        player2_nickname,
+        winner_nickname,
+        isWin,
+        isLoss: !isWin,
+        opponentNickname: player2_nickname,
+        resultText: isWin ? 'W' : 'L',
+        resultBadgeClass: isWin ? 'bg-green-500' : 'bg-red-500',
+        playerScore: Number(item.playerScore) || 0,
+        opponentScore: Number(item.opponentScore) || 0,
+        formattedDate,
+      } as MatchWithNicknames;
+      (base as any).winnerDisplay = sanitizeForTemplate(winner_nickname || 'Unknown');
+      (base as any).participantsDisplay = participantsDisplay;
+      return base;
+    });
 
-    const matches: Match[] = await response.json();
-    
-    // Ensure matches is an array
-    if (!Array.isArray(matches)) {
-      console.warn('Matches API returned non-array response:', matches);
-      return [];
-    }
-    
-    // Enhance matches with nicknames and result information
-    return this.enhanceMatches(matches);
+    return mapped;
   }
 
   private async fetchStats(userId: number): Promise<MatchStats> {
@@ -258,29 +298,73 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
     return matches.slice(startIndex, endIndex);
   }
 
+  private renderMatchesList(): void {
+    const container = this.element.querySelector('#matches-list') as HTMLElement | null;
+    if (!container) return;
+    const items = this.computePaginatedMatches(
+      this.state.matches || [],
+      this.state.currentPage || 1,
+      this.state.pageSize || 2
+    );
+    // Update totalPages in case matches length changed
+    const totalPages = Math.max(1, Math.ceil((this.state.matches || []).length / (this.state.pageSize || 2)));
+    if (totalPages !== this.state.totalPages) {
+      this.setState({ totalPages });
+    }
+    container.innerHTML = items.map((m) => {
+      const badgeColor = m.isWin ? '#AEDFAD' : '#FFA9A3';
+      const resultBadge = `<div class="flex items-center justify-center w-8 h-8 rounded-full" style="background-color: ${badgeColor};"><span class="text-white font-bold text-xs">${m.resultText}</span></div>`;
+      const participants = `${m.player1_nickname || ''} vs ${m.player2_nickname || m.opponentNickname || ''}`.trim();
+      const winner = m.winner_nickname || (m.isWin ? m.player1_nickname : m.player2_nickname) || 'Unknown';
+      const score = `<span class="${m.isWin ? 'text-[#AEDFAD]' : 'text-[#FFA9A3]'}">${m.playerScore}</span><span class="text-gray-500 mx-1">-</span><span class="${m.isLoss ? 'text-[#AEDFAD]' : 'text-[#FFA9A3]'}">${m.opponentScore}</span>`;
+      return `
+        <div class="flex items-center justify-between bg-gray-100 rounded-md p-2">
+          <div class="flex items-center gap-3">
+            ${resultBadge}
+            <div class="flex flex-col text-left">
+              <span class="text-sm font-semibold text-[#81C3C3]">${participants}</span>
+              <span class="text-xs text-gray-500">Winner: ${winner}</span>
+              <span class="text-xs text-gray-500">${m.formattedDate}</span>
+            </div>
+          </div>
+          <div class="text-right text-sm font-bold">${score}</div>
+        </div>`;
+    }).join('');
+  }
+
   public previousPage(): void {
+    const totalPages = Math.max(1, Math.ceil((this.state.matches || []).length / (this.state.pageSize || 2)));
     if (this.state.currentPage > 1) {
       const newPage = this.state.currentPage - 1;
+      console.log('Prev page ->', newPage, 'of', totalPages);
       this.setState({ 
         currentPage: newPage,
-        paginatedMatches: this.computePaginatedMatches(this.state.matches, newPage, this.state.pageSize),
         showPagination: this.state.totalPages > 1,
         hasMatches: this.state.matches.length > 0,
         noMatches: this.state.matches.length === 0
       });
+      setTimeout(() => {
+        this.updatePaginationButtons();
+        this.renderMatchesList();
+      }, 0);
     }
   }
 
   public nextPage(): void {
-    if (this.state.currentPage < this.state.totalPages) {
+    const totalPages = Math.max(1, Math.ceil((this.state.matches || []).length / (this.state.pageSize || 2)));
+    if (this.state.currentPage < totalPages) {
       const newPage = this.state.currentPage + 1;
+      console.log('Next page ->', newPage, 'of', totalPages);
       this.setState({ 
         currentPage: newPage,
-        paginatedMatches: this.computePaginatedMatches(this.state.matches, newPage, this.state.pageSize),
         showPagination: this.state.totalPages > 1,
         hasMatches: this.state.matches.length > 0,
         noMatches: this.state.matches.length === 0
       });
+      setTimeout(() => {
+        this.updatePaginationButtons();
+        this.renderMatchesList();
+      }, 0);
     }
   }
 
@@ -305,29 +389,22 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
 
   public async handleRefresh(): Promise<void> {
     await this.loadMatchHistory();
+    this.renderMatchesList();
   }
 
   protected override onMount(): void {
-    // Add event listeners
-    const refreshBtn = this.element.querySelector('#refresh-matches');
-    const prevBtn = this.element.querySelector('#prev-page');
-    const nextBtn = this.element.querySelector('#next-page');
-
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', () => this.handleRefresh());
-    }
-
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => this.previousPage());
-    }
-
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => this.nextPage());
-    }
+    // Add event listeners (delegated via base helper for reliability)
+    this.addEventListener('#refresh-matches', 'click', (e) => { e.preventDefault(); this.handleRefresh(); });
+    this.addEventListener('#prev-page', 'click', (e) => { e.preventDefault(); this.previousPage(); });
+    this.addEventListener('#next-page', 'click', (e) => { e.preventDefault(); this.nextPage(); });
+    // Initial render if data already loaded
+    this.renderMatchesList();
   }
 
   render() {
     // Update pagination button states after render
     setTimeout(() => this.updatePaginationButtons(), 0);
+    // keep list in sync
+    this.renderMatchesList();
   }
 }

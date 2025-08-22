@@ -12,6 +12,7 @@ config({ path: path.resolve(__dirname, '../.env') });
 import fastify from 'fastify';
 import { initialize } from './config/database.js';
 import getSSLOptions from './config/ssl.config.js';
+import handleSignals from './config/signals.config.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import friendRoutes from './routes/friend.routes.js';
@@ -47,6 +48,9 @@ const app = fastify(fastifyOptions);
 // finish logging setup
 setLoggerApp(app, process.env.CONSOLE_LOG);
 log("logging setup :)");
+
+// set up sigint and sigterm handling
+handleSignals(app, log);
 
 // register websocket
 await app.register(ws)

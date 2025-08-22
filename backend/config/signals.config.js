@@ -1,13 +1,16 @@
+import { db } from "../config/database.js"
+
 export default function handleSignals(app, log) {
 
 	async function shutdown(signal) {
 		log(`Received ${signal}. Shutting down gracefully...`, "info");
 		try {
 			await app.close();
+			await db.close();
 			log("Fastify server closed.", "info");
-			process.exit(0);
+			// process.exit(0);
 		} catch (err) {
-			log("Error during shutdown: " + err, "error");
+			console.log("Error during shutdown: " + err, "error");
 			process.exit(1);
 		}
 	}

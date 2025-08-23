@@ -192,6 +192,15 @@ export class PongGame {
 			console.log('Sending finish & save match msg:', JSON.stringify(msg));
 			this._engine._ws.sendMessage(JSON.stringify(msg));
 		}
+		else if (this._oppMode != OpponentMode.ONLINE) {
+			const msg = {
+				"type": 5,
+				"roomId": this._engine._roomID,
+				"status": "finished"
+			}
+			console.log('Sending finish match msg:', JSON.stringify(msg));
+			this._engine._ws.sendMessage(JSON.stringify(msg));
+		}
 	}
 
 	private checkWinCondition(): boolean {

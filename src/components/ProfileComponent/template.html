@@ -11,7 +11,9 @@
                 </button>
             </div>
         </div>
-        <img id="profile-picture" src="/art/profile/{{profilePictureUrl}}" alt="Profile" class="h-[90%] p-2 cursor-pointer hover:opacity-80 transition-opacity duration-300"/>
+        <div class="flex items-center justify-center h-[90%] w-[90%] p-2">
+          <img id="profile-picture" src="{{profilePictureUrl}}" alt="Profile" class="w-full h-full cursor-pointer hover:opacity-80 transition-opacity duration-300 object-cover object-center rounded-lg" style="aspect-ratio: 1/1; min-height: 200px; max-height: 250px;"/>
+        </div>
     </div>
     <div id="profile-picture-selector" class="flex flex-col items-center justify-center h-full w-full" style="display: none;">
         <div class="flex flex-col items-center justify-center text-center w-full h-full">
@@ -37,13 +39,20 @@
               <button id="profile-option-5" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300">
                 <img src="/art/profile/profile_no.svg" alt="Profile No" class="w-16 h-16 mx-auto" />
               </button>
-              <button id="profile-option-6" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300">
+              <input 
+                id="avatar-file-input" 
+                type="file" 
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                class="hidden"
+              />
+              <label for="avatar-file-input" class="p-2 rounded-lg hover:bg-[#DFD1EF] transition-colors duration-300 cursor-pointer">
                 <img src="/art/profile/profile_upload.svg" alt="Profile Upload" class="w-16 h-16 mx-auto" />
-              </button>
+              </label>
             </div>
             <button id="profile-selector-close" class="ml-[80%] md:ml-[70%] hover:scale-105 transition-transform duration-300">
               <img src="/art/profile/close-button.svg" alt="Close Button" class="w-8 h-8 md:w-12 md:h-12" />
             </button>
         </div>
     </div>
+
 </div>

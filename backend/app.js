@@ -12,7 +12,6 @@ config({ path: path.resolve(__dirname, '../.env') });
 import fastify from 'fastify';
 import { initialize } from './config/database.js';
 import getSSLOptions from './config/ssl.config.js';
-import handleSignals from './config/signals.config.js';
 import userRoutes from './routes/user.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import friendRoutes from './routes/friend.routes.js';
@@ -21,12 +20,12 @@ import authRoutes from './routes/auth.routes.js';
 import websocketRoutes from './routes/websocket.routes.js';
 import healthRoutes from './routes/health.routes.js';
 import authPlugin from './plugins/auth.js';
-import { xssProtectionPlugin } from './middlewares/xss-protection.js';
-import { cspPlugin } from './middlewares/csp.js';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import ws from '@fastify/websocket';
 import { log, setLoggerApp } from './utils/logger.utils.js';
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 
 // Initialize SSL configuration
 const sslOptions = getSSLOptions();
@@ -51,9 +50,6 @@ const app = fastify(fastifyOptions);
 setLoggerApp(app, process.env.CONSOLE_LOG);
 log("logging setup :)");
 
-// set up sigint and sigterm handling
-handleSignals(app, log);
-
 // register websocket
 await app.register(ws)
 
@@ -72,11 +68,19 @@ await app.register(cors, {
 // Register auth plugin
 await app.register(authPlugin);
 
-// Register XSS protection middleware
-await app.register(xssProtectionPlugin);
+// Register multipart plugin for file uploads
+await app.register(multipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 1
+  }
+});
 
-// Register CSP middleware
-await app.register(cspPlugin);
+// Register static file serving
+await app.register(fastifyStatic, {
+  root: path.join(__dirname, '../public'),
+  prefix: '/'
+});
 
 // Global rate limiting with sensible defaults
 await app.register(import('@fastify/rate-limit'), {

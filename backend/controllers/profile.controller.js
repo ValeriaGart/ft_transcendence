@@ -1,7 +1,7 @@
 import ProfileService from '../services/profile.service.js';
 import { validateNickname, cleanNickname, nicknameExists } from '../utils/nickname.utils.js';
 import { dbGet } from '../config/database.js';
-import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
+import { validateFile, generateUniqueFilename, saveFile, getFileUrl, cleanupOldAvatars } from '../utils/file-upload.utils.js';
 
 class ProfileController {
   static async getAllProfiles(request, reply) {
@@ -34,8 +34,6 @@ class ProfileController {
   static async updateProfile(request, reply) {
     try {
       const { id } = request.params;
-      
-      // No need to sanitize again - XSS middleware already handled this
       const profile = await ProfileService.updateProfile(id, request.body);
       
       return {
@@ -88,7 +86,7 @@ class ProfileController {
 
       // Pre-validate nickname if provided (including empty strings)
       if (nickname !== undefined && nickname !== null) {
-        const validation = validateNickname(updateFields.nickname);
+        const validation = validateNickname(nickname);
         if (!validation.isValid) {
           reply.code(400);
           return { 
@@ -171,7 +169,7 @@ class ProfileController {
       
       return suggestions;
     } catch (error) {
-      log(`Error generating nickname suggestions: ${error}`, WARN);
+      console.error('Error generating nickname suggestions:', error);
       return [];
     }
   }
@@ -208,6 +206,61 @@ class ProfileController {
     } catch (error) {
       reply.code(500);
       return { error: 'Failed to check nickname availability', details: error.message };
+    }
+  }
+
+  static async uploadAvatar(request, reply) {
+    try {
+      const { id } = request.params;
+      const userId = request.user.userId;
+      
+      // Get the uploaded file
+      const data = await request.file();
+      if (!data) {
+        reply.code(400);
+        return { error: 'No file uploaded' };
+      }
+
+      // Validate the file
+      const validation = validateFile(data, 'AVATAR');
+      if (!validation.valid) {
+        reply.code(400);
+        return { error: 'Invalid file', details: validation.errors };
+      }
+
+      // Generate unique filename
+      const filename = generateUniqueFilename(data.filename, userId);
+      
+      // Save the file
+      const filePath = await saveFile(data, filename, 'AVATAR');
+      
+      // Get the public URL
+      const publicUrl = getFileUrl(filePath);
+      
+      // Get current profile to check if there's an existing avatar
+      const currentProfile = await ProfileService.getProfileById(id);
+      const currentAvatarUrl = currentProfile?.profilePictureUrl;
+      
+      // Update profile with new avatar URL
+      const updatedProfile = await ProfileService.updateProfile(id, {
+        profilePictureUrl: publicUrl
+      });
+      
+      // Clean up old avatar files if they exist
+      if (currentAvatarUrl && currentAvatarUrl !== publicUrl) {
+        await cleanupOldAvatars(userId, publicUrl);
+      }
+      
+      return {
+        success: true,
+        message: 'Avatar uploaded successfully',
+        avatarUrl: publicUrl,
+        profile: updatedProfile
+      };
+      
+    } catch (error) {
+      reply.code(500);
+      return { error: 'Failed to upload avatar', details: error.message };
     }
   }
 }

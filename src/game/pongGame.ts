@@ -152,7 +152,7 @@ export class PongGame {
 			this._engine._gameStateMachine.transition(GameState.PAUSED);
 		}
 		// console.log('client has reveived message: ', msg);
-		if (msg.type == "CANCELMATCH") {
+		if (msg.type == "CANCELMATCH" || msg.type == "ERROR") {
 			this._engine.endGameLoop();
 		}
 		if (!msg.ballPosition) {

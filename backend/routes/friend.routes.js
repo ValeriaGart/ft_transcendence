@@ -6,10 +6,13 @@ import {
 } from '../schemas/friend.schemas.js';
 
 async function routes(fastify, options) {
-	fastify.get('/friend', FriendController.getAllFriendships);
+	fastify.get('/friend', {
+		preHandler: [fastify.authenticate]
+	}, FriendController.getAllFriendships);
 
 	fastify.get('/friend/:friend_id', {
-		schema: { params: requestFriendSchema }
+		schema: { params: requestFriendSchema },
+		preHandler: [fastify.authenticate]
 	}, FriendController.getAllFriendshipsUserId);
 	
 	fastify.post('/friend/me', {
@@ -23,7 +26,8 @@ async function routes(fastify, options) {
 	fastify.get('/friend/status', {
 		schema: {
 			query: friendStatusSchema
-		}
+		},
+		preHandler: [fastify.authenticate]
 	}, FriendController.getFriendshipStatus);
 
 	fastify.patch('/friend/me', {

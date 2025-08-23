@@ -87,7 +87,9 @@ async function routes(fastify, options) {
   }, UserController.deleteUser);
 
   // Get all users - for admin or authorized access only
-  fastify.get('/users', UserController.getAllUsers);
+  fastify.get('/users', {
+    preHandler: [fastify.authenticate]
+  }, UserController.getAllUsers);
 }
 
 export default routes;

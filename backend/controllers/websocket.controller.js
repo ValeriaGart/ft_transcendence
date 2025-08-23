@@ -5,12 +5,10 @@ class WebsocketController {
     constructor(websocketServer) {
 		log("[WebsocketController constructor]", DEBUG);
         this.service = new WebsocketService(websocketServer);
-		
     }
 
-	handleConnection(connection, req, wsid) {
-
-		this.service.handleJoin(connection, wsid);
+	handleConnection(connection, req, wsid, sessionId) {
+		this.service.handleJoin(connection, wsid, sessionId);
 		this.service.handleLeave(connection);
 		this.service.handleMessage(connection);
 	}

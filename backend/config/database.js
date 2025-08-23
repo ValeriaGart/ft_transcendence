@@ -82,13 +82,44 @@ function initialize() {
         FOREIGN KEY (player2_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (winner_id) REFERENCES users (id) ON DELETE CASCADE
       );
+      CREATE TABLE IF NOT EXISTS user_sessions (
+        userId INTEGER PRIMARY KEY,
+        sessionId TEXT UNIQUE NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        lastSeenAt TIMESTAMP,
+        revoked INTEGER DEFAULT 0,
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_user_sessions_sessionId ON user_sessions(sessionId);
       `,
-      (err) => {
-        if (err) reject(err);
-        else resolve();
+      async (err) => {
+        if (err) return reject(err);
+        try {
+          await ensureUserSessionsColumns();
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
       }
     );
   });
+}
+
+// Ensure newly added columns exist even if table pre-existed without them
+async function ensureUserSessionsColumns() {
+  const desired = {
+    lastSeenAt: 'TIMESTAMP',
+    revoked: 'INTEGER DEFAULT 0'
+  };
+  const existingCols = await new Promise((res, rej) => {
+    db.all('PRAGMA table_info(user_sessions);', [], (e, rows) => e ? rej(e) : res(rows));
+  });
+  const existingNames = new Set(existingCols.map(r => r.name));
+  for (const [col, def] of Object.entries(desired)) {
+    if (!existingNames.has(col)) {
+      await dbRun(`ALTER TABLE user_sessions ADD COLUMN ${col} ${def}`);
+    }
+  }
 }
 
 export { db, dbRun, dbGet, dbAll, initialize };

@@ -3,6 +3,7 @@ import jwt from '@fastify/jwt';
 import { dbGet } from '../config/database.js';
 import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 import { getAuthConfig } from '../config/auth.config.js';
+import SessionService from '../services/session.service.js';
 
 async function authPlugin(fastify, options) {
   const config = getAuthConfig();
@@ -27,6 +28,10 @@ async function authPlugin(fastify, options) {
       }
       
       await request.jwtVerify();
+      const { userId, sessionId } = request.user;
+  const ok = await SessionService.validateSession(userId, sessionId);
+  if (!ok) return reply.code(401).send({ error: 'SESSION_INVALID' });
+  await SessionService.touch(userId);
     } catch (err) {
       log("[auth.js] Unauthorized: " + err.message, WARN);
       reply.code(401).send({ 
@@ -40,19 +45,23 @@ async function authPlugin(fastify, options) {
   fastify.decorate('optionalAuth', async function(request, reply) {
     try {
       await request.jwtVerify();
-    } catch (err) {
-      request.user = null;
-    }
+      if (request.user?.userId) {
+  const ok = await SessionService.validateSession(request.user.userId, request.user.sessionId);
+  if (ok) await SessionService.touch(request.user.userId); else request.user = null;
+      }
+    } catch (err) { request.user = null; }
   });
 
   // Resource ownership validation
   fastify.decorate('requireOwnership', async function(request, reply) {
     try {
       await request.jwtVerify();
+      const { userId, sessionId } = request.user;
+  const ok = await SessionService.validateSession(userId, sessionId);
+  if (!ok) return reply.code(401).send({ error: 'SESSION_INVALID' });
+  await SessionService.touch(userId);
       
       const resourceId = parseInt(request.params.id);
-      const userId = request.user.userId;
-      
       if (resourceId !== userId) {
         reply.code(403).send({ 
           error: 'Forbidden', 
@@ -71,10 +80,12 @@ async function authPlugin(fastify, options) {
   fastify.decorate('requireProfileOwnership', async function(request, reply) {
     try {
       await request.jwtVerify();
+      const { userId, sessionId } = request.user;
+  const ok = await SessionService.validateSession(userId, sessionId);
+  if (!ok) return reply.code(401).send({ error: 'SESSION_INVALID' });
+  await SessionService.touch(userId);
       
       const profileId = parseInt(request.params.id);
-      const userId = request.user.userId;
-      
       const profile = await dbGet('SELECT userId FROM profiles WHERE id = ?', [profileId]);
       
       if (!profile || profile.userId !== userId) {

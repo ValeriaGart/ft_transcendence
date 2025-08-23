@@ -4,6 +4,7 @@ import InvitationService from "./invitation.service.js";
 import MatchMakingService from "./matchmaking.service.js";
 import sleep from "../utils/sleep.utils.js";
 import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
+import SessionService from '../services/session.service.js';
 
 // const _matchMakingService = new MatchMakingService(this);
 
@@ -20,15 +21,27 @@ class WebsocketService {
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><> */
 
-	handleJoin(connection, wsid) {
+	handleJoin = async (connection, wsid, sessionId) => {
 		connection.userId = wsid;
-		log("[WebSocket] user connected " + connection.userId);
+		connection.sessionId = sessionId;
+		const valid = await SessionService.validateSession(wsid, sessionId);
+		if (!valid) {
+			try { connection.send(JSON.stringify({ type: 'SESSION_INVALID', sender: '__server', message: 'Session not active' })); } catch {}
+			return connection.close();
+		}
+		for (let client of this.websocketServer.clients) {
+			if (client === connection) continue;
+			if (client.userId === wsid && client.sessionId !== sessionId && client.readyState === 1) {
+				try { connection.send(JSON.stringify({ type: 'SESSION_CONFLICT', sender: '__server', message: 'Another active session exists' })); } catch {}
+				return connection.close();
+			}
+		}
+		log("[WebSocket] user connected " + connection.userId, INFO);
 		this.broadcast({
 			type: "BROADCAST",
 			sender: '__server',
 			message: `id ${wsid} joined`
 		}, connection);
-
 		this.matchMakingService.reconnectPlayerToAllRooms(connection);
 	}
 	

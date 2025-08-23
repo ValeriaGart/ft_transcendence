@@ -8,7 +8,8 @@ async function routes(fastify, options) {
 		preHandler: [fastify.authenticate]
 		}, (connection, req) => {
 		const wsid = req.user.userId;
-		controller.handleConnection(connection, req, wsid);
+		const sessionId = req.user.sessionId;
+		controller.handleConnection(connection, req, wsid, sessionId);
 	});
 }
 

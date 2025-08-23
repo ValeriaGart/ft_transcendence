@@ -66,7 +66,7 @@ class AuthController {
       if (!user.googleId) { reply.code(400); return { error: 'This account uses email/password authentication. Please use regular Sign In.' }; }
       // Single-session enforcement
       const existing = await SessionService.getActiveSession(user.id);
-      if (existing) { reply.code(409); return { error: 'ALREADY_LOGGED_IN' }; }
+      if (existing) { reply.code(409); return { error: 'Already logged in somewhere else' }; }
       await AuthService.updateLastLogin(user.id);
       const { sessionId } = await SessionService.startSession(user.id);
       const token = generateJWT(user, sessionId);
@@ -159,7 +159,7 @@ class AuthController {
 
       await AuthService.resetFailedLoginAttempts(user.id);
       const existing = await SessionService.getActiveSession(user.id);
-      if (existing) { reply.code(409); return { error: 'ALREADY_LOGGED_IN' }; }
+      if (existing) { reply.code(409); return { error: 'Already logged in somewhere else' }; }
       await AuthService.updateLastLogin(user.id);
       const { sessionId } = await SessionService.startSession(user.id);
       const token = generateJWT(user, sessionId);

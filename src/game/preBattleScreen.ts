@@ -1,3 +1,4 @@
+import { colours } from "./constants.ts";
 import GameEngine from "./gameEngine.ts";
 import { Player } from "./player.ts";
 import { GameState } from "./types.ts";
@@ -10,11 +11,11 @@ export class PreBattleScreen {
 	}
 	
 	public drawPreBattleScreen(name1: string, name2: string, message: string): void {
-		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillStyle = colours.background;
 		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 		
 		this._engine._ctx.font = '125px Arial';
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		this._engine._ctx.textAlign = 'center';
 		this._engine._ctx.textBaseline = 'middle';
 		
@@ -42,11 +43,11 @@ export class PreBattleScreen {
 	}
 
 	public drawWaitScreen(): void {
-		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillStyle = colours.background;
 		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 		
 		this._engine._ctx.font = '125px Arial';
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		this._engine._ctx.textAlign = 'center';
 		this._engine._ctx.textBaseline = 'middle';
 		
@@ -61,11 +62,11 @@ export class PreBattleScreen {
 		var message3: string;
 		var message4: string;
 
-		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillStyle = colours.background;
 		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 
 		this._engine._ctx.font = '150px Arial';
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		this._engine._ctx.textAlign = 'center';
 		this._engine._ctx.textBaseline = 'middle';
 

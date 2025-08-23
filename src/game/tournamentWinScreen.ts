@@ -1,3 +1,4 @@
+import { colours } from "./constants.ts";
 import GameEngine from "./gameEngine.ts";
 
 export class TournamentWinScreen {
@@ -8,11 +9,11 @@ export class TournamentWinScreen {
 	}
 	
 	public drawWinScreen(name1: string, name2: string, name3: string): void {
-		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillStyle = colours.background;
 		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 		
 		this._engine._ctx.font = '100px Arial';
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.winnter;
 		this._engine._ctx.textAlign = 'center';
 		this._engine._ctx.textBaseline = 'middle';
 		
@@ -20,6 +21,7 @@ export class TournamentWinScreen {
 		
 		this._engine._ctx.font = '150px Arial';
 		this._engine._ctx.fillText(name1, this._engine._canvas.width / 2, this._engine._canvas.height / 2 - 100);
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		
 		this._engine._ctx.font = '50px Arial';
 		this._engine._ctx.fillText("2nd place", this._engine._canvas.width / 4, this._engine._canvas.height - 250);

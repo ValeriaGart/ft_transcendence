@@ -19,6 +19,7 @@ export class Tournament {
 	private _waiting: number = 0;
 	private _ready: number = 0;
 	private _received: boolean = false;
+	private _waitNumber = 3;
 
 	private _mode: GameMode;
 	private _oppMode: OpponentMode;
@@ -33,6 +34,13 @@ export class Tournament {
 		this._oppMode = oppMode;
 
 		this._players = [p1, p2, p3, p4];
+
+		if (p2.isBot())
+			this._waitNumber -= 1;
+		if (p3.isBot())
+			this._waitNumber -= 1;
+		if (p4.isBot())
+			this._waitNumber -= 1;
 
 		if (oppMode == OpponentMode.SINGLE) {
 			this._p1 = 0;
@@ -95,7 +103,7 @@ export class Tournament {
 				this.parseMessage(message);
 			}
 			if (this._engine._urp == 1) {
-				while (this._waiting < 3) {
+				while (this._waiting < this._waitNumber) {
 					this._PreBattleScreen.drawWaitScreen();
 					await new Promise(resolve => setTimeout(resolve, 50));
 				}
@@ -133,9 +141,9 @@ export class Tournament {
 	public async battleOne() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
-		// this.logPlayerStatus();
+		this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
-			while (this._ready < 3) {
+			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
 				await new Promise(resolve => setTimeout(resolve, 50));
 			}
@@ -149,7 +157,7 @@ export class Tournament {
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
-			while (this._ready < 3) {
+			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
 				await new Promise(resolve => setTimeout(resolve, 50));
 			}
@@ -208,7 +216,7 @@ export class Tournament {
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
-			while (this._ready < 3) {
+			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
 				await new Promise(resolve => setTimeout(resolve, 50));
 			}
@@ -222,7 +230,7 @@ export class Tournament {
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
-			while (this._ready < 3) {
+			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
 				await new Promise(resolve => setTimeout(resolve, 50));
 			}

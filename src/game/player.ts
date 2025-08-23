@@ -47,4 +47,8 @@ export class Player {
 		console.log('side set to:', this._side);
 		this._AI.setSide(side);
 	}
+
+	public setPnumber(n: number) {
+		this._pnumber = n;
+	}
 }

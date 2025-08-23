@@ -35,12 +35,15 @@ export class Tournament {
 
 		this._players = [p1, p2, p3, p4];
 
-		if (p2.isBot())
+		if (p2.isBot()) {
 			this._waitNumber -= 1;
-		if (p3.isBot())
+		}
+		if (p3.isBot()) {
 			this._waitNumber -= 1;
-		if (p4.isBot())
+		}
+		if (p4.isBot()) {
 			this._waitNumber -= 1;
+		}
 
 		if (oppMode == OpponentMode.SINGLE) {
 			this._p1 = 0;
@@ -141,7 +144,7 @@ export class Tournament {
 	public async battleOne() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
-		this.logPlayerStatus();
+		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
@@ -270,10 +273,10 @@ export class Tournament {
 	}
 
 	private logPlayerStatus() {
-		console.log("contestant1 > name:", this._players[this._p1].getName(), "| position:", this._players[this._p1].getPosition(), "| side:", this._players[this._p1].getSide(), "| isbot:", this._players[this._p1].isBot());
-		console.log("contestant2 > name:", this._players[this._p2].getName(), "| position:", this._players[this._p2].getPosition(), "| side:", this._players[this._p2].getSide(), "| isbot:", this._players[this._p2].isBot());
-		console.log("contestant3 > name:", this._players[this._p3].getName(), "| position:", this._players[this._p3].getPosition(), "| side:", this._players[this._p3].getSide(), "| isbot:", this._players[this._p3].isBot());
-		console.log("contestant4 > name:", this._players[this._p4].getName(), "| position:", this._players[this._p4].getPosition(), "| side:", this._players[this._p4].getSide(), "| isbot:", this._players[this._p4].isBot());
+		console.log("contestant1 > name:", this._players[this._p1].getName(), "| position:", this._players[this._p1].getPosition(), "| side:", this._players[this._p1].getSide(), "| isbot:", this._players[this._p1].isBot(), "| pnumber", this._players[this._p1].getPnumber());
+		console.log("contestant2 > name:", this._players[this._p2].getName(), "| position:", this._players[this._p2].getPosition(), "| side:", this._players[this._p2].getSide(), "| isbot:", this._players[this._p2].isBot(), "| pnumber", this._players[this._p2].getPnumber());
+		console.log("contestant3 > name:", this._players[this._p3].getName(), "| position:", this._players[this._p3].getPosition(), "| side:", this._players[this._p3].getSide(), "| isbot:", this._players[this._p3].isBot(), "| pnumber", this._players[this._p3].getPnumber());
+		console.log("contestant4 > name:", this._players[this._p4].getName(), "| position:", this._players[this._p4].getPosition(), "| side:", this._players[this._p4].getSide(), "| isbot:", this._players[this._p4].isBot(), "| pnumber", this._players[this._p4].getPnumber());
 	}
 
 	private resetSide() {

@@ -60,6 +60,8 @@ export default defineConfig({
 			'/api': {
 				target: sslEnabled ? 'https://localhost:3443' : 'http://localhost:3000',
 				changeOrigin: true,
+				// Allow self-signed certs in development
+				secure: false,
 				...(httpsAgent && { agent: httpsAgent }),
 				rewrite: (path) => path.replace(/^\/api/, '')
 			},
@@ -67,6 +69,8 @@ export default defineConfig({
 				target: sslEnabled ? 'wss://localhost:3443' : 'ws://localhost:3000',
 				ws: true,
 				changeOrigin: true,
+				// Allow self-signed certs in development
+				secure: false,
 				...(httpsAgent && { agent: httpsAgent }),
 				rewrite: (path) => path.replace(/^\/ws/, '')
 			}

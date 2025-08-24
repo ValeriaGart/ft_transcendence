@@ -33,6 +33,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
 
   constructor() {
     super();
+    console.log('ProfileComponent constructor called');
   }
 
   private showError(message: string) {
@@ -53,7 +54,10 @@ export class ProfileComponent extends Component<ProfileComponentState> {
   protected onMount(): void {
     // Only load data if we haven't loaded it before or if we're in a loading state
     if (!this.hasLoadedData || this.state.isLoading) {
+      console.log('ProfileComponent: Loading profile data');
       this.loadProfileData();
+    }  else {
+      console.log('ProfileComponent: Skipping data load, already loaded');
     }
     this.setupEventListeners();
   }
@@ -61,11 +65,13 @@ export class ProfileComponent extends Component<ProfileComponentState> {
   protected onUnmount(): void {
     // Don't reset the flag when unmounting to prevent reloading on remount
     // Only reset if we're actually changing users or there's an error
+    console.log('ProfileComponent: onUnmount called');
   }
 
   // Method to reset the data load flag (call this when user changes)
   public resetDataLoad(): void {
     this.hasLoadedData = false;
+    console.log('ProfileComponent: Data load flag reset');
   }
 
   private truncateEmail(email: string): string {

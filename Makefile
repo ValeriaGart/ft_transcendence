@@ -1,6 +1,6 @@
 up: check_env
-	@echo "\033[1;36mWelcome to Gumbus_soup Transcendence!\033[0m"
-	@echo "\033[1;33mLet's make it up\033[0m"
+	@echo "\033[1;36m🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨\033[0m"
+	@echo "\033[1;33m🚀 LET'S MAKE IT UP 🚀\033[0m"
 	@if [ ! -d "node_modules" ]; then \
 		echo "\033[1;34mInstalling dependencies...\033[0m"; \
 		npm install; \
@@ -30,8 +30,8 @@ fclean: clean
 	@echo "\033[1;32mFull clean-up done.\033[0m"
 
 re: check_env
-	@echo "\033[1;35mWelcome back to Gumbus_soup Transcendence!\033[0m"
-	@echo "\033[1;33mLet's restart and make it up again\033[0m"
+	@echo "\033[1;35m🔄 WELCOME BACK TO GUMBUS_SOUP TRANSCENDENCE! 🔄\033[0m"
+	@echo "\033[1;33m⚡ LET'S RESTART AND MAKE IT UP AGAIN ⚡\033[0m"
 	npm install
 	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
 		echo "\033[1;35mGenerating SSL certificates...\033[0m"; \

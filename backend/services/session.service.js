@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { log, DEBUG, WARN } from '../utils/logger.utils.js';
 import { dbGet, dbRun, dbAll } from '../config/database.js';
+import { getAuthConfig } from '../config/auth.config.js';
 
 // SQLite-backed single-session manager (Option A)
 // user_sessions table defined in database initialization
@@ -44,16 +45,48 @@ class SessionService {
   }
 
   static async getActiveSession(userId) {
-    return await dbGet('SELECT userId, sessionId, createdAt, lastSeenAt, revoked FROM user_sessions WHERE userId = ? AND revoked = 0', [userId]);
+    const session = await dbGet('SELECT userId, sessionId, createdAt, lastSeenAt, revoked FROM user_sessions WHERE userId = ? AND revoked = 0', [userId]);
+    
+    if (!session) return null;
+
+    // Check inactivity timeout
+    const config = getAuthConfig();
+    const lastSeenAt = new Date(session.lastSeenAt);
+    const now = new Date();
+    const inactivityDuration = now.getTime() - lastSeenAt.getTime();
+    
+    if (inactivityDuration > config.SESSION.INACTIVITY_TIMEOUT) {
+      log(`[SessionService] Active session expired due to inactivity user=${userId} lastSeen=${lastSeenAt}`, WARN);
+      // Revoke the inactive session
+      await this.revokeAllSessions(userId);
+      return null;
+    }
+
+    return session;
   }
 
   static async validateSession(userId, sessionId) {
-    const row = await dbGet('SELECT sessionId, revoked FROM user_sessions WHERE userId = ?', [userId]);
-    const ok = !!(row && row.sessionId === sessionId && row.revoked === 0);
-    if (!ok) {
+    const row = await dbGet('SELECT sessionId, revoked, lastSeenAt FROM user_sessions WHERE userId = ?', [userId]);
+    
+    if (!row || row.sessionId !== sessionId || row.revoked === 1) {
       log(`[SessionService] validateSession failed user=${userId} provided=${sessionId} stored=${row?.sessionId}`, WARN);
+      return false;
     }
-    return ok;
+
+    // Check inactivity timeout
+    const config = getAuthConfig();
+    const lastSeenAt = new Date(row.lastSeenAt);
+    const now = new Date();
+    const inactivityDuration = now.getTime() - lastSeenAt.getTime();
+    
+    if (inactivityDuration > config.SESSION.INACTIVITY_TIMEOUT) {
+      log(`[SessionService] Session expired due to inactivity user=${userId} lastSeen=${lastSeenAt} inactivity=${inactivityDuration}ms`, WARN);
+      // Mark session as revoked due to inactivity
+      await this.revokeAllSessions(userId);
+      return false;
+    }
+
+    return true;
   }
 
   static async endSession(userId) {

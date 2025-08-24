@@ -284,7 +284,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">How would you like to play?</p>
           <div class="flex space-x-4">
             <button id="choose-ai" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Play vs AI</button>
-            <button id="choose-local" class="flex-1 px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local 1v1</button>
+            <button id="choose-local" class="flex-1 px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local Game</button>
           </div>
         `;
         // Bind buttons
@@ -300,7 +300,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         if (localBtn) {
           localBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            this.showLocalConfirm();
+            this.showLocalOptions();
           });
         }
       }
@@ -310,7 +310,27 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     window.addEventListener('open-choice-popup', handler);
   }
 
-  private showLocalConfirm(): void {
+  private showLocalOptions(): void {
+    const content = this.element.querySelector('.text-center') as HTMLElement | null;
+    if (!content) return;
+    content.innerHTML = `
+      <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Local Game</h2>
+      <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-4">Choose a mode:</p>
+      <div class="flex flex-col space-y-3">
+        <button id="local-bestof" class="px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Best of 1v1</button>
+        <button id="local-infinite" class="px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Infinite 1v1</button>
+        <button id="local-tournament" class="px-6 py-3 bg-[#EE9C47] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local Tournament</button>
+      </div>
+    `;
+    const bestBtn = this.element.querySelector('#local-bestof') as HTMLButtonElement | null;
+    const infBtn = this.element.querySelector('#local-infinite') as HTMLButtonElement | null;
+    const tourBtn = this.element.querySelector('#local-tournament') as HTMLButtonElement | null;
+    if (bestBtn) bestBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('bestof'); });
+    if (infBtn) infBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('infinite'); });
+    if (tourBtn) tourBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalTournamentConfirm(); });
+  }
+
+  private showLocalConfirm(mode: 'bestof' | 'infinite' = 'bestof'): void {
     const content = this.element.querySelector('.text-center') as HTMLElement | null;
     if (!content) return;
     content.innerHTML = `
@@ -331,9 +351,80 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         e.preventDefault();
         const input = this.element.querySelector('#local-alias') as HTMLInputElement | null;
         const alias = (input?.value || 'Player 2').trim() || 'Player 2';
+        // Resolve Player 1 alias from profile
+        let p1Alias = 'Player 1';
         try {
+          const currentUser = authService.getCurrentUser();
+          if (currentUser) {
+            const resp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+            if (resp.ok) {
+              const data = await resp.json();
+              p1Alias = (data?.nickname && String(data.nickname).trim() !== '') ? data.nickname : `User${currentUser.id}`;
+            }
+          }
+        } catch {}
+        try {
+          localStorage.setItem('local_p1_alias', p1Alias);
           localStorage.setItem('local_p2_alias', alias);
           localStorage.setItem('local_mode', 'MULTI');
+          localStorage.setItem('local_gameMode', mode);
+        } catch {}
+        this.closePopup(false);
+        try {
+          const { Router } = await import('@blitz-ts');
+          Router.getInstance().navigate('/user/game');
+        } catch {
+          window.location.href = '/user/game';
+        }
+      });
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closePopup(false);
+      });
+    }
+  }
+
+  private showLocalTournamentConfirm(): void {
+    const content = this.element.querySelector('.text-center') as HTMLElement | null;
+    if (!content) return;
+    content.innerHTML = `
+      <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Local Tournament</h2>
+      <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-4">Enter 3 player names:</p>
+      <div class="mb-3"><input id="local-alias-2" type="text" placeholder="Player 2" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-3"><input id="local-alias-3" type="text" placeholder="Player 3" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-6"><input id="local-alias-4" type="text" placeholder="Player 4" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="flex space-x-4">
+        <button id="confirm-local-tournament" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Confirm</button>
+        <button id="cancel-local-tournament" class="flex-1 px-6 py-3 bg-[#EF7D77] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Cancel</button>
+      </div>
+    `;
+    const confirmBtn = this.element.querySelector('#confirm-local-tournament') as HTMLButtonElement | null;
+    const cancelBtn = this.element.querySelector('#cancel-local-tournament') as HTMLButtonElement | null;
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const a2 = (this.element.querySelector('#local-alias-2') as HTMLInputElement | null)?.value?.trim() || 'Player 2';
+        const a3 = (this.element.querySelector('#local-alias-3') as HTMLInputElement | null)?.value?.trim() || 'Player 3';
+        const a4 = (this.element.querySelector('#local-alias-4') as HTMLInputElement | null)?.value?.trim() || 'Player 4';
+        // Resolve Player 1 alias from profile
+        let p1Alias = 'Player 1';
+        try {
+          const currentUser = authService.getCurrentUser();
+          if (currentUser) {
+            const resp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+            if (resp.ok) {
+              const data = await resp.json();
+              p1Alias = (data?.nickname && String(data.nickname).trim() !== '') ? data.nickname : `User${currentUser.id}`;
+            }
+          }
+        } catch {}
+        try {
+          localStorage.setItem('local_p1_alias', p1Alias);
+          localStorage.setItem('local_mode', 'TOURNAMENT');
+          localStorage.setItem('local_gameMode', 'tournament');
+          localStorage.setItem('local_tournament_aliases', JSON.stringify([a2, a3, a4]));
         } catch {}
         this.closePopup(false);
         try {
@@ -501,8 +592,6 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     }
 
     const ws = WebSocketService.getInstance();
-    const isTournament = (this.state.pendingInviteType === 'tournament')
-      || (Array.isArray(this.state.invitationData?.players) && this.state.invitationData.players.length === 4);
 
     // if (isTournament) {
     //   // TEMP: in tournament case, behave like decline to avoid backend crash path

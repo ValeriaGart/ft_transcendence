@@ -7,6 +7,7 @@ export class GamePage extends Component {
     private gameEngine: GameEngine | null = null;
 
     private msg: MessageEvent | null = null;
+    private gameMessageHandler?: (message: MessageEvent) => void;
 
     constructor() {
         super();
@@ -77,33 +78,28 @@ export class GamePage extends Component {
                 this.initializeGame();
             }, 100);
         } else {
-            console.log('No stored message found, listening for new STARTMATCH messages...');
-            // Use existing WebSocket connection and listen for messages
+            console.log('No stored message found, listening for new STARTMATCH messages without overriding global handler...');
+            this.gameMessageHandler = (message: MessageEvent) => {
+                console.log('GamePage received message (listener): ', message.data);
+                if (this.parseMessage(message)) {
+                    this.createCanvas();
+                    this.msg = message;
+                    setTimeout(() => { this.initializeGame(); }, 0);
+                }
+            };
+            const bindListener = () => {
+                if (ws.ws) {
+                    ws.ws.addEventListener('message', this.gameMessageHandler as any);
+                } else {
+                    setTimeout(bindListener, 50);
+                }
+            };
             if (ws.isConnected()) {
-                console.log('Using existing WebSocket connection');
-                ws.ws.onmessage = (message) => {
-                    console.log("GamePage received message: ", message.data);
-                    if (this.parseMessage(message)) {
-                        this.createCanvas();
-                        this.msg = message;
-                        setTimeout(() => {
-                            this.initializeGame();
-                        }, 0);
-                    }
-                };
+                bindListener();
             } else {
                 console.log('Connecting to WebSocket...');
                 ws.connect(getWebSocketUrl('/hello-ws'));
-                ws.ws.onmessage = (message) => {
-                    console.log("GamePage received message: ", message.data);
-                    if (this.parseMessage(message)) {
-                        this.createCanvas();
-                        this.msg = message;
-                        setTimeout(() => {
-                            this.initializeGame();
-                        }, 0);
-                    }
-                };
+                bindListener();
             }
         }
     }
@@ -188,5 +184,12 @@ export class GamePage extends Component {
 
     protected onUnmount(): void {
         super.onUnmount();
+        // Clean up message listener to avoid leaks
+        try {
+            const ws = WebSocketService.getInstance();
+            if (this.gameMessageHandler && ws.ws) {
+                ws.ws.removeEventListener('message', this.gameMessageHandler as any);
+            }
+        } catch {}
     }
 }

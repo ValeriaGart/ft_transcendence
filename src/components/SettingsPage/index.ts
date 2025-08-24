@@ -344,6 +344,8 @@ export class SettingsPage extends Component<SettingsPageState> {
       });
       setTimeout(() => {
         this.updatePageVisibility();
+        const pwd = this.element.querySelector('#password') as HTMLInputElement | null;
+        if (pwd) pwd.value = '';
       }, 10);
     });
 
@@ -399,6 +401,8 @@ export class SettingsPage extends Component<SettingsPageState> {
       });
       setTimeout(() => {
         this.updatePageVisibility();
+        const pwd = this.element.querySelector('#password') as HTMLInputElement | null;
+        if (pwd) pwd.value = '';
       }, 10);
     });
 
@@ -708,6 +712,8 @@ export class SettingsPage extends Component<SettingsPageState> {
         if (confirmPage) {
           confirmPage.style.display = 'block';
           console.log('Showing confirm page');
+          const pwd = this.element.querySelector('#password') as HTMLInputElement | null;
+        if (pwd) pwd.value = '';
         }
         break;
       case 'password_change':

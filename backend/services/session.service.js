@@ -13,10 +13,10 @@ class SessionService {
   static async ensureSchema() {
     if (this._checkedSchema) return;
     try {
-  const pragma = await dbAll('PRAGMA table_info(user_sessions);');
-  this._hasTokenHash = Array.isArray(pragma) && pragma.some(r => r.name === 'tokenHash');
+      const pragma = await dbAll('PRAGMA table_info(user_sessions);');
+      this._hasTokenHash = Array.isArray(pragma) && pragma.some(r => r.name === 'tokenHash');
     } catch (e) {
-      console.error('[SessionService.ensureSchema] failed to inspect schema', e);
+      log(`[SessionService.ensureSchema] failed to inspect schema: ${e.message}`, WARN);
     } finally {
       this._checkedSchema = true;
     }
@@ -38,7 +38,7 @@ class SessionService {
       }
       log(`[SessionService] startSession user=${userId} sessionId=${sessionId}`, DEBUG);
     } catch (e) {
-      console.error('[SessionService.startSession] DB error', e);
+      log(`[SessionService.startSession] DB error: ${e.message}`, WARN);
       throw e;
     }
     return { sessionId };

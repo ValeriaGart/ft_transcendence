@@ -8,6 +8,8 @@ import {
 } from '../plugins/auth-utils.js';
 import { getAuthConfig } from '../config/auth.config.js';
 
+import { log } from '../utils/logger.utils.js';
+
 class AuthController {
   static async googleSignup(request, reply) {
     try {
@@ -203,7 +205,7 @@ class AuthController {
       };
     } catch (error) { 
       // Enhanced logging to diagnose 500s
-      console.error('[AuthController.login] Unexpected error', error);
+      log('ERROR', '[AuthController.login] Unexpected error', error);
       reply.code(500); 
       return { error: 'Login failed', details: error.message };
     }
@@ -212,7 +214,6 @@ class AuthController {
   static async logout(request, reply) {
     try {
       const config = getAuthConfig();
-      if (request.user?.userId) await SessionService.endSession(request.user.userId);
       reply.clearCookie(config.SESSION.COOKIE_NAME, { 
         path: '/', 
         httpOnly: true, 

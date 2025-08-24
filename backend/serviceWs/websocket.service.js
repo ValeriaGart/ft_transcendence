@@ -26,13 +26,13 @@ class WebsocketService {
 		connection.sessionId = sessionId;
 		const valid = await SessionService.validateSession(wsid, sessionId);
 		if (!valid) {
-			try { connection.send(JSON.stringify({ type: 'SESSION_INVALID', sender: '__server', message: 'Session not active' })); } catch {}
+			await this.sendMessageToClient(connection, { type: 'SESSION_INVALID', sender: '__server', message: 'Session not active' });
 			return connection.close();
 		}
 		for (let client of this.websocketServer.clients) {
 			if (client === connection) continue;
 			if (client.userId === wsid && client.sessionId !== sessionId && client.readyState === 1) {
-				try { connection.send(JSON.stringify({ type: 'SESSION_CONFLICT', sender: '__server', message: 'Another active session exists' })); } catch {}
+				await this.sendMessageToClient(connection, { type: 'SESSION_CONFLICT', sender: '__server', message: 'Another active session exists' });
 				return connection.close();
 			}
 		}

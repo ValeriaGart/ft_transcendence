@@ -1,3 +1,4 @@
+import { colours } from "./constants.ts";
 import GameEngine from "./gameEngine.ts";
 import { OpponentMode } from "./types.ts";
 
@@ -13,17 +14,17 @@ export class OpponentScreen {
 	}
 	
 	public drawOpponentScreen(): void {
-		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillStyle = colours.background;
 		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 
 		//title
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		this._engine._ctx.font = '100px Arial';
 		this._engine._ctx.textAlign = "center";
 		this._engine._ctx.textBaseline = "middle";
 		this._engine._ctx.fillText('select opponent mode', this._engine._canvas.width / 2, 150);
 
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		this._engine._ctx.font = '75px Arial';
 		this._engine._ctx.textAlign = "center";
 		this._engine._ctx.textBaseline = "middle";

@@ -31,4 +31,14 @@ export interface GameStats {
 	pnumber: number;
 }
 
+export interface Colours {
+	background: string;
+	foregroundMain: string;
+	foregroundSubtle: string;
+	winner: string;
+	pauseBG: string;
+	paddle: string;
+	ball: string;
+}
+
 export type PaddleSide = 'left' | 'right';

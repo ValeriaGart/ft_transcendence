@@ -15,6 +15,8 @@ check_env:
 down:
 	@echo "\033[1;31mStopping the development server...\033[0m"
 	@echo "\033[1;32mDevelopment server stopped.\033[0m"
+	@echo "\033[1;36mGoodbye from the Gumbus_soup team! 👋\033[0m"
+	@echo "\033[1;33mThanks for playing Transcendence! 🎮\033[0m"
 
 clean:
 	@echo "\033[1;31mStopping the development server...\033[0m"

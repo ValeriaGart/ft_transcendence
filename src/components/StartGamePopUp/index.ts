@@ -331,7 +331,20 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         e.preventDefault();
         const input = this.element.querySelector('#local-alias') as HTMLInputElement | null;
         const alias = (input?.value || 'Player 2').trim() || 'Player 2';
+        // Resolve Player 1 alias from profile
+        let p1Alias = 'Player 1';
         try {
+          const currentUser = authService.getCurrentUser();
+          if (currentUser) {
+            const resp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+            if (resp.ok) {
+              const data = await resp.json();
+              p1Alias = (data?.nickname && String(data.nickname).trim() !== '') ? data.nickname : `User${currentUser.id}`;
+            }
+          }
+        } catch {}
+        try {
+          localStorage.setItem('local_p1_alias', p1Alias);
           localStorage.setItem('local_p2_alias', alias);
           localStorage.setItem('local_mode', 'MULTI');
         } catch {}

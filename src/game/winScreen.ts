@@ -13,7 +13,7 @@ export class WinScreen {
 		this._pongGame._engine._ctx.fillRect(0, 0, this._pongGame._engine._canvas.width, this._pongGame._engine._canvas.height);
 		
 		this._pongGame._engine._ctx.font = '100px Arial';
-		this._pongGame._engine._ctx.fillStyle = colours.winnter;
+		this._pongGame._engine._ctx.fillStyle = colours.winner;
 		this._pongGame._engine._ctx.textAlign = 'center';
 		this._pongGame._engine._ctx.textBaseline = 'middle';
 		

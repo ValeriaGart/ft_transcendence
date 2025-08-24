@@ -26,7 +26,7 @@ export class RenderEngine {
 
 		this._pongGame._engine._ctx.beginPath();
 		this._pongGame._engine._ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-		this._pongGame._engine._ctx.fillStyle = colours.foregroundMain;
+		this._pongGame._engine._ctx.fillStyle = colours.ball;
 		this._pongGame._engine._ctx.fill();
 		this._pongGame._engine._ctx.closePath();
 	}
@@ -35,7 +35,7 @@ export class RenderEngine {
 		const paddleWidth = PADDLE_WIDTH;
 		const paddleHeight = PADDLE_HEIGHT;
 
-		this._pongGame._engine._ctx.fillStyle = colours.foregroundMain;
+		this._pongGame._engine._ctx.fillStyle = colours.paddle;
 		this._pongGame._engine._ctx.fillRect(
 			PADDLE_DISTANCE_FROM_BORDER,
 			this._pongGame._gameStats.paddlePositions.left,

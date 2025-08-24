@@ -7,9 +7,11 @@ export const BALL_SPEED = 15;
 export const PADDLE_SPEED = 15;
 export const PADDLE_DISTANCE_FROM_BORDER = 50;
 export const colours: Colours = {
-    background: '#438383ff',
-    foregroundMain: '#B0D5D5',
-    foregroundSubtle: '#607497ff',
-    winnter: '#ffc400ff',
-    pauseBG: '#162b2bff'
+    background: '#687274',
+    foregroundMain: '#fffefcff',
+    foregroundSubtle: '#d4d2cb',
+    winner: '#ffd549ff',
+    pauseBG: '#162b2bff',
+    paddle: '#fff5b5',
+    ball: '#ffdaf9ff'
 }

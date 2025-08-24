@@ -35,8 +35,10 @@ export interface Colours {
 	background: string;
 	foregroundMain: string;
 	foregroundSubtle: string;
-	winnter: string;
+	winner: string;
 	pauseBG: string;
+	paddle: string;
+	ball: string;
 }
 
 export type PaddleSide = 'left' | 'right';

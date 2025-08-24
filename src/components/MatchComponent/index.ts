@@ -181,8 +181,9 @@ export class MatchComponent extends Component<MatchComponentState> {
         await this.start1v1Match();
         return;
       }
-      // Start AI match (no selection)
-      window.dispatchEvent(new Event('request-ai-start'));
+      // No friend selected: ask user to choose AI vs Local
+      // Open StartGamePopUp with choice UI matching AI popup style
+      window.dispatchEvent(new Event('open-choice-popup'));
     });
     
     console.log('Event listener attached using component system');
@@ -706,7 +707,7 @@ export class MatchComponent extends Component<MatchComponentState> {
     if (playButton) {
       const count = this.state.selectedFriendIds.length;
       if (count === 0) {
-        playButton.textContent = 'Play vs AI';
+        playButton.textContent = 'Play vs AI || locally';
       } else if (count === 1) {
         const fid = this.state.selectedFriendIds[0];
         const friendName = sanitizeForTemplate(this.state.userProfiles[fid]?.nickname || `User ${fid}`);

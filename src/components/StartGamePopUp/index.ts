@@ -55,6 +55,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     this.setupCloseButton();
     this.setupInvitationHandling();
     this.setupAiOpenListener();
+    this.setupChoiceOpenListener();
     this.setupAiStartListener();
     this.setupPendingParticipantsListener();
     // Ensure dynamic Close buttons work (delegated listener)
@@ -269,6 +270,86 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     };
     window.addEventListener('open-ai-popup', handler);
     this.setState({ aiOpenListener: handler });
+  }
+
+  /**
+   * Listen for external requests to open a choice popup (AI vs Local)
+   */
+  private setupChoiceOpenListener(): void {
+    const handler = () => {
+      const content = this.element.querySelector('.text-center') as HTMLElement | null;
+      if (content) {
+        content.innerHTML = `
+          <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Choose Opponent</h2>
+          <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">How would you like to play?</p>
+          <div class="flex space-x-4">
+            <button id="choose-ai" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Play vs AI</button>
+            <button id="choose-local" class="flex-1 px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local 1v1</button>
+          </div>
+        `;
+        // Bind buttons
+        const aiBtn = this.element.querySelector('#choose-ai') as HTMLButtonElement | null;
+        const localBtn = this.element.querySelector('#choose-local') as HTMLButtonElement | null;
+        if (aiBtn) {
+          aiBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Reuse AI popup flow
+            window.dispatchEvent(new Event('request-ai-start'));
+          });
+        }
+        if (localBtn) {
+          localBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showLocalConfirm();
+          });
+        }
+      }
+      this.setState({ gameMode: undefined });
+      this.showPopup();
+    };
+    window.addEventListener('open-choice-popup', handler);
+  }
+
+  private showLocalConfirm(): void {
+    const content = this.element.querySelector('.text-center') as HTMLElement | null;
+    if (!content) return;
+    content.innerHTML = `
+      <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Local 1v1</h2>
+      <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-4">Enter Player 2 alias:</p>
+      <div class="mb-6">
+        <input id="local-alias" type="text" placeholder="Player 2" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[220px]" />
+      </div>
+      <div class="flex space-x-4">
+        <button id="confirm-local" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Confirm</button>
+        <button id="cancel-local" class="flex-1 px-6 py-3 bg-[#EF7D77] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Cancel</button>
+      </div>
+    `;
+    const confirmBtn = this.element.querySelector('#confirm-local') as HTMLButtonElement | null;
+    const cancelBtn = this.element.querySelector('#cancel-local') as HTMLButtonElement | null;
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const input = this.element.querySelector('#local-alias') as HTMLInputElement | null;
+        const alias = (input?.value || 'Player 2').trim() || 'Player 2';
+        try {
+          localStorage.setItem('local_p2_alias', alias);
+          localStorage.setItem('local_mode', 'MULTI');
+        } catch {}
+        this.closePopup(false);
+        try {
+          const { Router } = await import('@blitz-ts');
+          Router.getInstance().navigate('/user/game');
+        } catch {
+          window.location.href = '/user/game';
+        }
+      });
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closePopup(false);
+      });
+    }
   }
 
   /**

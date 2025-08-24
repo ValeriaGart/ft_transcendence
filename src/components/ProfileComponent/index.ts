@@ -251,18 +251,21 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       const email = currentUser?.email || 'Unknown';
       const truncatedEmail = this.truncateEmail(email);
       
+      console.log('ProfileComponent: Current user:', currentUser);
+      console.log('ProfileComponent: Auth token exists:', !!authService.getToken());
       // Get profile data from API
       const response = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       
-              if (!response.ok) {
-          if (response.status === 401) {
-          // Token expired, redirect to login
-          this.showError('Your session has expired. Please log in again.');
-          const { Router } = await import('@blitz-ts/router');
-          Router.getInstance().navigate('/');
-          return;
-        }
-              this.setState({
+      if (!response.ok) {
+        console.error('ProfileComponent: Profile fetch failed with status:', response.status);
+      if (response.status === 401) {
+        // Token expired, redirect to login
+        this.showError('Your session has expired. Please log in again.');
+        const { Router } = await import('@blitz-ts/router');
+        Router.getInstance().navigate('/');
+        return;
+      }
+            this.setState({
         nickname: 'Unknown',
         email: email,
         truncatedEmail: truncatedEmail,

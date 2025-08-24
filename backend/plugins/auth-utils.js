@@ -35,12 +35,13 @@ export async function verifyGoogleToken(idToken) {
   }
 }
 
-export function generateJWT(user) {
+export function generateJWT(user, sessionId) {
   const config = getAuthConfig();
   const payload = {
     userId: user.id,
     email: user.email,
     name: user.name,
+    sessionId,
     iat: Math.floor(Date.now() / 1000),
     iss: config.JWT.ISSUER,
     aud: config.JWT.AUDIENCE

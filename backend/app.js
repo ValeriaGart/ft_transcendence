@@ -74,6 +74,9 @@ await app.register(cors, {
 // Register auth plugin
 await app.register(authPlugin);
 
+// Register XXS protection middleware
+await app.register(xssProtectionPlugin);
+
 // Register multipart plugin for file uploads
 await app.register(multipart, {
   limits: {
@@ -87,6 +90,9 @@ await app.register(fastifyStatic, {
   root: path.join(__dirname, '../public'),
   prefix: '/'
 });
+
+// Register CSP middleware
+await app.register(cspPlugin);
 
 // Global rate limiting with sensible defaults
 await app.register(import('@fastify/rate-limit'), {

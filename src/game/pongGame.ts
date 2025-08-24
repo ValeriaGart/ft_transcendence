@@ -1,6 +1,6 @@
 import GameEngine from './gameEngine.ts';
-import { GameMode, GameState, type GameStats, OpponentMode, type PaddleSide } from './types.ts';
-import { BALL_SPEED, PADDLE_HEIGHT, PADDLE_SPEED } from './constants.ts';
+import { type ExtraPaddleSide, GameMode, GameState, type GameStats, OpponentMode, type PaddleSide } from './types.ts';
+import { BALL_SPEED, EXTRA_PADDLE_HEIGHT, EXTRA_PADDLE_SPEED, PADDLE_HEIGHT, PADDLE_SPEED } from './constants.ts';
 import { CollisionHandler } from './collisionDetection.ts';
 import { RenderEngine } from './renderEngine.ts';
 // import { getRandomAngle, getRandomDirection } from './utils.ts';
@@ -15,6 +15,7 @@ export class PongGame {
 	//custom interfaces
 	public	_gameStats: GameStats;
 	public readonly _paddleSides: PaddleSide[] = ['left', 'right'];
+	public readonly _extraPaddleSides: ExtraPaddleSide[] = ['ml', 'mr'];
 
 	//custom classes
 	private _collisionHandler: CollisionHandler;
@@ -60,9 +61,10 @@ export class PongGame {
 			ballPosition: { x: this._engine._canvas.width / 2, y: this._engine._canvas.height / 2},
 			// ballVelocity: { x: randomDirection * Math.cos(randomAngle) * speed, y: Math.sin(randomAngle) * speed},
 			ballVelocity: { x: -1 * speed, y: 0 * speed},
-			paddlePositions: { left: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2), right: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2)},
-			paddleDirection: {left: 0, right: 0},
-			paddleVelocity: { left :0, right: 0},
+			paddlePositions: { left: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2), right: (this._engine._canvas.height / 2) - (PADDLE_HEIGHT / 2),
+				ml: (this._engine._canvas.height / 2) - (EXTRA_PADDLE_HEIGHT / 2), mr: (this._engine._canvas.height / 2) - (EXTRA_PADDLE_HEIGHT / 2)},
+			paddleDirection: {left: 0, right: 0, ml: 0, mr: 0},
+			paddleVelocity: { left :0, right: 0, ml: 0, mr: 0},
 			scores: { left: 0, right: 0},
 			pnumber: this._engine._urp
 		};
@@ -84,8 +86,20 @@ export class PongGame {
 		}
 		this._gameStats.paddleVelocity.right = this._gameStats.paddleDirection.right * PADDLE_SPEED;
 		if (this._gameStats.paddlePositions.right + this._gameStats.paddleVelocity.right > 0
-		&& this._gameStats.paddlePositions.right + this._gameStats.paddleVelocity.right < this._engine._canvas.height - PADDLE_HEIGHT) {
+			&& this._gameStats.paddlePositions.right + this._gameStats.paddleVelocity.right < this._engine._canvas.height - PADDLE_HEIGHT) {
 			this._gameStats.paddlePositions.right += this._gameStats.paddleVelocity.right;
+		}
+		if (this._mode == GameMode.TEAMS) {
+			this._gameStats.paddleVelocity.ml = this._gameStats.paddleDirection.ml * EXTRA_PADDLE_SPEED;
+			if (this._gameStats.paddlePositions.ml + this._gameStats.paddleVelocity.ml > 0
+				&& this._gameStats.paddlePositions.ml + this._gameStats.paddleVelocity.ml < this._engine._canvas.height - EXTRA_PADDLE_HEIGHT) {
+				this._gameStats.paddlePositions.ml += this._gameStats.paddleVelocity.ml;
+			}
+			this._gameStats.paddleVelocity.mr = this._gameStats.paddleDirection.mr * EXTRA_PADDLE_SPEED;
+			if (this._gameStats.paddlePositions.mr + this._gameStats.paddleVelocity.mr > 0
+				&& this._gameStats.paddlePositions.mr + this._gameStats.paddleVelocity.mr < this._engine._canvas.height - EXTRA_PADDLE_HEIGHT) {
+				this._gameStats.paddlePositions.mr += this._gameStats.paddleVelocity.mr;
+			}
 		}
 
 		this._gameStats.ballPosition.x += this._gameStats.ballVelocity.x;
@@ -104,7 +118,7 @@ export class PongGame {
 		this._renderEngine.renderFrame();
 
 		this._collisionHandler.checkCollisions();
-		if (this._mode == GameMode.BEST_OF || this._mode == GameMode.TOURNAMENT) {
+		if (this._mode == GameMode.BEST_OF || this._mode == GameMode.TEAMS || this._mode == GameMode.TOURNAMENT) {
 			if (this.checkWinCondition()) {
 				switch (this._round) {
 					case 1:
@@ -212,7 +226,12 @@ export class PongGame {
 				return true;
 			}
 			this._engine._gameStateMachine.transition(GameState.GAME_OVER);
-			this._winScreen.drawWinScreen(this._p1.getName());
+			if (this._mode == GameMode.TEAMS) {
+				this._winScreen.drawTeamsWinScreen(this._p1.getName(), this._p3?.getName());
+			}
+			else {
+				this._winScreen.drawWinScreen(this._p1.getName());
+			}
 			this.sendFinishMessage();
 			return false;
 		}
@@ -225,7 +244,12 @@ export class PongGame {
 				return true;
 			}
 			this._engine._gameStateMachine.transition(GameState.GAME_OVER);
-			this._winScreen.drawWinScreen(this._p2.getName());
+			if (this._mode == GameMode.TEAMS) {
+				this._winScreen.drawTeamsWinScreen(this._p2.getName(), this._p4?.getName());
+			}
+			else {
+				this._winScreen.drawWinScreen(this._p2.getName());
+			}
 			this.sendFinishMessage();
 			return false;
 		}

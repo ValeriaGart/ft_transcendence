@@ -1,5 +1,6 @@
-import { BALL_RADIUS, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH, colours } from './constants.ts';
+import { BALL_RADIUS, EXTRA_PADDLE_DISTANCE_FROM_BORDER, EXTRA_PADDLE_HEIGHT, EXTRA_PADDLE_WIDTH, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH, colours } from './constants.ts';
 import { PongGame } from './pongGame.ts';
+import { GameMode } from './types.ts';
 
 export class RenderEngine {
 	private _pongGame: PongGame
@@ -16,6 +17,9 @@ export class RenderEngine {
 		this.drawCenterLine();
 		this.drawBall();
 		this.drawPaddles();
+		if (this._pongGame._mode == GameMode.TEAMS) {
+			this.drawExtraPaddles()
+		}
 		this.drawScore();
 		this.drawNames();
 	}
@@ -50,36 +54,74 @@ export class RenderEngine {
 		);
 	}
 
+	private drawExtraPaddles(): void {
+		const paddleWidth = EXTRA_PADDLE_WIDTH;
+		const paddleHeight = EXTRA_PADDLE_HEIGHT;
+
+		this._pongGame._engine._ctx.fillStyle = colours.paddle;
+		this._pongGame._engine._ctx.fillRect(
+			EXTRA_PADDLE_DISTANCE_FROM_BORDER,
+			this._pongGame._gameStats.paddlePositions.ml,
+			paddleWidth,
+			paddleHeight
+		);
+		this._pongGame._engine._ctx.fillRect(
+			this._pongGame._engine._canvas.width - paddleWidth - EXTRA_PADDLE_DISTANCE_FROM_BORDER,
+			this._pongGame._gameStats.paddlePositions.mr,
+			paddleWidth,
+			paddleHeight
+		);
+	}
+
 	private drawScore(): void {
 		this._pongGame._engine._ctx.font = '75px Arial';
 		this._pongGame._engine._ctx.fillStyle = colours.foregroundMain;
 		
 		this._pongGame._engine._ctx.fillText(
 			this._pongGame._gameStats.scores.left.toString(),
-			(this._pongGame._engine._canvas.width / 8) * 3,
-			75
+			(this._pongGame._engine._canvas.width / 2)- 20 - 250,
+			85
 		);
 		this._pongGame._engine._ctx.fillText(
 			this._pongGame._gameStats.scores.right.toString(),
-			(this._pongGame._engine._canvas.width / 8) * 5,
-			75
+			(this._pongGame._engine._canvas.width / 2) - 20 + 250,
+			85
 		);
 	}
 
 	private drawNames(): void {
 		this._pongGame._engine._ctx.font = '50px Arial';
 		this._pongGame._engine._ctx.fillStyle = colours.foregroundMain;
-		
-		this._pongGame._engine._ctx.fillText(
-			this._pongGame._p1.getName(),
-			this._pongGame._engine._canvas.width / 8,
-			75
-		);
-		this._pongGame._engine._ctx.fillText(
-			this._pongGame._p2.getName(),
-			(this._pongGame._engine._canvas.width / 8) * 7,
-			75
-		);
+
+		if (this._pongGame._mode == GameMode.TEAMS) {
+			
+			this._pongGame._engine._ctx.fillText(
+				this._pongGame._p1.getName() + "s team",
+				75,
+				75
+			);
+			this._pongGame._engine._ctx.textAlign = 'right';
+			this._pongGame._engine._ctx.fillText(
+				this._pongGame._p2.getName() + "s team",
+				this._pongGame._engine._canvas.width - 75,
+				75
+			);
+			this._pongGame._engine._ctx.textAlign = 'left';
+		}
+		else {
+			this._pongGame._engine._ctx.fillText(
+				this._pongGame._p1.getName(),
+				75,
+				75
+			);
+			this._pongGame._engine._ctx.textAlign = 'right';
+			this._pongGame._engine._ctx.fillText(
+				this._pongGame._p2.getName(),
+				this._pongGame._engine._canvas.width - 75,
+				75
+			);
+			this._pongGame._engine._ctx.textAlign = 'left';
+		}
 	}
 
 	private drawCenterLine(): void {

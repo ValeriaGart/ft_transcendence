@@ -32,10 +32,10 @@ export class GamePage extends Component {
         // First, handle local quick-start (no websocket) if flagged
         try {
             const localMode = localStorage.getItem('local_mode');
+            const localGameMode = localStorage.getItem('local_gameMode') || 'bestof';
             if (localMode === 'MULTI') {
                 const p1 = localStorage.getItem('local_p1_alias') || 'Player 1';
                 const p2 = localStorage.getItem('local_p2_alias') || 'Player 2';
-                // Build a fake STARTMATCH payload compatible with GameEngine
                 const payload = {
                     type: 'STARTMATCH',
                     roomId: 'local',
@@ -44,16 +44,46 @@ export class GamePage extends Component {
                         { nick: p1, ai: false, pnumber: 1 },
                         { nick: p2, ai: false, pnumber: 2 }
                     ],
-                    gameMode: 'bestof',
+                    gameMode: localGameMode,
                     oppMode: 'multi'
                 };
-                // Clear local flags
                 try {
                     localStorage.removeItem('local_mode');
                     localStorage.removeItem('local_p1_alias');
                     // keep p2 alias for next defaults
                 } catch {}
-                // Create canvas and start immediately
+                this.createCanvas();
+                const fakeEvent = { data: JSON.stringify(payload) } as MessageEvent;
+                this.gameEngine = new GameEngine('gameCanvas');
+                this.gameEngine.startGameLoop(fakeEvent);
+                return;
+            }
+            if (localMode === 'TOURNAMENT') {
+                const p1 = localStorage.getItem('local_p1_alias') || 'Player 1';
+                const aliasesRaw = localStorage.getItem('local_tournament_aliases');
+                let a2 = 'Player 2', a3 = 'Player 3', a4 = 'Player 4';
+                try {
+                    const arr = JSON.parse(aliasesRaw || '[]');
+                    a2 = arr[0] || a2; a3 = arr[1] || a3; a4 = arr[2] || a4;
+                } catch {}
+                const payload = {
+                    type: 'STARTMATCH',
+                    roomId: 'local',
+                    urp: 1,
+                    players: [
+                        { nick: p1, ai: false, pnumber: 1 },
+                        { nick: a2, ai: false, pnumber: 2 },
+                        { nick: a3, ai: false, pnumber: 3 },
+                        { nick: a4, ai: false, pnumber: 4 }
+                    ],
+                    gameMode: 'tournament',
+                    oppMode: 'multi'
+                };
+                try {
+                    localStorage.removeItem('local_mode');
+                    localStorage.removeItem('local_p1_alias');
+                    localStorage.removeItem('local_tournament_aliases');
+                } catch {}
                 this.createCanvas();
                 const fakeEvent = { data: JSON.stringify(payload) } as MessageEvent;
                 this.gameEngine = new GameEngine('gameCanvas');

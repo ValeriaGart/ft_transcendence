@@ -29,6 +29,39 @@ export class GamePage extends Component {
     protected onMount(): void {
         console.log('GamePage: onMount called');
         
+        // First, handle local quick-start (no websocket) if flagged
+        try {
+            const localMode = localStorage.getItem('local_mode');
+            if (localMode === 'MULTI') {
+                const p1 = localStorage.getItem('local_p1_alias') || 'Player 1';
+                const p2 = localStorage.getItem('local_p2_alias') || 'Player 2';
+                // Build a fake STARTMATCH payload compatible with GameEngine
+                const payload = {
+                    type: 'STARTMATCH',
+                    roomId: 'local',
+                    urp: 1,
+                    players: [
+                        { nick: p1, ai: false, pnumber: 1 },
+                        { nick: p2, ai: false, pnumber: 2 }
+                    ],
+                    gameMode: 'bestof',
+                    oppMode: 'multi'
+                };
+                // Clear local flags
+                try {
+                    localStorage.removeItem('local_mode');
+                    localStorage.removeItem('local_p1_alias');
+                    // keep p2 alias for next defaults
+                } catch {}
+                // Create canvas and start immediately
+                this.createCanvas();
+                const fakeEvent = { data: JSON.stringify(payload) } as MessageEvent;
+                this.gameEngine = new GameEngine('gameCanvas');
+                this.gameEngine.startGameLoop(fakeEvent);
+                return;
+            }
+        } catch {}
+
         // Check if we have a stored STARTMATCH message from StartGamePopUp
         const ws = WebSocketService.getInstance();
         const storedMessage = ws.getLastStartMatchMessage();
@@ -111,8 +144,11 @@ export class GamePage extends Component {
         var msg
         msg = JSON.parse(message.data);
 
+        if (msg.type == "ERROR") {
+            window.location.assign('/user');
+        }
         if (msg.type !== "STARTMATCH") {
-            console.error("Unexpected message type:", msg.type);
+            // console.error("Unexpected message type:", msg.type);
             return false;
         }
         return true;

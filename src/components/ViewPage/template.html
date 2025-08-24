@@ -1,0 +1,34 @@
+<div class="flex flex-col items-center justify-center h-auto min-h-screen w-screen bg-[#FFFFF3] overflow-hidden">
+    <img src="/art/dark_star.svg" alt="Star" class="absolute top-[10%] left-[1%] h-[20%] w-auto animate-pulse-slow z-0" />
+    <img src="/art/dark_star.svg" alt="Star" class="absolute top-[50%] left-[0%] h-[10%] w-auto animate-pulse-slow z-0" />
+    <img src="/art/dark_star.svg" alt="Star" class="absolute top-[15%] right-[0%] h-[13%] w-auto animate-pulse-slow z-0" />
+    <img src="/art/dark_star.svg" alt="Star" class="absolute bottom-[4%] left-[4%] h-[10%] w-auto animate-pulse-slow z-0" />
+    <img src="/art/dark_star.svg" alt="Star" class="absolute bottom-[23%] right-[5%] h-[8%] w-auto animate-pulse-slow z-0" />
+    <img src="/art/dark_star.svg" alt="Star" class="absolute bottom-[0%] right-[1%] h-[10%] w-auto animate-pulse-slow z-0" />
+    <div class="flex flex-col items-center justify-center lg:w-[80%] w-[100%] h-auto min-h-screen bg-[#B0D5D5] z-10">
+        <div class="flex flex-col items-center h-auto min-h-[900px] w-[95%] bg-[#F0F7F7] rounded-3xl -mt-10 p-1 relative">
+            <blitz-sound-button></blitz-sound-button>
+            <div class="flex flex-wrap justify-center items-center gap-x-8 2xl:gap-x-24">
+                <div class="flex flex-col items-center justify-between h-auto w-[360px] md:w-[500px] mt-[10%] md:mt-[5%] mb-[10%] gap-3 md:gap-10">
+                    <div class="flex flex-col items-center justify-center h-[250px] w-[360px] md:w-[500px] md:h-[300px]">
+                        <blitz-view-profile-component nickname="{{nickname}}"></blitz-view-profile-component>
+                    </div>
+                    <div id="dashboard" class="flex flex-row items-center justify-center h-[360px] w-[360px] md:w-[450px] md:h-[400px] mt-[10%] bg-[#B0D5D5] border-[#81C3C3] border-8 rounded-3xl">
+                        <blitz-view-match-history-component nickname="{{nickname}}"></blitz-view-match-history-component>
+                    </div>
+                </div>
+                <div class="flex flex-col mt-[50px] w-[300px] h-[610px] lg:h-[710px] lg:w-[350px] mb-[10%] bg-[#B0D5D5] border-[#81C3C3] border-8 rounded-3xl">
+                    <div class="text-[#81C3C3] font-['Irish_Grover'] text-xl text-center mt-4">Friends</div>
+                    <div id="view-friends-list" class="flex-1 overflow-y-auto px-3 py-2"></div>
+                </div>
+            </div>
+        </div>
+        <a href="https://github.com/ValeriaGart/ft_transcendence" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 hover:opacity-80">
+            <img src="/art/githubicon.svg" alt="githubicon" class="h-[40px] w-auto" />
+            <span class="text-[#81C3C3] font-['Irish_Grover'] text-[200%] md:text-[220%]">Our project on github</span>
+        </a>
+    </div>
+    
+    <!-- StartGamePopUp Component - Always available for receiving invitations -->
+    <blitz-start-game-popup></blitz-start-game-popup>
+</div>

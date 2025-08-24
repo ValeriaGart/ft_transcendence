@@ -109,20 +109,17 @@ export class InputHandler {
 	private handleGameScreenDown(event: KeyboardEvent): void {
 		if (this._engine._pongGame) {
 			const gameStats = this._engine._pongGame._gameStats.paddleDirection;
-			// In local MULTI mode, always allow both players' keys
-			if (this._engine._pongGame._oppMode === OpponentMode.MULTI) {
-				if (event.key == 'w') gameStats.left = -1;
-				if (event.key == 's') gameStats.left = +1;
-				if (event.key == 'ArrowUp') gameStats.right = -1;
-				if (event.key == 'ArrowDown') gameStats.right = +1;
-			}
 			
-			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber() || (this._engine._pongGame?._p1.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())) {
+			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber()
+				|| (this._engine._pongGame?._p1.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())
+				|| this._engine._pongGame._oppMode == OpponentMode.MULTI) {
 				if (event.key == 'w') gameStats.left = -1;
 				if (event.key == 's') gameStats.left = +1;
 			}
 			
-			if ((this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber()) || (this._engine._pongGame?._p2.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())) {
+			if ((this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber())
+				|| (this._engine._pongGame?._p2.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())
+				|| this._engine._pongGame._oppMode == OpponentMode.MULTI) {
 				if (event.key == 'ArrowUp') gameStats.right = -1;
 				if (event.key == 'ArrowDown') gameStats.right = +1;
 			}
@@ -136,17 +133,16 @@ export class InputHandler {
 	private handleGameScreenUp(event: KeyboardEvent): void {
 		if (this._engine._pongGame) {
 			const gameStats = this._engine._pongGame._gameStats.paddleDirection;
-			// In local MULTI mode, always allow both players' keys
-			if (this._engine._pongGame._oppMode === OpponentMode.MULTI) {
-				if (event.key == 'w' || event.key == 's') gameStats.left = 0;
-				if (event.key == 'ArrowUp' || event.key == 'ArrowDown') gameStats.right = 0;
-			}
 			
-			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber() || (this._engine._pongGame?._p1.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())) {
+			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber()
+				|| (this._engine._pongGame?._p1.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())
+				|| this._engine._pongGame._oppMode == OpponentMode.MULTI) {
 				if (event.key == 'w' || event.key == 's') gameStats.left = 0;
 			}
 			
-			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber() || (this._engine._pongGame?._p2.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())) {
+			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber()
+				|| (this._engine._pongGame?._p2.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())
+				|| this._engine._pongGame._oppMode == OpponentMode.MULTI) {
 				if (event.key == 'ArrowUp' || event.key == 'ArrowDown') gameStats.right = 0;
 			}
 		}

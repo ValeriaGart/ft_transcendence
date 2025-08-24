@@ -1,6 +1,7 @@
 import ProfileService from '../services/profile.service.js';
 import { validateNickname, cleanNickname, nicknameExists } from '../utils/nickname.utils.js';
 import { dbGet } from '../config/database.js';
+import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 import { validateFile, generateUniqueFilename, saveFile, getFileUrl, cleanupOldAvatars } from '../utils/file-upload.utils.js';
 
 class ProfileController {
@@ -18,12 +19,12 @@ class ProfileController {
     try {
       const { id } = request.params;
       const profile = await ProfileService.getProfileById(id);
-      
+
       if (!profile) {
         reply.code(404);
         return { error: 'Profile not found' };
       }
-      
+
       return profile;
     } catch (error) {
       reply.code(500);
@@ -34,8 +35,9 @@ class ProfileController {
   static async updateProfile(request, reply) {
     try {
       const { id } = request.params;
+      // No need to sanitize again - XSS middleware already handled this
       const profile = await ProfileService.updateProfile(id, request.body);
-      
+
       return {
         success: true,
         message: 'Profile updated successfully',
@@ -46,7 +48,7 @@ class ProfileController {
         reply.code(404);
         return { error: 'Profile not found' };
       }
-      
+
       reply.code(500);
       return { error: 'Failed to update profile', details: error.message };
     }
@@ -56,12 +58,12 @@ class ProfileController {
     try {
       const userId = request.user.userId;
       const profile = await ProfileService.getProfileByUserId(userId);
-      
+
       if (!profile) {
         reply.code(404);
         return { error: 'Profile not found' };
       }
-      
+
       return profile;
     } catch (error) {
       reply.code(500);
@@ -86,7 +88,7 @@ class ProfileController {
 
       // Pre-validate nickname if provided (including empty strings)
       if (nickname !== undefined && nickname !== null) {
-        const validation = validateNickname(nickname);
+        const validation = validateNickname(updateFields.nickname);
         if (!validation.isValid) {
           reply.code(400);
           return { 
@@ -108,7 +110,7 @@ class ProfileController {
         reply.code(404);
         return { error: 'Profile not found' };
       }
-      
+
       if (error.message === 'Nickname already taken by another user') {
         reply.code(409);
         return { 
@@ -116,7 +118,7 @@ class ProfileController {
           suggestions: await ProfileController.generateNicknameSuggestions(request.body.nickname)
         };
       }
-      
+
       if (error.message.includes('Nickname validation failed')) {
         reply.code(400);
         return { 
@@ -125,7 +127,7 @@ class ProfileController {
           suggestions: await ProfileController.generateNicknameSuggestions(request.body.nickname)
         };
       }
-      
+
       reply.code(500);
       return { error: 'Failed to update profile', details: error.message };
     }
@@ -134,14 +136,14 @@ class ProfileController {
   static async suggestNickname(request, reply) {
     try {
       const { baseNickname } = request.query;
-      
+
       if (!baseNickname) {
         reply.code(400);
         return { error: 'Base nickname is required' };
       }
 
       const suggestion = await ProfileService.suggestNickname(baseNickname);
-      
+
       return {
         success: true,
         suggestion,
@@ -157,7 +159,7 @@ class ProfileController {
     try {
       const suggestions = [];
       const cleaned = cleanNickname(baseNickname);
-      
+
       // Generate 5 simple numbered suggestions (e.g., "john_1", "john_2", etc.)
       for (let i = 1; i <= 5; i++) {
         const suggestion = `${cleaned}_${i}`;
@@ -166,10 +168,10 @@ class ProfileController {
           suggestions.push(suggestion);
         }
       }
-      
+
       return suggestions;
     } catch (error) {
-      console.error('Error generating nickname suggestions:', error);
+      log(`Error generating nickname suggestions: ${error}`, WARN);
       return [];
     }
   }
@@ -177,7 +179,7 @@ class ProfileController {
   static async checkNicknameAvailability(request, reply) {
     try {
       const { nickname } = request.query;
-      
+
       if (!nickname) {
         reply.code(400);
         return { error: 'Nickname parameter is required' };

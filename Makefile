@@ -5,18 +5,16 @@ up: check_env
 		echo "\033[1;34mInstalling dependencies...\033[0m"; \
 		npm install; \
 	fi
+	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
+		echo "\033[1;35mGenerating SSL certificates...\033[0m"; \
+		./backend/scripts/generate-ssl.sh; \
+	fi
 	npm run dev:both
 
 check_env:
 	@if [ ! -f ".env" ]; then \
 		./srcs/check_env.sh; \
 	fi
-
-down:
-	@echo "\033[1;31mStopping the development server...\033[0m"
-	@echo "\033[1;32mDevelopment server stopped.\033[0m"
-	@echo "\033[1;36mGoodbye from the Gumbus_soup team! 👋\033[0m"
-	@echo "\033[1;33mThanks for playing Transcendence! 🎮\033[0m"
 
 clean:
 	@echo "\033[1;31mStopping the development server...\033[0m"
@@ -31,10 +29,14 @@ fclean: clean
 	@rm -rf build
 	@echo "\033[1;32mFull clean-up done.\033[0m"
 
-re: down check_env 
+re: check_env
 	@echo "\033[1;35mWelcome back to Gumbus_soup Transcendence!\033[0m"
 	@echo "\033[1;33mLet's restart and make it up again\033[0m"
 	npm install
+	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
+		echo "\033[1;35mGenerating SSL certificates...\033[0m"; \
+		./backend/scripts/generate-ssl.sh; \
+	fi
 	npm run dev:both
 
-.PHONY: re clean fclean up down
+.PHONY: re clean fclean up

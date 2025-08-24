@@ -46,10 +46,12 @@ async function authPlugin(fastify, options) {
     try {
       await request.jwtVerify();
       if (request.user?.userId) {
-  const ok = await SessionService.validateSession(request.user.userId, request.user.sessionId);
-  if (ok) await SessionService.touch(request.user.userId); else request.user = null;
+        const ok = await SessionService.validateSession(request.user.userId, request.user.sessionId);
+        if (ok) await SessionService.touch(request.user.userId); else request.user = null;
       }
-    } catch (err) { request.user = null; }
+    } catch (err) { 
+      request.user = null; 
+    }
   });
 
   // Resource ownership validation
@@ -81,9 +83,9 @@ async function authPlugin(fastify, options) {
     try {
       await request.jwtVerify();
       const { userId, sessionId } = request.user;
-  const ok = await SessionService.validateSession(userId, sessionId);
-  if (!ok) return reply.code(401).send({ error: 'SESSION_INVALID' });
-  await SessionService.touch(userId);
+      const ok = await SessionService.validateSession(userId, sessionId);
+      if (!ok) return reply.code(401).send({ error: 'SESSION_INVALID' });
+      await SessionService.touch(userId);
       
       const profileId = parseInt(request.params.id);
       const profile = await dbGet('SELECT userId FROM profiles WHERE id = ?', [profileId]);

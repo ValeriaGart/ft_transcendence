@@ -83,6 +83,12 @@ async function routes(fastify, options) {
       }
     }
   }, ProfileController.checkNicknameAvailability);
+
+  // Add avatar upload endpoint
+  fastify.post('/profiles/:id/avatar', {
+    schema: { params: profileParamsSchema },
+    preHandler: [fastify.authenticate, fastify.requireProfileOwnership]
+  }, ProfileController.uploadAvatar);
 }
 
 export default routes;

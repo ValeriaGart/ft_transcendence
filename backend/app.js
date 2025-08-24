@@ -22,11 +22,13 @@ import websocketRoutes from './routes/websocket.routes.js';
 import healthRoutes from './routes/health.routes.js';
 import authPlugin from './plugins/auth.js';
 import { xssProtectionPlugin } from './middlewares/xss-protection.js';
-import { cspPlugin } from './middlewares/csp.js';
+import { cspPlugin } from './middlewares/csp.js'
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import ws from '@fastify/websocket';
 import { log, setLoggerApp } from './utils/logger.utils.js';
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 
 // Initialize SSL configuration
 const sslOptions = getSSLOptions();
@@ -72,8 +74,22 @@ await app.register(cors, {
 // Register auth plugin
 await app.register(authPlugin);
 
-// Register XSS protection middleware
+// Register XXS protection middleware
 await app.register(xssProtectionPlugin);
+
+// Register multipart plugin for file uploads
+await app.register(multipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 1
+  }
+});
+
+// Register static file serving
+await app.register(fastifyStatic, {
+  root: path.join(__dirname, '../public'),
+  prefix: '/'
+});
 
 // Register CSP middleware
 await app.register(cspPlugin);

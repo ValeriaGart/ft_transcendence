@@ -10,13 +10,14 @@ services:
       - "3443:3443"  # https backend
     environment:
       - NODE_ENV=production
+      - LOG_PATH_BE=${LOG_PATH_BE}
     networks:
       - transcendence_net
     volumes:
       - ./db.sqlite:/workspaces/ft_transcendence/db.sqlite
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-      - ${LOG_PATH_BE}:/workspaces/ft_transcendence/logs_backend
+      - ${LOG_PATH_BE}:${LOG_PATH_BE}
 
     healthcheck:
       test: ["CMD", "/workspaces/ft_transcendence/healthcheck.sh"]

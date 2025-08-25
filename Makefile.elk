@@ -30,19 +30,8 @@ elk-logs:
 
 
 set-lifecycle:
-	@echo "Setting index lifecycle template..."
-	-@output=$$(sudo curl -u elastic:secret1 \
-		--cacert /var/lib/docker/volumes/ft_transcendence_certs/_data/ca/ca.crt \
-		-X PUT "https://localhost:9200/_index_template/my_template" \
-		-H "Content-Type: application/json" \
-		--data-binary @devops/kibana/config/lifecycle.template 2>/dev/null); \
-	if echo "$$output" | grep -q '{"acknowledged":true}'; then \
-		echo "Lifecycle template set successfully."; \
-	else \
-		echo "Unexpected response:"; \
-		echo "$$output"; \
-		exit 1; \
-	fi
+	chmod +x devops/general_config/set_lifecycle.sh
+	@devops/general_config/set_lifecycle.sh
 
 start-elk: elk-up set-lifecycle
 

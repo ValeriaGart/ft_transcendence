@@ -6,7 +6,7 @@ source .env
 set +a
 
 sudo curl -u elastic:"$ELASTIC_PASSWORD" \
-	--cacert /var/lib/docker/volumes/ft_transcendence_certs/_data/ca/ca.crt \
+	--cacert $CA_CERT_PATH/ca.crt \
 	-X PUT "https://localhost:9200/_index_template/my_logstash_template" \
 	-H "Content-Type: application/json" \
 	--data-binary @devops/general_config/set_lifecycle.template

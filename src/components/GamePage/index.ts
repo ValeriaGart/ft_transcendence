@@ -44,7 +44,7 @@ export class GamePage extends Component {
                         { nick: p1, ai: false, pnumber: 1 },
                         { nick: p2, ai: false, pnumber: 2 }
                     ],
-                    gameMode: 'teams',
+                    gameMode: 'bestof',
                     oppMode: 'multi'
                 };
                 // Clear local flags

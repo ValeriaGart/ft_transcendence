@@ -116,7 +116,7 @@ export class InputHandler {
 				if (event.key == 'w') gameStats.left = -1;
 				if (event.key == 's') gameStats.left = +1;
 			}
-			
+
 			if ((this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber())
 				|| (this._engine._pongGame?._p2.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())
 				|| this._engine._pongGame._oppMode === OpponentMode.MULTI) {
@@ -124,14 +124,21 @@ export class InputHandler {
 				if (event.key == 'ArrowDown') gameStats.right = +1;
 			}
 
-			if (this._engine._pongGame._mode === GameMode.TEAMS) {
+			if (this._engine._pongGame._mode === GameMode.TEAMS
+				&& (this._engine._pongGame._gameStats.pnumber == this._engine._pongGame._p3?.getPnumber()
+				|| this._engine._pongGame._oppMode === OpponentMode.MULTI)) {
 				if (event.key == 'g') gameStats.ml = -1;
 				if (event.key == 'b') gameStats.ml = +1;
+			}
+
+			if (this._engine._pongGame._mode === GameMode.TEAMS
+				&& (this._engine._pongGame._gameStats.pnumber == this._engine._pongGame._p4?.getPnumber()
+				|| this._engine._pongGame._oppMode === OpponentMode.MULTI)) {
 				if (event.key == 'k') gameStats.mr = -1;
 				if (event.key == 'm') gameStats.mr = +1;
 			}
-			
-			if (event.key == 'Escape'){
+
+			if (event.key == 'Escape' && this._engine._pongGame._oppMode != OpponentMode.ONLINE){
 				this._engine._gameStateMachine.transition(GameState.PAUSED);
 			}
 		}
@@ -144,20 +151,29 @@ export class InputHandler {
 			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber()
 				|| (this._engine._pongGame?._p1.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())
 				|| this._engine._pongGame._oppMode === OpponentMode.MULTI) {
-				if (event.key == 'w' || event.key == 's') gameStats.left = 0;
+				if (event.key == 'w'  && this._engine._pongGame._gameStats.paddleDirection.left == -1) gameStats.left = 0;
+				if (event.key == 's'  && this._engine._pongGame._gameStats.paddleDirection.left == +1) gameStats.left = 0;
 			}
 			
 			if (this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p2.getPnumber()
 				|| (this._engine._pongGame?._p2.isBot() && event.location == 1 && this._engine._pongGame?._gameStats.pnumber == this._engine._pongGame?._p1.getPnumber())
 				|| this._engine._pongGame._oppMode === OpponentMode.MULTI) {
-				if (event.key == 'ArrowUp' || event.key == 'ArrowDown') gameStats.right = 0;
+				if (event.key == 'ArrowUp'  && this._engine._pongGame._gameStats.paddleDirection.right == -1) gameStats.right = 0;
+				if (event.key == 'ArrowDown'  && this._engine._pongGame._gameStats.paddleDirection.right == +1) gameStats.right = 0;
 			}
 
-			if (this._engine._pongGame._mode === GameMode.TEAMS) {
-				if (event.key == 'g') gameStats.ml = 0;
-				if (event.key == 'b') gameStats.ml = 0;
-				if (event.key == 'k') gameStats.mr = 0;
-				if (event.key == 'm') gameStats.mr = 0;
+			if (this._engine._pongGame._mode === GameMode.TEAMS
+				&& (this._engine._pongGame._gameStats.pnumber == this._engine._pongGame._p3?.getPnumber()
+				|| this._engine._pongGame._oppMode === OpponentMode.MULTI)) {
+				if (event.key == 'g' && this._engine._pongGame._gameStats.paddleDirection.ml == -1) gameStats.ml = 0;
+				if (event.key == 'b'  && this._engine._pongGame._gameStats.paddleDirection.ml == +1) gameStats.ml = 0;
+			}
+
+			if (this._engine._pongGame._mode === GameMode.TEAMS
+				&& (this._engine._pongGame._gameStats.pnumber == this._engine._pongGame._p4?.getPnumber()
+				|| this._engine._pongGame._oppMode === OpponentMode.MULTI)) {
+				if (event.key == 'k' && this._engine._pongGame._gameStats.paddleDirection.mr == -1) gameStats.mr = 0;
+				if (event.key == 'm'  && this._engine._pongGame._gameStats.paddleDirection.mr == +1) gameStats.mr = 0;
 			}
 		}
 	}

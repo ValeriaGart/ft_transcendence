@@ -41,26 +41,28 @@ export class CollisionHandler {
 			}
 		});
 
-		this._pongGame._extraPaddleSides.forEach(side => {
-			if (this.isBallHittingExtraPaddle(side)) {
-				if (side == 'ml') {
-					if (this._pongGame._gameStats.ballVelocity.x < 0) {
-						this._pongGame._gameStats.ballVelocity.x *= -1;
+		if (this._pongGame._mode == GameMode.TEAMS) {
+			this._pongGame._extraPaddleSides.forEach(side => {
+				if (this.isBallHittingExtraPaddle(side)) {
+					if (side == 'ml') {
+						if (this._pongGame._gameStats.ballVelocity.x < 0) {
+							this._pongGame._gameStats.ballVelocity.x *= -1;
+						}
+						if (this.isExtraPaddleHittingWall('ml') == false) {
+							this._pongGame._gameStats.ballVelocity.y += this._pongGame._gameStats.paddleVelocity.ml / 2;
+						}
 					}
-					if (this.isExtraPaddleHittingWall('ml') == false) {
-						this._pongGame._gameStats.ballVelocity.y += this._pongGame._gameStats.paddleVelocity.ml / 2;
+					if (side == 'mr') {
+						if (this._pongGame._gameStats.ballVelocity.x > 0) {
+							this._pongGame._gameStats.ballVelocity.x *= -1;
+						}
+						if (this.isExtraPaddleHittingWall('mr') == false) {
+							this._pongGame._gameStats.ballVelocity.y += this._pongGame._gameStats.paddleVelocity.mr / 2;
+						}
 					}
 				}
-				if (side == 'mr') {
-					if (this._pongGame._gameStats.ballVelocity.x > 0) {
-						this._pongGame._gameStats.ballVelocity.x *= -1;
-					}
-					if (this.isExtraPaddleHittingWall('mr') == false) {
-						this._pongGame._gameStats.ballVelocity.y += this._pongGame._gameStats.paddleVelocity.mr / 2;
-					}
-				}
-			}
-		});
+			});
+		}
 
 		//goal collision
 		if (this._pongGame._gameStats.ballPosition.x <= 0) {

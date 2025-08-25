@@ -34,6 +34,7 @@ export class PongGame {
 	private _lastAIUpdateTimeMs: number = 0;
 	private _lastBroadcastTimeMs: number = 0;
 	private _running: boolean = true;
+	private _aiTarget: number = 0;
 
 	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1?: Player, p2?: Player, p3?: Player, p4?: Player, round?: number) {
 		this._engine = engine;
@@ -96,9 +97,12 @@ export class PongGame {
 				this._p1._AI.update(this);
 			}
 			if (this._p2.isBot() == true) {
-				this._p2._AI.update(this);
+				this._aiTarget = this._p2._AI.update(this);
 			}
 			this._lastAIUpdateTimeMs = Date.now();
+		}
+		if (this._p2.isBot()) {
+			this._p2._AI.move(this._aiTarget, this);
 		}
 
 		this._renderEngine.renderFrame();

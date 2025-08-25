@@ -795,16 +795,19 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     }
 
     const ws = WebSocketService.getInstance();
-    // Send a cancel to avoid backend crash path on type 4 for tournaments
-    const cancelMessage = {
-      type: 5,
-      roomId: this.state.pendingRoomId,
-      status: 'cancel'
-    };
-    console.log('Sending cancel message (decline):', cancelMessage);
-    try { (this.state as any)._cancelSent = true; } catch {}
-    ws.sendMessage(JSON.stringify(cancelMessage));
-    try { localStorage.setItem('force_cancel_room_id', String(this.state.pendingRoomId)); } catch {}
+    // Do not send cancel for local synthetic rooms
+    const isLocalRoom = String(this.state.pendingRoomId) === 'local';
+    if (!isLocalRoom) {
+      const cancelMessage = {
+        type: 5,
+        roomId: this.state.pendingRoomId,
+        status: 'cancel'
+      };
+      console.log('Sending cancel message (decline):', cancelMessage);
+      try { (this.state as any)._cancelSent = true; } catch {}
+      ws.sendMessage(JSON.stringify(cancelMessage));
+      try { localStorage.setItem('force_cancel_room_id', String(this.state.pendingRoomId)); } catch {}
+    }
     
     // Close the popup
     this.closePopup();

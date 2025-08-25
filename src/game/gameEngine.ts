@@ -234,7 +234,9 @@ export class GameEngine {
 			window.addEventListener('beforeunload', this._beforeUnloadHandler, { capture: true });
 			this._pageHideHandler = () => {
 				try {
-					if (this._roomID) {
+					// Avoid sending cancel for local games (no real backend room)
+					const isLocalRoom = !this._roomID || String(this._roomID) === 'local';
+					if (this._roomID && !isLocalRoom) {
 						const cancelMsg = { type: 5, roomId: this._roomID, status: 'cancel' };
 						this._ws.sendMessage(JSON.stringify(cancelMsg));
 						// Mark for forced cancel on next WS reconnect in case the ws is already closed

@@ -72,7 +72,8 @@ export class BotAI{
 			? pongGame._gameStats.paddlePositions.left
 			: pongGame._gameStats.paddlePositions.right;
 			
-		const impactPosition = this.predictBallImpact(ballPosition, ballVelocity, pongGame);
+		var impactPosition = this.predictBallImpact(ballPosition, ballVelocity, pongGame);
+		if (impactPosition == paddlePosition + PADDLE_HEIGHT / 2) impactPosition = 0;
 
 		return this.movePaddleToPosition(paddlePosition, impactPosition);
 	}

@@ -51,7 +51,8 @@ class SessionService {
 
     // Check inactivity timeout
     const config = getAuthConfig();
-    const lastSeenAt = new Date(session.lastSeenAt);
+    // SQLite CURRENT_TIMESTAMP is UTC without timezone; parse as UTC
+    const lastSeenAt = new Date(`${String(session.lastSeenAt).replace(' ', 'T')}Z`);
     const now = new Date();
     const inactivityDuration = now.getTime() - lastSeenAt.getTime();
     
@@ -75,7 +76,8 @@ class SessionService {
 
     // Check inactivity timeout
     const config = getAuthConfig();
-    const lastSeenAt = new Date(row.lastSeenAt);
+    // SQLite CURRENT_TIMESTAMP is UTC without timezone; parse as UTC
+    const lastSeenAt = new Date(`${String(row.lastSeenAt).replace(' ', 'T')}Z`);
     const now = new Date();
     const inactivityDuration = now.getTime() - lastSeenAt.getTime();
     

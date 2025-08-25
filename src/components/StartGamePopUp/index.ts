@@ -85,7 +85,23 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         console.log('Decline invitation clicked');
         this.declineInvitation();
         // Force a full reload after sending cancel to reset all UI state cleanly
-        setTimeout(() => { try { window.location.reload(); } catch {} }, 50);
+        setTimeout(() => {
+          try { window.location.reload(); } catch {}
+          try { (window as any).location.href = window.location.href; } catch {}
+          try { window.location.assign('/user'); } catch {}
+          try { Router.getInstance().navigate('/user'); } catch {}
+        }, 50);
+      }
+      if (target && target.closest('#acknowledge-close')) {
+        e.preventDefault();
+        this.closePopup(false);
+        // Reload to fully reset the state after acknowledging cancel
+        setTimeout(() => {
+          try { window.location.reload(); } catch {}
+          try { (window as any).location.href = window.location.href; } catch {}
+          try { window.location.assign('/user'); } catch {}
+          try { Router.getInstance().navigate('/user'); } catch {}
+        }, 50);
       }
     });
   }
@@ -172,6 +188,8 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
               (this as any)._waitTimeoutId = undefined;
             }
           } catch {}
+          // Ensure any way of closing this popup triggers a full reload
+          try { (this as any)._reloadOnClose = true; } catch {}
           // Keep popup open but replace content with decline message and who declined if available
           const declinedByNick = this.state.invitationData?.players?.find((p: any) => p.accepted === 'declined')?.nick;
           const baseMessage = parsedData.message || 'Invitation declined or match was cancelled.';
@@ -278,6 +296,14 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
       (popupElement as HTMLElement).style.display = 'none';
       console.log('StartGamePopUp: Popup hidden');
     }
+
+    // If requested, force a reload after closing (e.g., after CANCELMATCH)
+    try {
+      if ((this as any)._reloadOnClose === true) {
+        setTimeout(() => window.location.reload(), 50);
+        return;
+      }
+    } catch {}
 
     // If user-initiated cancellation/close in 1v1, reload their page to reset UI
     if (shouldCancel && this.state.gameMode === '1v1') {

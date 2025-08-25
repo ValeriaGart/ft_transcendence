@@ -49,6 +49,7 @@ export class UserPage extends Component {
 
         const close = () => {
             try { overlay.remove(); } catch {}
+            try { window.location.reload(); } catch {}
         };
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
         overlay.querySelector('#cancel-popup-close')?.addEventListener('click', (e) => { e.preventDefault(); close(); });

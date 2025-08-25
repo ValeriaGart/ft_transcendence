@@ -1,0 +1,32 @@
+{
+  "index_patterns": ["logstash_*"],
+  "template": {
+    "settings": {
+      "index": {
+        "mode": "standard",
+        "routing": {
+          "allocation": {
+            "include": {
+              "_tier_preference": "data_hot"
+            }
+          }
+        }
+      }
+    },
+    "mappings": {
+      "_data_stream_timestamp": {
+        "enabled": true
+      },
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        }
+      }
+    },
+    "aliases": {},
+    "lifecycle": {
+      "enabled": true,
+      "data_retention": "5d"
+    }
+  }
+}

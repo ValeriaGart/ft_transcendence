@@ -4,6 +4,7 @@ import { GameMode, GameState, OpponentMode } from './types.ts';
 export class InputHandler {
 	private _engine: GameEngine;
 	public _oppMode: OpponentMode = OpponentMode.SINGLE;
+	private _onPopState?: (e: PopStateEvent) => void;
 
 	constructor(engine: GameEngine) {
 		this._engine = engine;
@@ -12,6 +13,20 @@ export class InputHandler {
 	public setupEventListeners(): void {
 		window.addEventListener('keydown', this.handleKeyDown.bind(this));
 		window.addEventListener('keyup', this.handleKeyUp.bind(this));
+
+		// Map browser Back button to behave like Escape and keep user on game view
+		try {
+			history.pushState(null, '', window.location.href);
+			this._onPopState = (e: PopStateEvent) => {
+				// Stop router from handling this popstate
+				try { e.stopImmediatePropagation(); e.stopPropagation(); } catch {}
+				// prevent navigating away by restoring state, then mirror Esc
+				history.pushState(null, '', window.location.href);
+				this.handleEscapeAction();
+			};
+			// Use capture to intercept before router listeners
+			window.addEventListener('popstate', this._onPopState, true);
+		} catch {}
 	}
 
 	private handleKeyDown(event: KeyboardEvent): void {
@@ -180,7 +195,7 @@ export class InputHandler {
 	
 	private handlePauseScreen(event: KeyboardEvent): void {
 		if (event.key == 'Escape') {
-			this._engine._gameStateMachine.transition(GameState.GAME);
+			this.handleEscapeAction();
 		}
 		if (event.key == 'Enter') {
 			const msg = {
@@ -218,6 +233,22 @@ export class InputHandler {
 	private handleTournamentMiddle(event: KeyboardEvent): void {
 		if (event.key == 'Enter') {
 			this._engine.startRoundThree();
+		}
+	}
+
+	private handleEscapeAction(): void {
+		switch (this._engine._gameStateMachine.getCurrentState()) {
+			case GameState.GAME:
+				this._engine._gameStateMachine.transition(GameState.PAUSED);
+				break;
+			case GameState.PAUSED:
+				this._engine._gameStateMachine.transition(GameState.GAME);
+				break;
+			case GameState.SELECT:
+				this._engine._gameStateMachine.transition(GameState.OPPONENT);
+				break;
+			default:
+				break;
 		}
 	}
 }

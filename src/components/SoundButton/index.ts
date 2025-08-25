@@ -39,7 +39,7 @@ export class SoundButton extends Component<SoundButtonProps, SoundButtonState> {
         setTimeout(() => {
             const button = this.element.querySelector('button');
             if (button) {
-                button.className = `absolute ${this.state.positionClasses} hover:opacity-80`;
+                button.className = `absolute ${this.state.positionClasses} hover:opacity-80 cursor-pointer`;
             }
         }, 0);
     }

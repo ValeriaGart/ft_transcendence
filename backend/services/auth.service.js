@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { verifyPassword as verifyArgon2 } from '../utils/password-utils.js';
 import { dbRun, dbGet } from '../config/database.js';
 import { AUTH_CONFIG } from '../config/auth.config.js';
 import { generateNicknameFromUserData, validateNickname, generateUniqueNickname } from '../utils/nickname.utils.js';
@@ -133,7 +134,17 @@ class AuthService {
 
   static async verifyPassword(password, hash) {
     try {
-      return await bcrypt.compare(password, hash);
+      // without this change password change doesnt work : from V
+      // Try bcrypt first
+      try {
+        if (await bcrypt.compare(password, hash)) return true;
+      } catch {}
+      // Then try argon2
+      try {
+        if (await verifyArgon2(hash, password)) return true;
+      } catch {}
+      log('Password verification failed for provided hash format', WARN);
+      return false;
     } catch (error) {
       log('Error verifying password: ' + error, WARN);
       return false;

@@ -86,6 +86,16 @@ export class WebSocketService {
   private setupEventListeners(): void {
     this.ws.onopen = () => {
       console.log('Connected to WebSocket server');
+      // On open, if there is a lingering room marked for cancel, send cancel once
+      try {
+        const forceRoom = localStorage.getItem('force_cancel_room_id');
+        if (forceRoom) {
+          const cancel = { type: 5, roomId: forceRoom, status: 'cancel' } as any;
+          console.log('WS onopen: sending forced cancel for lingering room', cancel);
+          this.sendMessage(JSON.stringify(cancel));
+          localStorage.removeItem('force_cancel_room_id');
+        }
+      } catch {}
     };
 
     this.ws.onmessage = (event) => {

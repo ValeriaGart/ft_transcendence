@@ -12,6 +12,7 @@ interface ViewProfileState {
   truncatedEmail: string;
   bio: string;
   profilePictureUrl: string;
+  isCustomAvatar: boolean;
   isLoading: boolean;
   showError: boolean;
   errorMessage: string | null;
@@ -24,6 +25,7 @@ export class ViewProfileComponent extends Component<ViewProfileProps, ViewProfil
     truncatedEmail: '-',
     bio: 'No bio available',
     profilePictureUrl: 'profile_no.svg',
+    isCustomAvatar: false,
     isLoading: true,
     showError: false,
     errorMessage: null,
@@ -90,15 +92,23 @@ export class ViewProfileComponent extends Component<ViewProfileProps, ViewProfil
         return;
       }
 
-      let profilePictureUrl = 'profile_no.svg';
-      if (profile.profilePictureUrl) {
-        if (typeof profile.profilePictureUrl === 'string' &&
-            !profile.profilePictureUrl.startsWith('http://') &&
-            !profile.profilePictureUrl.startsWith('https://')) {
-          const parts = profile.profilePictureUrl.split('/');
-          profilePictureUrl = parts[parts.length - 1] || 'profile_no.svg';
+      // Build a fully-qualified image URL:
+      // - Uploaded images come as '/uploads/...': use as-is
+      // - Built-in avatars are filenames like 'profile_1.svg': prefix with '/art/profile/'
+      // - Anything else defaults to built-in 'profile_no.svg'
+      let profilePictureUrl = '/art/profile/profile_no.svg';
+      let isCustomAvatar = false;
+      if (typeof profile.profilePictureUrl === 'string' && profile.profilePictureUrl.trim() !== '') {
+        const url = profile.profilePictureUrl as string;
+        if (url.startsWith('/uploads/') || url.includes('/uploads/')) {
+          profilePictureUrl = url;
+          isCustomAvatar = true;
+        } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          const parts = url.split('/');
+          const filename = parts[parts.length - 1] || 'profile_no.svg';
+          profilePictureUrl = `/art/profile/${filename}`;
         } else {
-          profilePictureUrl = 'profile_no.svg';
+          profilePictureUrl = '/art/profile/profile_no.svg';
         }
       }
 
@@ -108,8 +118,10 @@ export class ViewProfileComponent extends Component<ViewProfileProps, ViewProfil
         truncatedEmail: '-',
         bio: profile.bio && profile.bio.trim() !== '' ? profile.bio : 'No bio available',
         profilePictureUrl,
+        isCustomAvatar,
         isLoading: false,
       });
+      this.updateProfileImageFit();
     } catch (e) {
       console.error('Error loading viewed profile:', e);
       this.showError('Failed to load profile');
@@ -148,6 +160,21 @@ export class ViewProfileComponent extends Component<ViewProfileProps, ViewProfil
         this.showError(message);
       }
     });
+  }
+
+  private updateProfileImageFit(): void {
+    try {
+      const img = this.element.querySelector('#profile-picture') as HTMLElement | null;
+      if (!img) return;
+      const classList = img.classList;
+      if (this.state.isCustomAvatar) {
+        classList.remove('object-contain');
+        if (!classList.contains('object-cover')) classList.add('object-cover');
+      } else {
+        classList.remove('object-cover');
+        if (!classList.contains('object-contain')) classList.add('object-contain');
+      }
+    } catch {}
   }
 }
 

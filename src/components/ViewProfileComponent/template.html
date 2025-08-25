@@ -1,16 +1,12 @@
 <div class="flex flex-row items-center justify-center relative h-[250px] w-[360px] md:w-[500px] md:h-[300px] border-[#81C3C3] border-8 rounded-4xl">
   <div id="profile-component" class="flex flex-row items-center justify-center h-full w-full">
-    <div class="flex flex-col items-center justify-center h-full w-[50%] gap-7 border-0 max-w-[50%]">
+    <div class="flex flex-col items-center justify-center h-full w-auto gap-7 border-0 max-w-[50%]">
       <p class="text-xl md:text-2xl font-bold text-[#81C3C3] underline underline-offset-6 decoration-3 pl-2">{{nickname}}</p>
       <div id="bio" class="w-full h-[100px] max-w-[90%] min-h-[40px] rounded-md p-2 pt-0 text-center text-[#81C3C3] border-[#81C3C3] border-2 overflow-hidden text-sm md:text-xl leading-tight break-words whitespace-normal">{{bio}}</div>
-      <div class="flex flex-row items-end justify-center w-[20%] md:w-[50%] gap-x-1 -mt-7 mr-3">
-        <button id="add-friend-btn" class="flex items-center gap-x-2  mt-4 bg-[#81C3C3] text-[#F0F7F7] text-sm md:text-base font-['Irish_Grover'] px-4 py-2 rounded-md">
-          <img src="/art/user_page/plus_button.svg" alt="Add" class="h-4 w-3 md:h-6 md:w-5 hover:scale-105 transition-transform duration-300 text-sm md:text-base cursor-pointer" />
-          Add Friend
-        </button>
-      </div>
     </div>
-    <img id="profile-picture" src="/art/profile/{{profilePictureUrl}}" alt="Profile" class="h-[90%] p-2"/>
+    <div class="flex items-center justify-center h-[90%] w-[90%] max-w-[50%] p-2">
+      <img id="profile-picture" src="{{profilePictureUrl}}" alt="Profile" class="w-full h-full object-contain object-center rounded-lg" style="aspect-ratio: 1/1; min-height: 200px; max-height: 250px;"/>
+    </div>
   </div>
 </div>
 

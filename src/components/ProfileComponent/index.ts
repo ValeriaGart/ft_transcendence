@@ -60,6 +60,8 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       console.log('ProfileComponent: Skipping data load, already loaded');
     }
     this.setupEventListeners();
+    // Ensure correct fit mode on mount
+    this.updateProfileImageFit();
   }
 
   protected onUnmount(): void {
@@ -165,6 +167,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
           isCustomAvatar: false
         });
         this.hidePictureSelector();
+        this.updateProfileImageFit();
       } else {
         const errorData = await updateResponse.json();
         console.error('Failed to update profile picture:', errorData);
@@ -204,6 +207,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
           isCustomAvatar: true
         });
         this.hidePictureSelector();
+        this.updateProfileImageFit();
         
         // Force reload profile data to ensure consistency
         this.hasLoadedData = false;
@@ -312,6 +316,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       });
       
       this.hasLoadedData = true; // Mark that we've loaded the data
+      this.updateProfileImageFit();
 
     } catch (error) {
       console.error('Error loading profile data:', error);
@@ -338,6 +343,23 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       
       this.hasLoadedData = true; // Mark that we've loaded the data even in error case
     }
+  }
+  
+  private updateProfileImageFit(): void {
+    try {
+      const img = this.element.querySelector('#profile-picture') as HTMLElement | null;
+      if (!img) return;
+      // Toggle object-fit class based on whether avatar is custom/uploaded
+      // Uploaded/custom => allow cover (can crop). Default/built-in => contain (no crop)
+      const classList = img.classList;
+      if (this.state.isCustomAvatar) {
+        classList.remove('object-contain');
+        if (!classList.contains('object-cover')) classList.add('object-cover');
+      } else {
+        classList.remove('object-cover');
+        if (!classList.contains('object-contain')) classList.add('object-contain');
+      }
+    } catch {}
   }
     
   render() {}

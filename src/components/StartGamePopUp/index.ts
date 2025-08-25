@@ -17,7 +17,7 @@ interface StartGamePopUpState {
   aiOpenListener?: (e: Event) => void;
   defaultContentHtml?: string;
   pendingParticipants?: string[];
-  pendingInviteType?: '1v1' | 'tournament';
+  pendingInviteType?: '1v1' | 'tournament' | 'teams';
 }
 
 export class StartGamePopUp extends Component<StartGamePopUpState> {
@@ -58,6 +58,25 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     this.setupChoiceOpenListener();
     this.setupAiStartListener();
     this.setupPendingParticipantsListener();
+    // Send cancel on page hide if there is a pending room (pre-STARTMATCH)
+    try {
+      const pageHideHandler = () => {
+        try {
+          // Avoid double-cancel if user already pressed Close
+          if ((this.state as any)._cancelSent === true) return;
+          const ws = WebSocketService.getInstance();
+          const roomId = (this.state.pendingRoomId) || (localStorage.getItem('current_room_id') || undefined);
+          if (roomId) {
+            const cancel = { type: 5, roomId, status: 'cancel' };
+            ws.sendMessage(JSON.stringify(cancel));
+            try { localStorage.setItem('force_cancel_room_id', String(roomId)); } catch {}
+          }
+        } catch {}
+      };
+      window.addEventListener('pagehide', pageHideHandler, { capture: true });
+      // keep reference for cleanup
+      (this.state as any)._pageHideHandler = pageHideHandler;
+    } catch {}
     // Ensure dynamic Close buttons work (delegated listener)
     this.element.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -65,6 +84,24 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         e.preventDefault();
         console.log('Decline invitation clicked');
         this.declineInvitation();
+        // Force a full reload after sending cancel to reset all UI state cleanly
+        setTimeout(() => {
+          try { window.location.reload(); } catch {}
+          try { (window as any).location.href = window.location.href; } catch {}
+          try { window.location.assign('/user'); } catch {}
+          try { Router.getInstance().navigate('/user'); } catch {}
+        }, 50);
+      }
+      if (target && target.closest('#acknowledge-close')) {
+        e.preventDefault();
+        this.closePopup(false);
+        // Reload to fully reset the state after acknowledging cancel
+        setTimeout(() => {
+          try { window.location.reload(); } catch {}
+          try { (window as any).location.href = window.location.href; } catch {}
+          try { window.location.assign('/user'); } catch {}
+          try { Router.getInstance().navigate('/user'); } catch {}
+        }, 50);
       }
     });
   }
@@ -95,16 +132,24 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         if (parsedData.type === "INVITATION" && parsedData.roomId) {
           console.log('Received 1v1 invitation, showing accept/decline options...');
           // Store the invitation data
+          const players = Array.isArray(parsedData.players) ? parsedData.players : [];
+          const fourPlayers = players.length === 4;
+          const pendingType: '1v1' | 'tournament' | 'teams' = fourPlayers ? (parsedData.gameMode === 'teams' ? 'teams' : 'tournament') : '1v1';
           this.setState({ 
             invitationData: parsedData,
             pendingRoomId: parsedData.roomId,
+            pendingInviteType: pendingType,
+            pendingParticipants: players.map((p: any) => String(p.nick)),
             gameMode: '1v1'
           });
           // Show the invitation popup with accept/decline buttons
           this.showInvitationPopup(parsedData);
           // Show the popup
           this.showPopup();
-        } else if (parsedData.type === "INFO" && parsedData.roomId && parsedData.message.includes("room was created")) {
+        } else if (
+          parsedData.type === "INFO" && parsedData.roomId &&
+          typeof parsedData.message === 'string' && parsedData.message.includes("room was created")
+        ) {
           console.log('Received room creation info:', parsedData);
           // If AI flow is active, do NOT show waiting popup
           if (this.state.gameMode === 'ai') {
@@ -112,14 +157,21 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
             return;
           }
           // Otherwise (1v1 initiator) show waiting popup
-          this.setState({ 
-            pendingRoomId: parsedData.roomId,
-            gameMode: '1v1'
-          });
+          this.setState({ pendingRoomId: parsedData.roomId });
+          try { localStorage.setItem('current_room_id', String(parsedData.roomId)); } catch {}
           this.showWaitingPopup(parsedData);
           this.showPopup();
         } else if (parsedData.type === "STARTMATCH") {
           console.log('Match starting! Navigating to game if not already there...');
+          try { localStorage.removeItem('current_room_id'); } catch {}
+          // Clear any tournament wait timeout
+          try {
+            const tid = (this as any)._waitTimeoutId;
+            if (typeof tid === 'number') {
+              clearTimeout(tid);
+              (this as any)._waitTimeoutId = undefined;
+            }
+          } catch {}
           // Close the popup
           this.closePopup();
           // Navigate only if not already on the game route to avoid double-mount
@@ -129,6 +181,17 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           }
         } else if (parsedData.type === "CANCELMATCH") {
           console.log('Match was cancelled (declined or timed out).');
+          try { localStorage.removeItem('current_room_id'); } catch {}
+          // Clear any tournament wait timeout
+          try {
+            const tid = (this as any)._waitTimeoutId;
+            if (typeof tid === 'number') {
+              clearTimeout(tid);
+              (this as any)._waitTimeoutId = undefined;
+            }
+          } catch {}
+          // Ensure any way of closing this popup triggers a full reload
+          try { (this as any)._reloadOnClose = true; } catch {}
           // Keep popup open but replace content with decline message and who declined if available
           const declinedByNick = this.state.invitationData?.players?.find((p: any) => p.accepted === 'declined')?.nick;
           const baseMessage = parsedData.message || 'Invitation declined or match was cancelled.';
@@ -152,6 +215,14 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
             this.closePopup(false);
             this.showError(message);
             setTimeout(() => window.location.reload(), 100);
+          }
+        } else if (parsedData.type === "ERROR") {
+          const msg = String(parsedData.message || 'An error occurred.');
+          // Suppress the (5) error after we already sent cancel ourselves
+          if (!((this.state as any)._cancelSent === true) || !msg.includes('(5)')) {
+            this.showError(msg.includes('Players are busy')
+              ? 'One or both players are currently in a game. Please wait for the current game to finish or try again later.'
+              : msg);
           }
         } else {
           console.log('StartGamePopUp: Received other message type:', parsedData.type, parsedData);
@@ -228,6 +299,14 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
       console.log('StartGamePopUp: Popup hidden');
     }
 
+    // If requested, force a reload after closing (e.g., after CANCELMATCH)
+    try {
+      if ((this as any)._reloadOnClose === true) {
+        setTimeout(() => window.location.reload(), 50);
+        return;
+      }
+    } catch {}
+
     // If user-initiated cancellation/close in 1v1, reload their page to reset UI
     if (shouldCancel && this.state.gameMode === '1v1') {
       setTimeout(() => window.location.reload(), 100);
@@ -284,7 +363,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-8">How would you like to play?</p>
           <div class="flex space-x-4">
             <button id="choose-ai" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Play vs AI</button>
-            <button id="choose-local" class="flex-1 px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local 1v1</button>
+            <button id="choose-local" class="flex-1 px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local Game</button>
           </div>
         `;
         // Bind buttons
@@ -300,7 +379,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         if (localBtn) {
           localBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            this.showLocalConfirm();
+            this.showLocalOptions();
           });
         }
       }
@@ -310,7 +389,30 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     window.addEventListener('open-choice-popup', handler);
   }
 
-  private showLocalConfirm(): void {
+  private showLocalOptions(): void {
+    const content = this.element.querySelector('.text-center') as HTMLElement | null;
+    if (!content) return;
+    content.innerHTML = `
+      <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Local Game</h2>
+      <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-4">Choose a mode:</p>
+      <div class="flex flex-col space-y-3">
+        <button id="local-bestof" class="px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Best of 1v1</button>
+        <button id="local-infinite" class="px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Infinite 1v1</button>
+        <button id="local-tournament" class="px-6 py-3 bg-[#EE9C47] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local Tournament</button>
+        <button id="local-teams" class="px-6 py-3 bg-[#9C89B8] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Teams (2v2)</button>
+      </div>
+    `;
+    const bestBtn = this.element.querySelector('#local-bestof') as HTMLButtonElement | null;
+    const infBtn = this.element.querySelector('#local-infinite') as HTMLButtonElement | null;
+    const tourBtn = this.element.querySelector('#local-tournament') as HTMLButtonElement | null;
+    const teamsBtn = this.element.querySelector('#local-teams') as HTMLButtonElement | null;
+    if (bestBtn) bestBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('bestof'); });
+    if (infBtn) infBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('infinite'); });
+    if (tourBtn) tourBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalTournamentConfirm(); });
+    if (teamsBtn) teamsBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalTeamsConfirm(); });
+  }
+
+  private showLocalConfirm(mode: 'bestof' | 'infinite' = 'bestof'): void {
     const content = this.element.querySelector('.text-center') as HTMLElement | null;
     if (!content) return;
     content.innerHTML = `
@@ -331,9 +433,136 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         e.preventDefault();
         const input = this.element.querySelector('#local-alias') as HTMLInputElement | null;
         const alias = (input?.value || 'Player 2').trim() || 'Player 2';
+        // Resolve Player 1 alias from profile
+        let p1Alias = 'Player 1';
         try {
+          const currentUser = authService.getCurrentUser();
+          if (currentUser) {
+            const resp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+            if (resp.ok) {
+              const data = await resp.json();
+              p1Alias = (data?.nickname && String(data.nickname).trim() !== '') ? data.nickname : `User${currentUser.id}`;
+            }
+          }
+        } catch {}
+        try {
+          localStorage.setItem('local_p1_alias', p1Alias);
           localStorage.setItem('local_p2_alias', alias);
           localStorage.setItem('local_mode', 'MULTI');
+          localStorage.setItem('local_gameMode', mode);
+        } catch {}
+        this.closePopup(false);
+        try {
+          const { Router } = await import('@blitz-ts');
+          Router.getInstance().navigate('/user/game');
+        } catch {
+          window.location.href = '/user/game';
+        }
+      });
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closePopup(false);
+      });
+    }
+  }
+
+  private showLocalTeamsConfirm(): void {
+    const content = this.element.querySelector('.text-center') as HTMLElement | null;
+    if (!content) return;
+    content.innerHTML = `
+      <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Local Teams (2v2)</h2>
+      <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-4">Enter 3 player names (teammate and two opponents):</p>
+      <div class="mb-3"><input id="teams-alias-2" type="text" placeholder="Teammate" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-3"><input id="teams-alias-3" type="text" placeholder="Opponent 1" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-6"><input id="teams-alias-4" type="text" placeholder="Opponent 2" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="flex space-x-4">
+        <button id="confirm-local-teams" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Confirm</button>
+        <button id="cancel-local-teams" class="flex-1 px-6 py-3 bg-[#EF7D77] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Cancel</button>
+      </div>
+    `;
+    const confirmBtn = this.element.querySelector('#confirm-local-teams') as HTMLButtonElement | null;
+    const cancelBtn = this.element.querySelector('#cancel-local-teams') as HTMLButtonElement | null;
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const a2 = (this.element.querySelector('#teams-alias-2') as HTMLInputElement | null)?.value?.trim() || 'Teammate';
+        const a3 = (this.element.querySelector('#teams-alias-3') as HTMLInputElement | null)?.value?.trim() || 'Opponent 1';
+        const a4 = (this.element.querySelector('#teams-alias-4') as HTMLInputElement | null)?.value?.trim() || 'Opponent 2';
+        // Resolve Player 1 alias from profile
+        let p1Alias = 'Player 1';
+        try {
+          const currentUser = authService.getCurrentUser();
+          if (currentUser) {
+            const resp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+            if (resp.ok) {
+              const data = await resp.json();
+              p1Alias = (data?.nickname && String(data.nickname).trim() !== '') ? data.nickname : `User${currentUser.id}`;
+            }
+          }
+        } catch {}
+        try {
+          localStorage.setItem('local_p1_alias', p1Alias);
+          localStorage.setItem('local_mode', 'TEAMS');
+          localStorage.setItem('local_gameMode', 'teams');
+          localStorage.setItem('local_teams_aliases', JSON.stringify([a2, a3, a4]));
+        } catch {}
+        this.closePopup(false);
+        try {
+          const { Router } = await import('@blitz-ts');
+          Router.getInstance().navigate('/user/game');
+        } catch {
+          window.location.href = '/user/game';
+        }
+      });
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closePopup(false);
+      });
+    }
+  }
+  private showLocalTournamentConfirm(): void {
+    const content = this.element.querySelector('.text-center') as HTMLElement | null;
+    if (!content) return;
+    content.innerHTML = `
+      <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Local Tournament</h2>
+      <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-4">Enter 3 player names:</p>
+      <div class="mb-3"><input id="local-alias-2" type="text" placeholder="Player 2" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-3"><input id="local-alias-3" type="text" placeholder="Player 3" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-6"><input id="local-alias-4" type="text" placeholder="Player 4" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="flex space-x-4">
+        <button id="confirm-local-tournament" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Confirm</button>
+        <button id="cancel-local-tournament" class="flex-1 px-6 py-3 bg-[#EF7D77] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Cancel</button>
+      </div>
+    `;
+    const confirmBtn = this.element.querySelector('#confirm-local-tournament') as HTMLButtonElement | null;
+    const cancelBtn = this.element.querySelector('#cancel-local-tournament') as HTMLButtonElement | null;
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const a2 = (this.element.querySelector('#local-alias-2') as HTMLInputElement | null)?.value?.trim() || 'Player 2';
+        const a3 = (this.element.querySelector('#local-alias-3') as HTMLInputElement | null)?.value?.trim() || 'Player 3';
+        const a4 = (this.element.querySelector('#local-alias-4') as HTMLInputElement | null)?.value?.trim() || 'Player 4';
+        // Resolve Player 1 alias from profile
+        let p1Alias = 'Player 1';
+        try {
+          const currentUser = authService.getCurrentUser();
+          if (currentUser) {
+            const resp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+            if (resp.ok) {
+              const data = await resp.json();
+              p1Alias = (data?.nickname && String(data.nickname).trim() !== '') ? data.nickname : `User${currentUser.id}`;
+            }
+          }
+        } catch {}
+        try {
+          localStorage.setItem('local_p1_alias', p1Alias);
+          localStorage.setItem('local_mode', 'TOURNAMENT');
+          localStorage.setItem('local_gameMode', 'tournament');
+          localStorage.setItem('local_tournament_aliases', JSON.stringify([a2, a3, a4]));
         } catch {}
         this.closePopup(false);
         try {
@@ -399,8 +628,8 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     const popupContent = this.element.querySelector('.text-center');
     if (popupContent) {
       const players = Array.isArray(invitationData.players) ? invitationData.players : [];
-      const isTournament = players.length === 4;
-      const title = isTournament ? 'Tournament Invitation' : '1v1 Invitation';
+      const isFour = players.length === 4;
+      const title = isFour ? (invitationData.gameMode === 'teams' ? 'Teams Invitation' : 'Tournament Invitation') : '1v1 Invitation';
       const listHtml = players.map((p: any) => `<li class="text-[#81C3C3]">${escapeHtml(p.nick)}${p.ai ? ' (AI)' : ''}</li>`).join('');
       popupContent.innerHTML = `
         <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">${title}</h2>
@@ -446,8 +675,9 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     const popupContent = this.element.querySelector('.text-center');
     if (popupContent) {
       const participants = (this.state.pendingParticipants ?? []) as string[];
-      const isTournament = this.state.pendingInviteType === 'tournament' || participants.length === 4;
-      const title = isTournament ? 'Waiting for Players' : 'Waiting for Player';
+      const isFour = participants.length === 4;
+      const pit = this.state.pendingInviteType;
+      const title = pit === 'teams' ? 'Waiting for Team Players' : (isFour ? 'Waiting for Players' : 'Waiting for Player');
       const listHtml = participants.length ? `<ul class=\"mb-4 space-y-1\">${participants.map((n: string) => `<li class=\\\"text-[#81C3C3]\\\">${n}</li>`).join('')}</ul>` : '';
       popupContent.innerHTML = `
         <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">${title}</h2>
@@ -460,6 +690,33 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B784F2]"></div>
         </div>
       `;
+
+      // If tournament wait takes too long, cancel and route to user with message
+      try {
+        if (isFour) {
+          const roomId = String(infoData.roomId || this.state.pendingRoomId || localStorage.getItem('current_room_id') || '');
+          // Clear any existing timer first
+          try {
+            const existing = (this as any)._waitTimeoutId;
+            if (typeof existing === 'number') {
+              clearTimeout(existing);
+            }
+          } catch {}
+          const timeoutMs = 10000;
+          const tid = window.setTimeout(() => {
+            try {
+              const ws = WebSocketService.getInstance();
+              if (roomId) {
+                const cancel = { type: 5, roomId, status: 'cancel' } as any;
+                ws.sendMessage(JSON.stringify(cancel));
+              }
+            } catch {}
+            try { localStorage.setItem('last_cancel_message', 'Match was cancelled due to timeout waiting for players.'); } catch {}
+            try { window.location.assign('/user'); } catch {}
+          }, timeoutMs);
+          try { (this as any)._waitTimeoutId = tid; } catch {}
+        }
+      } catch {}
     }
   }
 
@@ -501,23 +758,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     }
 
     const ws = WebSocketService.getInstance();
-    const isTournament = (this.state.pendingInviteType === 'tournament')
-      || (Array.isArray(this.state.invitationData?.players) && this.state.invitationData.players.length === 4);
-
-    // if (isTournament) {
-    //   // TEMP: in tournament case, behave like decline to avoid backend crash path
-    //   const cancelMessage = {
-    //     type: 5,
-    //     roomId: this.state.pendingRoomId,
-    //     status: 'cancel'
-    //   };
-    //   console.log('Tournament accept treated as cancel:', cancelMessage);
-    //   ws.sendMessage(JSON.stringify(cancelMessage));
-    //   this.closePopup(false);
-    //   setTimeout(() => window.location.reload(), 100);
-    //   return;
-    // }
-
+    
     // Normal 1v1 accept flow
     const acceptMessage = {
       type: 4,
@@ -527,26 +768,46 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     console.log('Sending accept message:', acceptMessage);
     ws.sendMessage(JSON.stringify(acceptMessage));
     console.log('Accept message sent, waiting for STARTMATCH or other response...');
+
+    // Immediately update UI to "waiting" so the player sees progress
+    try {
+      const players = Array.isArray(this.state.invitationData?.players) ? this.state.invitationData!.players : [];
+      const isTournament = players.length === 4;
+      const participantNames = players.map((p: any) => String(p.nick));
+      this.setState({
+        pendingInviteType: isTournament ? 'tournament' : '1v1',
+        pendingParticipants: participantNames
+      });
+      this.showWaitingPopup({ roomId: this.state.pendingRoomId });
+      this.showPopup();
+    } catch {}
   }
 
   /**
    * Decline the game invitation
    */
   private declineInvitation(): void {
+    // Prevent duplicate cancels from double-click or multiple listeners
+    try { if ((this.state as any)._cancelSent === true) return; } catch {}
     if (!this.state.pendingRoomId) {
       console.error('No pending room ID');
       return;
     }
 
     const ws = WebSocketService.getInstance();
-    // Send a cancel to avoid backend crash path on type 4 for tournaments
-    const cancelMessage = {
-      type: 5,
-      roomId: this.state.pendingRoomId,
-      status: 'cancel'
-    };
-    console.log('Sending cancel message (decline):', cancelMessage);
-    ws.sendMessage(JSON.stringify(cancelMessage));
+    // Do not send cancel for local synthetic rooms
+    const isLocalRoom = String(this.state.pendingRoomId) === 'local';
+    if (!isLocalRoom) {
+      const cancelMessage = {
+        type: 5,
+        roomId: this.state.pendingRoomId,
+        status: 'cancel'
+      };
+      console.log('Sending cancel message (decline):', cancelMessage);
+      try { (this.state as any)._cancelSent = true; } catch {}
+      ws.sendMessage(JSON.stringify(cancelMessage));
+      try { localStorage.setItem('force_cancel_room_id', String(this.state.pendingRoomId)); } catch {}
+    }
     
     // Close the popup
     this.closePopup();
@@ -577,6 +838,24 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     try {
       console.log('Starting new match...');
       this.setState({ loading: true });
+
+      // Ensure any lingering room is cancelled before creating a new one (avoids "players are busy")
+      try {
+        const ws = WebSocketService.getInstance();
+        const roomIds: string[] = [];
+        const a = localStorage.getItem('force_cancel_room_id'); if (a) roomIds.push(a);
+        const b = localStorage.getItem('current_room_id'); if (b) roomIds.push(b);
+        for (const id of Array.from(new Set(roomIds))) {
+          const cancel = { type: 5, roomId: id, status: 'cancel' };
+          console.log('Pre-start: sending cancel for lingering room', cancel);
+          ws.sendMessage(JSON.stringify(cancel));
+        }
+        if (roomIds.length) {
+          try { localStorage.removeItem('force_cancel_room_id'); } catch {}
+          try { localStorage.removeItem('current_room_id'); } catch {}
+          await new Promise(r => setTimeout(r, 400));
+        }
+      } catch {}
 
       // Get current user's profile to get their nickname
       const currentUser = authService.getCurrentUser();
@@ -642,6 +921,19 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     if (this.state.aiOpenListener) {
       window.removeEventListener('open-ai-popup', this.state.aiOpenListener);
     }
+    try {
+      const h = (this.state as any)._pageHideHandler as any;
+      if (h) window.removeEventListener('pagehide', h, { capture: true } as any);
+      (this.state as any)._pageHideHandler = undefined;
+    } catch {}
+    // Clear any pending wait timeout
+    try {
+      const tid = (this as any)._waitTimeoutId;
+      if (typeof tid === 'number') {
+        clearTimeout(tid);
+        (this as any)._waitTimeoutId = undefined;
+      }
+    } catch {}
   }
 
   render() {

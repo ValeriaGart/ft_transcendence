@@ -106,9 +106,21 @@ export class Tournament {
 				this.parseMessage(message);
 			}
 			if (this._engine._urp == 1) {
+				const startMs = Date.now();
 				while (this._waiting < this._waitNumber) {
 					this._PreBattleScreen.drawWaitScreen();
 					await new Promise(resolve => setTimeout(resolve, 50));
+					if (Date.now() - startMs > 10000) {
+						try {
+							if (this._engine._roomID) {
+								const cancelMsg = { type: 5, roomId: this._engine._roomID, status: 'cancel' } as any;
+								this._engine._ws.sendMessage(JSON.stringify(cancelMsg));
+							}
+						} catch {}
+						try { localStorage.setItem('last_cancel_message', 'Match cancelled: timeout waiting for players.'); } catch {}
+						this._engine.endGameLoop();
+						return;
+					}
 				}
 				this._waiting = 0;
 				this.broadcastGameState();
@@ -124,9 +136,21 @@ export class Tournament {
 				const gameStateString = JSON.stringify(msg);
 				this._engine._ws.sendMessage(gameStateString);
 				console.log("sent waiting");
+				const startMs = Date.now();
 				while (this._received == false) {
 					this._PreBattleScreen.drawWaitScreen();
 					await new Promise(resolve => setTimeout(resolve, 50));
+					if (Date.now() - startMs > 10000) {
+						try {
+							if (this._engine._roomID) {
+								const cancelMsg = { type: 5, roomId: this._engine._roomID, status: 'cancel' } as any;
+								this._engine._ws.sendMessage(JSON.stringify(cancelMsg));
+							}
+						} catch {}
+						try { localStorage.setItem('last_cancel_message', 'Match cancelled: timeout waiting for players.'); } catch {}
+						this._engine.endGameLoop();
+						return;
+					}
 				}
 				this._received = false;
 			}
@@ -146,13 +170,29 @@ export class Tournament {
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
+			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
 				await new Promise(resolve => setTimeout(resolve, 50));
+				if (Date.now() - startMs > 10000) {
+					try {
+						if (this._engine._roomID) {
+							const cancelMsg = { type: 5, roomId: this._engine._roomID, status: 'cancel' } as any;
+							this._engine._ws.sendMessage(JSON.stringify(cancelMsg));
+						}
+					} catch {}
+					try { localStorage.setItem('last_cancel_message', 'Match cancelled: timeout waiting for players.'); } catch {}
+					this._engine.endGameLoop();
+					return;
+				}
 			}
 		}
 		this._ready = 0;
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], this._players[this._p3], this._players[this._p4], 1);
+		// Ensure gameplay begins immediately in local mode
+		if (this._oppMode !== OpponentMode.ONLINE) {
+			this._engine._gameStateMachine.transition(GameState.GAME);
+		}
 	}
 	
 	public async battleTwo(){
@@ -160,13 +200,28 @@ export class Tournament {
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
+			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
 				await new Promise(resolve => setTimeout(resolve, 50));
+				if (Date.now() - startMs > 10000) {
+					try {
+						if (this._engine._roomID) {
+							const cancelMsg = { type: 5, roomId: this._engine._roomID, status: 'cancel' } as any;
+							this._engine._ws.sendMessage(JSON.stringify(cancelMsg));
+						}
+					} catch {}
+					try { localStorage.setItem('last_cancel_message', 'Match cancelled: timeout waiting for players.'); } catch {}
+					this._engine.endGameLoop();
+					return;
+				}
 			}
 		}
 		this._ready = 0;
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], this._players[this._p1], this._players[this._p2], 2);
+		if (this._oppMode !== OpponentMode.ONLINE) {
+			this._engine._gameStateMachine.transition(GameState.GAME);
+		}
 	}
 	
 	public tournamentMiddle(): void {
@@ -219,9 +274,21 @@ export class Tournament {
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
+			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
 				await new Promise(resolve => setTimeout(resolve, 50));
+				if (Date.now() - startMs > 10000) {
+					try {
+						if (this._engine._roomID) {
+							const cancelMsg = { type: 5, roomId: this._engine._roomID, status: 'cancel' } as any;
+							this._engine._ws.sendMessage(JSON.stringify(cancelMsg));
+						}
+					} catch {}
+					try { localStorage.setItem('last_cancel_message', 'Match cancelled: timeout waiting for players.'); } catch {}
+					this._engine.endGameLoop();
+					return;
+				}
 			}
 			this._ready = 0;
 			this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], this._players[this._p1], this._players[this._p2], 3);
@@ -233,13 +300,28 @@ export class Tournament {
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
 		// this.logPlayerStatus();
 		if (this._oppMode == OpponentMode.ONLINE) {
+			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
 				await new Promise(resolve => setTimeout(resolve, 50));
+				if (Date.now() - startMs > 10000) {
+					try {
+						if (this._engine._roomID) {
+							const cancelMsg = { type: 5, roomId: this._engine._roomID, status: 'cancel' } as any;
+							this._engine._ws.sendMessage(JSON.stringify(cancelMsg));
+						}
+					} catch {}
+					try { localStorage.setItem('last_cancel_message', 'Match cancelled: timeout waiting for players.'); } catch {}
+					this._engine.endGameLoop();
+					return;
+				}
 			}
 		}
 		this._ready = 0;
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2],  this._players[this._p3], this._players[this._p4], 4);
+		if (this._oppMode !== OpponentMode.ONLINE) {
+			this._engine._gameStateMachine.transition(GameState.GAME);
+		}
 	}
 
 	public winScreen(): void {

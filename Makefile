@@ -38,6 +38,8 @@ down-elk:
 down-app:
 	docker compose down app
 
+down:
+	docker compose down
 
 
 # ## setup for app

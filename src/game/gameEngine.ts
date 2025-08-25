@@ -45,6 +45,8 @@ export class GameEngine {
 
 	public _ws = WebSocketService.getInstance();
 	private _intervalId?: NodeJS.Timeout;
+	private _beforeUnloadHandler?: (e: BeforeUnloadEvent) => void;
+	private _pageHideHandler?: (e: Event) => void;
 
 	constructor(canvasID: string) {
 		this._canvas = document.getElementById(canvasID) as HTMLCanvasElement;
@@ -171,6 +173,17 @@ export class GameEngine {
 
 	private cleanup(): void {
 		this.removeAllEventListeners();
+		// Detach page lifecycle handlers
+		try {
+			if (this._beforeUnloadHandler) {
+				window.removeEventListener('beforeunload', this._beforeUnloadHandler as any, { capture: true } as any);
+				(this as any)._beforeUnloadHandler = undefined;
+			}
+			if (this._pageHideHandler) {
+				window.removeEventListener('pagehide', this._pageHideHandler as any, { capture: true } as any);
+				(this as any)._pageHideHandler = undefined;
+			}
+		} catch {}
 		if (this._canvas) {
 			if (this._ctx) {
 				this._ctx.clearRect(0,0, this._canvas.width, this._canvas.height);
@@ -199,6 +212,33 @@ export class GameEngine {
 		//roughly 60fps
 		
 		this.parseMessage(msg);
+
+		// Attach unload confirmation and cancel behavior only while game is active
+		try {
+			this._beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+				// Suggest leaving; don't send cancel here (user may cancel the dialog)
+				// Update URL so the next load lands on /user instead of /user/game
+				try { history.replaceState(null, '', '/user'); } catch {}
+				try { localStorage.setItem('navigate_to_user', '1'); } catch {}
+				e.preventDefault();
+				e.returnValue = '';
+				return '';
+			};
+			window.addEventListener('beforeunload', this._beforeUnloadHandler, { capture: true });
+			this._pageHideHandler = () => {
+				try {
+					if (this._roomID) {
+						const cancelMsg = { type: 5, roomId: this._roomID, status: 'cancel' };
+						this._ws.sendMessage(JSON.stringify(cancelMsg));
+						// Mark for forced cancel on next WS reconnect in case the ws is already closed
+						try { localStorage.setItem('force_cancel_room_id', String(this._roomID)); } catch {}
+						// After sending cancel, switch route to /user via SPA if available
+						try { history.replaceState(null, '', '/user'); } catch {}
+					}
+				} catch {}
+			};
+			window.addEventListener('pagehide', this._pageHideHandler, { capture: true });
+		} catch {}
 
 		switch (this._oppModeStr) {
 			case 'single':

@@ -58,6 +58,25 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     this.setupChoiceOpenListener();
     this.setupAiStartListener();
     this.setupPendingParticipantsListener();
+    // Send cancel on page hide if there is a pending room (pre-STARTMATCH)
+    try {
+      const pageHideHandler = () => {
+        try {
+          // Avoid double-cancel if user already pressed Close
+          if ((this.state as any)._cancelSent === true) return;
+          const ws = WebSocketService.getInstance();
+          const roomId = (this.state.pendingRoomId) || (localStorage.getItem('current_room_id') || undefined);
+          if (roomId) {
+            const cancel = { type: 5, roomId, status: 'cancel' };
+            ws.sendMessage(JSON.stringify(cancel));
+            try { localStorage.setItem('force_cancel_room_id', String(roomId)); } catch {}
+          }
+        } catch {}
+      };
+      window.addEventListener('pagehide', pageHideHandler, { capture: true });
+      // keep reference for cleanup
+      (this.state as any)._pageHideHandler = pageHideHandler;
+    } catch {}
     // Ensure dynamic Close buttons work (delegated listener)
     this.element.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -65,6 +84,8 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         e.preventDefault();
         console.log('Decline invitation clicked');
         this.declineInvitation();
+        // Force a full reload after sending cancel to reset all UI state cleanly
+        setTimeout(() => { try { window.location.reload(); } catch {} }, 50);
       }
     });
   }
@@ -104,7 +125,10 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           this.showInvitationPopup(parsedData);
           // Show the popup
           this.showPopup();
-        } else if (parsedData.type === "INFO" && parsedData.roomId && parsedData.message.includes("room was created")) {
+        } else if (
+          parsedData.type === "INFO" && parsedData.roomId &&
+          typeof parsedData.message === 'string' && parsedData.message.includes("room was created")
+        ) {
           console.log('Received room creation info:', parsedData);
           // If AI flow is active, do NOT show waiting popup
           if (this.state.gameMode === 'ai') {
@@ -116,10 +140,20 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
             pendingRoomId: parsedData.roomId,
             gameMode: '1v1'
           });
+          try { localStorage.setItem('current_room_id', String(parsedData.roomId)); } catch {}
           this.showWaitingPopup(parsedData);
           this.showPopup();
         } else if (parsedData.type === "STARTMATCH") {
           console.log('Match starting! Navigating to game if not already there...');
+          try { localStorage.removeItem('current_room_id'); } catch {}
+          // Clear any tournament wait timeout
+          try {
+            const tid = (this as any)._waitTimeoutId;
+            if (typeof tid === 'number') {
+              clearTimeout(tid);
+              (this as any)._waitTimeoutId = undefined;
+            }
+          } catch {}
           // Close the popup
           this.closePopup();
           // Navigate only if not already on the game route to avoid double-mount
@@ -129,6 +163,15 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           }
         } else if (parsedData.type === "CANCELMATCH") {
           console.log('Match was cancelled (declined or timed out).');
+          try { localStorage.removeItem('current_room_id'); } catch {}
+          // Clear any tournament wait timeout
+          try {
+            const tid = (this as any)._waitTimeoutId;
+            if (typeof tid === 'number') {
+              clearTimeout(tid);
+              (this as any)._waitTimeoutId = undefined;
+            }
+          } catch {}
           // Keep popup open but replace content with decline message and who declined if available
           const declinedByNick = this.state.invitationData?.players?.find((p: any) => p.accepted === 'declined')?.nick;
           const baseMessage = parsedData.message || 'Invitation declined or match was cancelled.';
@@ -152,6 +195,14 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
             this.closePopup(false);
             this.showError(message);
             setTimeout(() => window.location.reload(), 100);
+          }
+        } else if (parsedData.type === "ERROR") {
+          const msg = String(parsedData.message || 'An error occurred.');
+          // Suppress the (5) error after we already sent cancel ourselves
+          if (!((this.state as any)._cancelSent === true) || !msg.includes('(5)')) {
+            this.showError(msg.includes('Players are busy')
+              ? 'One or both players are currently in a game. Please wait for the current game to finish or try again later.'
+              : msg);
           }
         } else {
           console.log('StartGamePopUp: Received other message type:', parsedData.type, parsedData);
@@ -551,6 +602,33 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B784F2]"></div>
         </div>
       `;
+
+      // If tournament wait takes too long, cancel and route to user with message
+      try {
+        if (isTournament) {
+          const roomId = String(infoData.roomId || this.state.pendingRoomId || localStorage.getItem('current_room_id') || '');
+          // Clear any existing timer first
+          try {
+            const existing = (this as any)._waitTimeoutId;
+            if (typeof existing === 'number') {
+              clearTimeout(existing);
+            }
+          } catch {}
+          const timeoutMs = 10000;
+          const tid = window.setTimeout(() => {
+            try {
+              const ws = WebSocketService.getInstance();
+              if (roomId) {
+                const cancel = { type: 5, roomId, status: 'cancel' } as any;
+                ws.sendMessage(JSON.stringify(cancel));
+              }
+            } catch {}
+            try { localStorage.setItem('last_cancel_message', 'Match was cancelled due to timeout waiting for players.'); } catch {}
+            try { window.location.assign('/user'); } catch {}
+          }, timeoutMs);
+          try { (this as any)._waitTimeoutId = tid; } catch {}
+        }
+      } catch {}
     }
   }
 
@@ -592,21 +670,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     }
 
     const ws = WebSocketService.getInstance();
-
-    // if (isTournament) {
-    //   // TEMP: in tournament case, behave like decline to avoid backend crash path
-    //   const cancelMessage = {
-    //     type: 5,
-    //     roomId: this.state.pendingRoomId,
-    //     status: 'cancel'
-    //   };
-    //   console.log('Tournament accept treated as cancel:', cancelMessage);
-    //   ws.sendMessage(JSON.stringify(cancelMessage));
-    //   this.closePopup(false);
-    //   setTimeout(() => window.location.reload(), 100);
-    //   return;
-    // }
-
+    
     // Normal 1v1 accept flow
     const acceptMessage = {
       type: 4,
@@ -616,12 +680,27 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     console.log('Sending accept message:', acceptMessage);
     ws.sendMessage(JSON.stringify(acceptMessage));
     console.log('Accept message sent, waiting for STARTMATCH or other response...');
+
+    // Immediately update UI to "waiting" so the player sees progress
+    try {
+      const players = Array.isArray(this.state.invitationData?.players) ? this.state.invitationData!.players : [];
+      const isTournament = players.length === 4;
+      const participantNames = players.map((p: any) => String(p.nick));
+      this.setState({
+        pendingInviteType: isTournament ? 'tournament' : '1v1',
+        pendingParticipants: participantNames
+      });
+      this.showWaitingPopup({ roomId: this.state.pendingRoomId });
+      this.showPopup();
+    } catch {}
   }
 
   /**
    * Decline the game invitation
    */
   private declineInvitation(): void {
+    // Prevent duplicate cancels from double-click or multiple listeners
+    try { if ((this.state as any)._cancelSent === true) return; } catch {}
     if (!this.state.pendingRoomId) {
       console.error('No pending room ID');
       return;
@@ -635,7 +714,9 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
       status: 'cancel'
     };
     console.log('Sending cancel message (decline):', cancelMessage);
+    try { (this.state as any)._cancelSent = true; } catch {}
     ws.sendMessage(JSON.stringify(cancelMessage));
+    try { localStorage.setItem('force_cancel_room_id', String(this.state.pendingRoomId)); } catch {}
     
     // Close the popup
     this.closePopup();
@@ -666,6 +747,24 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     try {
       console.log('Starting new match...');
       this.setState({ loading: true });
+
+      // Ensure any lingering room is cancelled before creating a new one (avoids "players are busy")
+      try {
+        const ws = WebSocketService.getInstance();
+        const roomIds: string[] = [];
+        const a = localStorage.getItem('force_cancel_room_id'); if (a) roomIds.push(a);
+        const b = localStorage.getItem('current_room_id'); if (b) roomIds.push(b);
+        for (const id of Array.from(new Set(roomIds))) {
+          const cancel = { type: 5, roomId: id, status: 'cancel' };
+          console.log('Pre-start: sending cancel for lingering room', cancel);
+          ws.sendMessage(JSON.stringify(cancel));
+        }
+        if (roomIds.length) {
+          try { localStorage.removeItem('force_cancel_room_id'); } catch {}
+          try { localStorage.removeItem('current_room_id'); } catch {}
+          await new Promise(r => setTimeout(r, 400));
+        }
+      } catch {}
 
       // Get current user's profile to get their nickname
       const currentUser = authService.getCurrentUser();
@@ -731,6 +830,19 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     if (this.state.aiOpenListener) {
       window.removeEventListener('open-ai-popup', this.state.aiOpenListener);
     }
+    try {
+      const h = (this.state as any)._pageHideHandler as any;
+      if (h) window.removeEventListener('pagehide', h, { capture: true } as any);
+      (this.state as any)._pageHideHandler = undefined;
+    } catch {}
+    // Clear any pending wait timeout
+    try {
+      const tid = (this as any)._waitTimeoutId;
+      if (typeof tid === 'number') {
+        clearTimeout(tid);
+        (this as any)._waitTimeoutId = undefined;
+      }
+    } catch {}
   }
 
   render() {

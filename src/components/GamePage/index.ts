@@ -1,4 +1,5 @@
 import { Component } from "@blitz-ts";
+import { Router } from "@blitz-ts";
 import { GameEngine } from "../../game/gameEngine";
 import { WebSocketService } from "./../../lib/webSocket";
 import { getWebSocketUrl } from "../../config/api";
@@ -29,6 +30,14 @@ export class GamePage extends Component {
 
     protected onMount(): void {
         console.log('GamePage: onMount called');
+        // If a previous reload requested returning to user, navigate there via SPA now
+        try {
+            if (localStorage.getItem('navigate_to_user') === '1') {
+                localStorage.removeItem('navigate_to_user');
+                Router.getInstance().navigate('/user');
+                return;
+            }
+        } catch {}
         
         // First, handle local quick-start (no websocket) if flagged
         try {

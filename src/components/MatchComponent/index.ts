@@ -266,6 +266,23 @@ export class MatchComponent extends Component<MatchComponentState> {
   private async startTournament(selectedFriendIds: number[]): Promise<void> {
     console.log('Starting tournament with selected friends:', selectedFriendIds);
     try {
+      // Cancel any lingering room preemptively to avoid busy error on backend
+      try {
+        const ws = WebSocketService.getInstance();
+        const roomIds: string[] = [];
+        const a = localStorage.getItem('force_cancel_room_id'); if (a) roomIds.push(a);
+        const b = localStorage.getItem('current_room_id'); if (b) roomIds.push(b);
+        for (const id of Array.from(new Set(roomIds))) {
+          const cancel = { type: 5, roomId: id, status: 'cancel' } as any;
+          console.log('Pre-start tournament: sending cancel for lingering room', cancel);
+          ws.sendMessage(JSON.stringify(cancel));
+        }
+        if (roomIds.length) {
+          try { localStorage.removeItem('force_cancel_room_id'); } catch {}
+          try { localStorage.removeItem('current_room_id'); } catch {}
+          await new Promise(r => setTimeout(r, 400));
+        }
+      } catch {}
       const currentUser = authService.getCurrentUser();
       if (!currentUser) {
         this.showError('You must be logged in to start a game');

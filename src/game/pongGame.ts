@@ -172,24 +172,37 @@ export class PongGame {
 		if (!msg.ballPosition) {
 			return;
 		}
-		if (this._gameStats.pnumber == this._p2.getPnumber()) {
+		if (this._gameStats.pnumber == this._p1.getPnumber()) {
+			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
+			this._gameStats.paddlePositions.ml = msg.paddlePositions.ml;
+			this._gameStats.paddlePositions.mr = msg.paddlePositions.mr;
+			if (this._gameStats.ballPosition.x > this._engine._canvas.width / 2) {
+				this._gameStats.ballPosition = msg.ballPosition;
+				this._gameStats.ballVelocity = msg.ballVelocity;
+			}
+		}
+		else if (this._gameStats.pnumber == this._p2.getPnumber()) {
 			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
+			this._gameStats.paddlePositions.ml = msg.paddlePositions.ml;
+			this._gameStats.paddlePositions.mr = msg.paddlePositions.mr;
 			this._gameStats.scores = msg.scores;
 			if (this._gameStats.ballPosition.x <= this._engine._canvas.width / 2) {
 				this._gameStats.ballPosition = msg.ballPosition;
 				this._gameStats.ballVelocity = msg.ballVelocity;
 			}
 		}
-		else if (this._gameStats.pnumber == this._p1.getPnumber()) {
-			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
-			if (this._gameStats.ballPosition.x > this._engine._canvas.width / 2) {
-				this._gameStats.ballPosition = msg.ballPosition;
-				this._gameStats.ballVelocity = msg.ballVelocity;
-			}
-		}
-		else {
+		else if (this._gameStats.pnumber == this._p3?.getPnumber()) {
 			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
 			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
+			this._gameStats.paddlePositions.mr = msg.paddlePositions.mr;
+			this._gameStats.scores = msg.scores;
+			this._gameStats.ballPosition = msg.ballPosition;
+			this._gameStats.ballVelocity = msg.ballVelocity;
+		}
+		else if (this._gameStats.pnumber == this._p4?.getPnumber()) {
+			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
+			this._gameStats.paddlePositions.right = msg.paddlePositions.right;
+			this._gameStats.paddlePositions.ml = msg.paddlePositions.ml;
 			this._gameStats.scores = msg.scores;
 			this._gameStats.ballPosition = msg.ballPosition;
 			this._gameStats.ballVelocity = msg.ballVelocity;

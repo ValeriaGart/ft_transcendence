@@ -16,7 +16,7 @@ services:
       - ./db.sqlite:/workspaces/ft_transcendence/db.sqlite
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-      - ./logs_backend:/workspaces/ft_transcendence/logs_backend
+      - ${LOG_PATH_BE}:/workspaces/ft_transcendence/logs_backend
 
     healthcheck:
       test: ["CMD", "/workspaces/ft_transcendence/healthcheck.sh"]
@@ -26,9 +26,6 @@ services:
       start_period: 10s
 
   setup:
-    depends_on:
-      app:
-        condition: service_healthy
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
@@ -62,13 +59,13 @@ services:
           unzip config/certs/certs.zip -d config/certs;
         fi;
         echo "Setting file permissions"
-        chown -R 1000:1000 config/certs;
-        find . -type d -exec chmod 754 \{\} \;;
-        find . -type f -exec chmod 644 \{\} \;;
+        chown -R 1000:1000 /usr/share/elasticsearch/config/certs
+        find /usr/share/elasticsearch/config/certs -type d -exec chmod 754 {} \;
+        find /usr/share/elasticsearch/config/certs -type f -exec chmod 644 {} \;
         echo "Waiting for Elasticsearch availability";
-        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        until curl -s --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
         echo "Setting kibana_system password";
-        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        until curl -s -X POST --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
         echo "All done!";
       '
     healthcheck:
@@ -76,10 +73,10 @@ services:
       interval: 1s
       timeout: 5s
       retries: 120
+    networks:
+      - transcendence_net
 
   es01:
-    # cap_add:
-    # - IPC_LOCK
     depends_on:
       setup:
         condition: service_healthy
@@ -160,11 +157,6 @@ services:
 
   logstash:
     image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
-    # build:
-    #   context: ./logstash/
-    #   dockerfile: ./Dockerfile
-    #   args:
-    #     STACK_VERSION: ${STACK_VERSION}
     ports:
       - 5044:5044
     volumes:
@@ -179,21 +171,12 @@ services:
     networks:
       - transcendence_net
 
-  # apm:
-  #   image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
-  #   depends_on:
-  #     kibana:
-  #       condition: service_healthy
-  #   ports: 
-  #     - 8200:8200
-  #   volumes:
-  #     - ./apm/config/apm-server.docker.yml:/usr/share/apm-server/apm-server.yml:ro
-  #     - certs:/usr/share/apm/config/certs
-
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    user: "0"
     volumes:
-      - ./logs_backend:/usr/share/filebeat/logs_backend
+      - ${LOG_PATH_BE}:/usr/share/filebeat/logs_backend
+      - ${LOG_PATH_ES}:/usr/share/filebeat/logs_es
       - ./devops/filebeat/config/filebeat.example.yml:/usr/share/filebeat/filebeat.yml
     depends_on:
       kibana:
@@ -210,7 +193,6 @@ volumes:
     driver: local
   kibanadata:
     driver: local
-  # sqlite_data:
 
 networks:
   transcendence_net:

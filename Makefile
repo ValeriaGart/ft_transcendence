@@ -11,24 +11,40 @@ welcome-message:
 	@echo "$(CYAN)🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨$(RESET)"
 
 
-## certificates
-setup-certs:
-	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
-		echo "$(MAGENTA)Generating SSL certificates...$(RESET)"; \
-		./backend/scripts/generate-ssl.sh; \
-	fi
-
-rm-certs:
-	@rm -rf backend/ssl/server.*
 
 
+# ## START UP commands
+
+start-up-elk:
+	@echo "$(CYAN)📋 LET'S MAKE ELK UP 📈$(RESET)"
+	$(MAKE) -f Makefile.elk config-devops
+	$(MAKE) -f Makefile.elk setup-log-dir
+	$(MAKE) -f Makefile.elk elk-up
+	$(MAKE) -f Makefile.elk set-lifecycle
+
+start-up-app: setup-db check_env setup-certs
+	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
+	@echo "start up app"
+	docker compose up app --build
+
+start-app:
+	docker compose down app && docker compose up app
+
+
+# ## down commands
+down-elk:
+	@(MAKE) -f Makefile.elk elk-down
 
 
 
+# ## setup for app
+setup-db:
+	@echo "$(YELLOW)🏗 setup-db$(RESET)"
+	@touch db.sqlite
 
-up: check_env
-	@echo "$(YELLOW)🚀 LET'S MAKE IT UP 🚀$(RESET)"
-# npm run dev:both
+rm-db: 
+	@echo "$(GREEN)🧼 remove database"
+	@rm db.sqlite
 
 check_env:
 	@if [ ! -f ".env" ]; then \
@@ -36,21 +52,27 @@ check_env:
 		exit 1; \
 	fi
 
-clean: 
 
-fclean: clean
-	@echo "$(MAGENTA)Full clean-up...$(RESET)"
-
-	@echo "$(GREEN)Full clean-up done.$(RESET)"
-
-re: check_env
-	@echo "$(MAGENTA)🔄 WELCOME BACK TO GUMBUS_SOUP TRANSCENDENCE! 🔄$(RESET)"
-	@echo "$(YELLOW)⚡ LET'S RESTART AND MAKE IT UP AGAIN ⚡$(RESET)"
-	npm install
+## certificates
+setup-certs:
+	@echo "$(YELLOW)🏗 setup certificates$(RESET)"
 	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
-		echo "$(MAGENTA)Generating SSL certificates...$(RESET)"; \
+		echo "$(YELLOW)Generating SSL certificates...$(RESET)"; \
 		./backend/scripts/generate-ssl.sh; \
 	fi
+
+rm-certs:
+	@echo "$(GREEN)🧼 remove certs$(RESET)"
+	@rm -rf backend/ssl/server.*
+
+
+
+clean: rm-certs rm-db
+
+fclean: clean
+	@echo "$(GREEN)Full clean-up...$(RESET)"
+	@echo "$(GREEN)Full clean-up done.$(RESET)"
+
 # npm run dev:both
 
 .PHONY: re clean fclean up

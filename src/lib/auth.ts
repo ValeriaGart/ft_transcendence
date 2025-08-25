@@ -30,6 +30,8 @@ class AuthService {
     this.loadFromStorageSync();
     // Verify auth asynchronously
     this.verifyStoredAuth();
+    // Start periodic session validation every 5 minutes
+    this.startPeriodicValidation();
   }
 
   public static getInstance(): AuthService {
@@ -77,6 +79,23 @@ class AuthService {
         this.clearAuth();
       }
     }
+  }
+
+  /**
+   * Start periodic session validation to detect expired sessions
+   */
+  private startPeriodicValidation(): void {
+    // Check every 5 minutes (300000ms)
+    setInterval(async () => {
+      if (this.state.isAuthenticated && this.state.token) {
+        const isValid = await this.verifyAuth();
+        if (!isValid) {
+          console.log('AuthService: Session expired during periodic check');
+          this.clearAuth();
+          this.notifyListeners();
+        }
+      }
+    }, 5 * 60 * 1000);
   }
 
   /**
@@ -403,6 +422,16 @@ class AuthService {
 
         return true;
       } else {
+        // Check if it's a session expiration (401 with SESSION_INVALID)
+        if (response.status === 401) {
+          const errorData = await response.json();
+          if (errorData.error === 'SESSION_INVALID') {
+            console.log('AuthService: Session expired due to inactivity');
+          } else {
+            console.log('AuthService: Token invalid');
+          }
+        }
+        
         // Token is invalid, clear auth
         console.log('AuthService Websocket: Disconnecting WebSocket after failed auth verification');
         WebSocketService.getInstance().disconnect();

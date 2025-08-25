@@ -33,7 +33,8 @@ export function getAuthConfig() {
         sameSite: 'lax',
         maxAge: 60 * 60 * 1000, // 1 hour
         path: '/' // Accessible across the entire domain
-      }
+      },
+      INACTIVITY_TIMEOUT: 15 * 60 * 1000 // 15 min
     },
 
   SECURITY: {

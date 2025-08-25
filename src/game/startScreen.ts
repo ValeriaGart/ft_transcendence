@@ -1,3 +1,4 @@
+import { colours } from "./constants.ts";
 import GameEngine from "./gameEngine.ts";
 
 export class StartScreen {
@@ -8,11 +9,11 @@ export class StartScreen {
 	}
 	
 	public drawStartScreen(): void {
-		this._engine._ctx.fillStyle = 'black';
+		this._engine._ctx.fillStyle = colours.background;
 		this._engine._ctx.fillRect(0, 0, this._engine._canvas.width, this._engine._canvas.height);
 		
 		this._engine._ctx.font = '250px Arial';
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		this._engine._ctx.textAlign = 'center';
 		this._engine._ctx.textBaseline = 'middle';
 		

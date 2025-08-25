@@ -124,7 +124,14 @@ export class GameEngine {
 	}
 	
 	private singleGameHandler(mode: GameMode, oppMode: OpponentMode): void {
-		if (oppMode == OpponentMode.SINGLE && this._p1ID && this._p2ID) {
+		if (mode == GameMode.TEAMS && this._p1ID && this._p2ID && this._p3ID && this._p4ID) {
+			var playerOne: Player = new Player(this._p1Nick ?? 'player1', 0, false, this._p1ID);
+			var playerTwo: Player = new Player(this._p2Nick ?? 'player2', 0, false, this._p2ID);
+			var playerThree: Player = new Player(this._p3Nick ?? 'player3', 0, false, this._p3ID);
+			var playerFour: Player = new Player(this._p4Nick ?? 'player4', 0, false, this._p4ID);
+			this._pongGame = new PongGame(this, mode, oppMode, playerOne, playerTwo, playerThree, playerFour);
+		}
+		else if (oppMode == OpponentMode.SINGLE && this._p1ID && this._p2ID) {
 			var playerOne: Player = new Player(this._p1Nick ?? 'player', 0, false, this._p1ID);
 			var playerTwo: Player = new Player(this._p2Nick ?? 'bot', 0, true, this._p2ID);
 			this._pongGame = new PongGame(this, mode, oppMode, playerOne, playerTwo);
@@ -264,6 +271,9 @@ export class GameEngine {
 				break;
 			case 'tournament':
 				this._gameMode = GameMode.TOURNAMENT;
+				break;
+			case 'teams':
+				this._gameMode = GameMode.TEAMS;
 				break;
 			default:
 				console.error('Invalid game mode:', this._gameModeStr, " defaulting to mode select");

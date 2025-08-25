@@ -12,7 +12,8 @@ export enum GameState {
 export enum GameMode {
 	INFINITE = 'infinite',
 	BEST_OF = 'best of 5',
-	TOURNAMENT = 'tournament'
+	TOURNAMENT = 'tournament',
+	TEAMS = 'teams'
 }
 
 export enum OpponentMode {
@@ -24,11 +25,22 @@ export enum OpponentMode {
 export interface GameStats {
 	ballPosition: { x: number; y: number};
 	ballVelocity: { x: number; y: number};
-	paddlePositions: { left: number; right: number};
-	paddleVelocity: { left: number; right: number};
-	paddleDirection: { left: number; right: number};
+	paddlePositions: { left: number; right: number, ml: number, mr: number};
+	paddleVelocity: { left: number; right: number, ml: number, mr: number};
+	paddleDirection: { left: number; right: number, ml: number, mr: number};
 	scores: { left: number; right: number};
 	pnumber: number;
 }
 
+export interface Colours {
+	background: string;
+	foregroundMain: string;
+	foregroundSubtle: string;
+	winner: string;
+	pauseBG: string;
+	paddle: string;
+	ball: string;
+}
+
 export type PaddleSide = 'left' | 'right';
+export type ExtraPaddleSide = 'ml' | 'mr';

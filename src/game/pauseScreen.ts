@@ -1,3 +1,4 @@
+import { colours } from "./constants.ts";
 import GameEngine from "./gameEngine.ts";
 
 export class PauseScreen {
@@ -8,11 +9,11 @@ export class PauseScreen {
 	}
 	
 	public drawPauseScreen(): void {
-		this._engine._ctx.fillStyle = 'blue';
+		this._engine._ctx.fillStyle = colours.pauseBG;
 		this._engine._ctx.fillRect(300, 200, this._engine._canvas.width - 600, this._engine._canvas.height - 400);
 		
 		this._engine._ctx.font = '250px Arial';
-		this._engine._ctx.fillStyle = 'white';
+		this._engine._ctx.fillStyle = colours.foregroundMain;
 		this._engine._ctx.textAlign = 'center';
 		this._engine._ctx.textBaseline = 'middle';
 		

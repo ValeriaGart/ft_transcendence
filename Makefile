@@ -1,40 +1,46 @@
+# Color variables
+CYAN=\033[1;36m
+YELLOW=\033[1;33m
+BLUE=\033[1;34m
+MAGENTA=\033[1;35m
+RED=\033[1;31m
+GREEN=\033[1;32m
+RESET=\033[0m
+
+
 up: check_env
-	@echo "\033[1;36m🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨\033[0m"
-	@echo "\033[1;33m🚀 LET'S MAKE IT UP 🚀\033[0m"
-	@if [ ! -d "node_modules" ]; then \
-		echo "\033[1;34mInstalling dependencies...\033[0m"; \
-		npm install; \
-	fi
+	@echo "$(CYAN)🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨$(RESET)"
+	@echo "$(YELLOW)🚀 LET'S MAKE IT UP 🚀$(RESET)"
 	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
-		echo "\033[1;35mGenerating SSL certificates...\033[0m"; \
+		echo "$(MAGENTA)Generating SSL certificates...$(RESET)"; \
 		./backend/scripts/generate-ssl.sh; \
 	fi
 	npm run dev:both
 
 check_env:
 	@if [ ! -f ".env" ]; then \
-		./srcs/check_env.sh; \
+		echo "$(RED) ERROR: .env doesn't exist$(RESET)"; \
+		exit 1; \
 	fi
 
-clean:
-	@echo "\033[1;31mStopping the development server...\033[0m"
-	@echo "\033[1;34mCleaning up node_modules and package-lock.json...\033[0m"
+rm-dependency-installs:
+	@echo "$(BLUE)Cleaning up node_modules and package-lock.json...$(RESET)"
 	@rm -rf node_modules package-lock.json
-	@echo "\033[1;32mClean-up done.\033[0m"
+	@echo "$(GREEN)Clean-up done.$(RESET)"
+
+clean: 
 
 fclean: clean
-	@echo "\033[1;35mFull clean-up...\033[0m"
-	@rm -rf .vite
-	@rm -rf dist
-	@rm -rf build
-	@echo "\033[1;32mFull clean-up done.\033[0m"
+	@echo "$(MAGENTA)Full clean-up...$(RESET)"
+
+	@echo "$(GREEN)Full clean-up done.$(RESET)"
 
 re: check_env
-	@echo "\033[1;35m🔄 WELCOME BACK TO GUMBUS_SOUP TRANSCENDENCE! 🔄\033[0m"
-	@echo "\033[1;33m⚡ LET'S RESTART AND MAKE IT UP AGAIN ⚡\033[0m"
+	@echo "$(MAGENTA)🔄 WELCOME BACK TO GUMBUS_SOUP TRANSCENDENCE! 🔄$(RESET)"
+	@echo "$(YELLOW)⚡ LET'S RESTART AND MAKE IT UP AGAIN ⚡$(RESET)"
 	npm install
 	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
-		echo "\033[1;35mGenerating SSL certificates...\033[0m"; \
+		echo "$(MAGENTA)Generating SSL certificates...$(RESET)"; \
 		./backend/scripts/generate-ssl.sh; \
 	fi
 	npm run dev:both

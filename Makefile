@@ -7,26 +7,34 @@ RED=\033[1;31m
 GREEN=\033[1;32m
 RESET=\033[0m
 
-
-up: check_env
+welcome-message:
 	@echo "$(CYAN)🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨$(RESET)"
-	@echo "$(YELLOW)🚀 LET'S MAKE IT UP 🚀$(RESET)"
+
+
+## certificates
+setup-certs:
 	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
 		echo "$(MAGENTA)Generating SSL certificates...$(RESET)"; \
 		./backend/scripts/generate-ssl.sh; \
 	fi
-	npm run dev:both
+
+rm-certs:
+	@rm -rf backend/ssl/server.*
+
+
+
+
+
+
+up: check_env
+	@echo "$(YELLOW)🚀 LET'S MAKE IT UP 🚀$(RESET)"
+# npm run dev:both
 
 check_env:
 	@if [ ! -f ".env" ]; then \
 		echo "$(RED) ERROR: .env doesn't exist$(RESET)"; \
 		exit 1; \
 	fi
-
-rm-dependency-installs:
-	@echo "$(BLUE)Cleaning up node_modules and package-lock.json...$(RESET)"
-	@rm -rf node_modules package-lock.json
-	@echo "$(GREEN)Clean-up done.$(RESET)"
 
 clean: 
 
@@ -43,6 +51,6 @@ re: check_env
 		echo "$(MAGENTA)Generating SSL certificates...$(RESET)"; \
 		./backend/scripts/generate-ssl.sh; \
 	fi
-	npm run dev:both
+# npm run dev:both
 
 .PHONY: re clean fclean up

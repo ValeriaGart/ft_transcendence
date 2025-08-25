@@ -266,6 +266,36 @@ export class MatchComponent extends Component<MatchComponentState> {
   private async startTournament(selectedFriendIds: number[]): Promise<void> {
     console.log('Starting tournament with selected friends:', selectedFriendIds);
     try {
+      // Ask initiator to choose mode: classic tournament or teams (2v2)
+      const choice = await new Promise<'tournament'|'teams'|null>((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 flex items-center justify-center z-50';
+        overlay.style.backgroundColor = 'rgba(0,0,0,0.2)';
+        overlay.innerHTML = `
+          <div class="bg-[#FFF7AC] border-4 border-[#EE9C47] rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
+            <button id="mode-close" class="absolute top-4 right-4 text-[#81C3C3] hover:text-[#B784F2] transition-colors duration-300 cursor-pointer">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+            <div class="text-center">
+              <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Choose Match Type</h2>
+              <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-6">How do you want to play?</p>
+              <div class="flex flex-col space-y-3">
+                <button id="choose-tournament" class="px-6 py-3 bg-[#EE9C47] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Tournament</button>
+                <button id="choose-teams" class="px-6 py-3 bg-[#9C89B8] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Teams (2v2)</button>
+              </div>
+            </div>
+          </div>`;
+        const container = this.getElement() || document.body;
+        container.appendChild(overlay);
+        const cleanup = () => { try { overlay.remove(); } catch {} };
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) { cleanup(); resolve(null); } });
+        overlay.querySelector('#mode-close')?.addEventListener('click', (e) => { e.preventDefault(); cleanup(); resolve(null); });
+        overlay.querySelector('#choose-tournament')?.addEventListener('click', (e) => { e.preventDefault(); cleanup(); resolve('tournament'); });
+        overlay.querySelector('#choose-teams')?.addEventListener('click', (e) => { e.preventDefault(); cleanup(); resolve('teams'); });
+      });
+      if (!choice) { return; }
       // Cancel any lingering room preemptively to avoid busy error on backend
       try {
         const ws = WebSocketService.getInstance();
@@ -344,12 +374,12 @@ export class MatchComponent extends Component<MatchComponentState> {
         return;
       }
 
-      // Send tournament request
+      // Send request with selected game mode
       const ws = WebSocketService.getInstance();
       const msg = {
         type: 3,
         players,
-        gameMode: 'tournament',
+        gameMode: choice === 'teams' ? 'teams' : 'tournament',
         oppMode: 'online'
       };
       console.log('Sending tournament request:', JSON.stringify(msg));
@@ -358,7 +388,7 @@ export class MatchComponent extends Component<MatchComponentState> {
       // Inform StartGamePopUp about pending participants for better waiting UI
       try {
         const participantNames = players.map(p => p.nick);
-        window.dispatchEvent(new CustomEvent('set-pending-participants', { detail: { participants: participantNames, type: 'tournament' } }));
+        window.dispatchEvent(new CustomEvent('set-pending-participants', { detail: { participants: participantNames, type: choice } }));
       } catch {}
 
       // Show waiting popup is handled by StartGamePopUp via INFO/CANCEL/STARTMATCH

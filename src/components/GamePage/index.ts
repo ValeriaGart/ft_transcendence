@@ -100,6 +100,38 @@ export class GamePage extends Component {
                 this.gameEngine.startGameLoop(fakeEvent);
                 return;
             }
+            if (localMode === 'TEAMS') {
+                const p1 = localStorage.getItem('local_p1_alias') || 'Player 1';
+                const aliasesRaw = localStorage.getItem('local_teams_aliases');
+                let a2 = 'Teammate', a3 = 'Opponent 1', a4 = 'Opponent 2';
+                try {
+                    const arr = JSON.parse(aliasesRaw || '[]');
+                    a2 = arr[0] || a2; a3 = arr[1] || a3; a4 = arr[2] || a4;
+                } catch {}
+                const payload = {
+                    type: 'STARTMATCH',
+                    roomId: 'local',
+                    urp: 1,
+                    players: [
+                        { nick: p1, ai: false, pnumber: 1 },
+                        { nick: a2, ai: false, pnumber: 2 },
+                        { nick: a3, ai: false, pnumber: 3 },
+                        { nick: a4, ai: false, pnumber: 4 }
+                    ],
+                    gameMode: 'teams',
+                    oppMode: 'multi'
+                };
+                try {
+                    localStorage.removeItem('local_mode');
+                    localStorage.removeItem('local_p1_alias');
+                    localStorage.removeItem('local_teams_aliases');
+                } catch {}
+                this.createCanvas();
+                const fakeEvent = { data: JSON.stringify(payload) } as MessageEvent;
+                this.gameEngine = new GameEngine('gameCanvas');
+                this.gameEngine.startGameLoop(fakeEvent);
+                return;
+            }
         } catch {}
 
         // Check if we have a stored STARTMATCH message from StartGamePopUp

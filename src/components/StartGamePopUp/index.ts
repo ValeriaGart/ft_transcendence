@@ -17,7 +17,7 @@ interface StartGamePopUpState {
   aiOpenListener?: (e: Event) => void;
   defaultContentHtml?: string;
   pendingParticipants?: string[];
-  pendingInviteType?: '1v1' | 'tournament';
+  pendingInviteType?: '1v1' | 'tournament' | 'teams';
 }
 
 export class StartGamePopUp extends Component<StartGamePopUpState> {
@@ -132,9 +132,14 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         if (parsedData.type === "INVITATION" && parsedData.roomId) {
           console.log('Received 1v1 invitation, showing accept/decline options...');
           // Store the invitation data
+          const players = Array.isArray(parsedData.players) ? parsedData.players : [];
+          const fourPlayers = players.length === 4;
+          const pendingType: '1v1' | 'tournament' | 'teams' = fourPlayers ? (parsedData.gameMode === 'teams' ? 'teams' : 'tournament') : '1v1';
           this.setState({ 
             invitationData: parsedData,
             pendingRoomId: parsedData.roomId,
+            pendingInviteType: pendingType,
+            pendingParticipants: players.map((p: any) => String(p.nick)),
             gameMode: '1v1'
           });
           // Show the invitation popup with accept/decline buttons
@@ -152,10 +157,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
             return;
           }
           // Otherwise (1v1 initiator) show waiting popup
-          this.setState({ 
-            pendingRoomId: parsedData.roomId,
-            gameMode: '1v1'
-          });
+          this.setState({ pendingRoomId: parsedData.roomId });
           try { localStorage.setItem('current_room_id', String(parsedData.roomId)); } catch {}
           this.showWaitingPopup(parsedData);
           this.showPopup();
@@ -397,14 +399,17 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         <button id="local-bestof" class="px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Best of 1v1</button>
         <button id="local-infinite" class="px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Infinite 1v1</button>
         <button id="local-tournament" class="px-6 py-3 bg-[#EE9C47] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local Tournament</button>
+        <button id="local-teams" class="px-6 py-3 bg-[#9C89B8] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Teams (2v2)</button>
       </div>
     `;
     const bestBtn = this.element.querySelector('#local-bestof') as HTMLButtonElement | null;
     const infBtn = this.element.querySelector('#local-infinite') as HTMLButtonElement | null;
     const tourBtn = this.element.querySelector('#local-tournament') as HTMLButtonElement | null;
+    const teamsBtn = this.element.querySelector('#local-teams') as HTMLButtonElement | null;
     if (bestBtn) bestBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('bestof'); });
     if (infBtn) infBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('infinite'); });
     if (tourBtn) tourBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalTournamentConfirm(); });
+    if (teamsBtn) teamsBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalTeamsConfirm(); });
   }
 
   private showLocalConfirm(mode: 'bestof' | 'infinite' = 'bestof'): void {
@@ -463,6 +468,62 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     }
   }
 
+  private showLocalTeamsConfirm(): void {
+    const content = this.element.querySelector('.text-center') as HTMLElement | null;
+    if (!content) return;
+    content.innerHTML = `
+      <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">Local Teams (2v2)</h2>
+      <p class="text-[#81C3C3] font-['Irish_Grover'] text-lg mb-4">Enter 3 player names (teammate and two opponents):</p>
+      <div class="mb-3"><input id="teams-alias-2" type="text" placeholder="Teammate" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-3"><input id="teams-alias-3" type="text" placeholder="Opponent 1" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="mb-6"><input id="teams-alias-4" type="text" placeholder="Opponent 2" class="px-3 py-2 border-2 border-[#81C3C3] rounded-2xl text-[#81C3C3] w-[240px]" /></div>
+      <div class="flex space-x-4">
+        <button id="confirm-local-teams" class="flex-1 px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Confirm</button>
+        <button id="cancel-local-teams" class="flex-1 px-6 py-3 bg-[#EF7D77] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Cancel</button>
+      </div>
+    `;
+    const confirmBtn = this.element.querySelector('#confirm-local-teams') as HTMLButtonElement | null;
+    const cancelBtn = this.element.querySelector('#cancel-local-teams') as HTMLButtonElement | null;
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const a2 = (this.element.querySelector('#teams-alias-2') as HTMLInputElement | null)?.value?.trim() || 'Teammate';
+        const a3 = (this.element.querySelector('#teams-alias-3') as HTMLInputElement | null)?.value?.trim() || 'Opponent 1';
+        const a4 = (this.element.querySelector('#teams-alias-4') as HTMLInputElement | null)?.value?.trim() || 'Opponent 2';
+        // Resolve Player 1 alias from profile
+        let p1Alias = 'Player 1';
+        try {
+          const currentUser = authService.getCurrentUser();
+          if (currentUser) {
+            const resp = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
+            if (resp.ok) {
+              const data = await resp.json();
+              p1Alias = (data?.nickname && String(data.nickname).trim() !== '') ? data.nickname : `User${currentUser.id}`;
+            }
+          }
+        } catch {}
+        try {
+          localStorage.setItem('local_p1_alias', p1Alias);
+          localStorage.setItem('local_mode', 'TEAMS');
+          localStorage.setItem('local_gameMode', 'teams');
+          localStorage.setItem('local_teams_aliases', JSON.stringify([a2, a3, a4]));
+        } catch {}
+        this.closePopup(false);
+        try {
+          const { Router } = await import('@blitz-ts');
+          Router.getInstance().navigate('/user/game');
+        } catch {
+          window.location.href = '/user/game';
+        }
+      });
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closePopup(false);
+      });
+    }
+  }
   private showLocalTournamentConfirm(): void {
     const content = this.element.querySelector('.text-center') as HTMLElement | null;
     if (!content) return;
@@ -567,8 +628,8 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     const popupContent = this.element.querySelector('.text-center');
     if (popupContent) {
       const players = Array.isArray(invitationData.players) ? invitationData.players : [];
-      const isTournament = players.length === 4;
-      const title = isTournament ? 'Tournament Invitation' : '1v1 Invitation';
+      const isFour = players.length === 4;
+      const title = isFour ? (invitationData.gameMode === 'teams' ? 'Teams Invitation' : 'Tournament Invitation') : '1v1 Invitation';
       const listHtml = players.map((p: any) => `<li class="text-[#81C3C3]">${escapeHtml(p.nick)}${p.ai ? ' (AI)' : ''}</li>`).join('');
       popupContent.innerHTML = `
         <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">${title}</h2>
@@ -614,8 +675,9 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     const popupContent = this.element.querySelector('.text-center');
     if (popupContent) {
       const participants = (this.state.pendingParticipants ?? []) as string[];
-      const isTournament = this.state.pendingInviteType === 'tournament' || participants.length === 4;
-      const title = isTournament ? 'Waiting for Players' : 'Waiting for Player';
+      const isFour = participants.length === 4;
+      const pit = this.state.pendingInviteType;
+      const title = pit === 'teams' ? 'Waiting for Team Players' : (isFour ? 'Waiting for Players' : 'Waiting for Player');
       const listHtml = participants.length ? `<ul class=\"mb-4 space-y-1\">${participants.map((n: string) => `<li class=\\\"text-[#81C3C3]\\\">${n}</li>`).join('')}</ul>` : '';
       popupContent.innerHTML = `
         <h2 class="text-[#B784F2] font-['Irish_Grover'] text-2xl lg:text-3xl mb-6">${title}</h2>
@@ -631,7 +693,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
 
       // If tournament wait takes too long, cancel and route to user with message
       try {
-        if (isTournament) {
+        if (isFour) {
           const roomId = String(infoData.roomId || this.state.pendingRoomId || localStorage.getItem('current_room_id') || '');
           // Clear any existing timer first
           try {

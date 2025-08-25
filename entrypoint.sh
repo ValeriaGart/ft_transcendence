@@ -33,7 +33,7 @@ echo "[Cron Setup]"
 service cron start
 crontab -l > crontab_new 
 echo "echo \$(date '+%Y-%m-%d %H:%M:%S')" > /tmp/timestamp.sh
-echo "#deactivated for now # */20 * * * * (bash /tmp/timestamp.sh && echo ': cron gonna rotate' && /usr/sbin/logrotate -f /etc/logrotate.d/ft_transcendence) >> /tmp/cron.log 2>&1" >> crontab_new
+echo "*/20 * * * * (bash /tmp/timestamp.sh && echo ': cron gonna rotate' && /usr/sbin/logrotate -f /etc/logrotate.d/ft_transcendence) >> /tmp/cron.log 2>&1" >> crontab_new
 crontab crontab_new
 rm crontab_new
 echo "[Cron Setup Done]"

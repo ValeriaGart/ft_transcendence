@@ -68,9 +68,11 @@ rm-certs:
 
 
 clean: rm-certs rm-db
+	@docker compose down
 
 fclean: clean
 	@echo "$(GREEN)Full clean-up...$(RESET)"
+	@docker compose down -v
 	@echo "$(GREEN)Full clean-up done.$(RESET)"
 
 # npm run dev:both

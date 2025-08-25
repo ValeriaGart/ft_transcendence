@@ -18,6 +18,7 @@ export class TournamentWinScreen {
 		this._engine._ctx.textBaseline = 'middle';
 		
 		this._engine._ctx.fillText('WINNER', this._engine._canvas.width / 2, this._engine._canvas.height / 4 - 100);
+		this._engine._ctx.fillStyle = colours.paddle;
 		
 		this._engine._ctx.font = '150px Arial';
 		this._engine._ctx.fillText(name1, this._engine._canvas.width / 2, this._engine._canvas.height / 2 - 100);

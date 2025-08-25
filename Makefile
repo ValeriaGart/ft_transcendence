@@ -7,10 +7,10 @@ RED=\033[1;31m
 GREEN=\033[1;32m
 RESET=\033[0m
 
+all: welcome-message start-up-elk start-up-app
+
 welcome-message:
 	@echo "$(CYAN)🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨$(RESET)"
-
-
 
 
 # ## START UP commands

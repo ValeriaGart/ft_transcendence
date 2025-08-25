@@ -39,7 +39,7 @@ const fastifyOptions = {
     level: process.env.LOG_LEVEL,
     transport: {
       target: 'pino/file',
-      options: { destination: 'logs_backend/app.log' }
+      options: { destination: process.env.LOG_PATH_BE +'/app.log' }
     }
   }
 };

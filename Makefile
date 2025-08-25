@@ -1,42 +1,85 @@
-up: check_env
-	@echo "\033[1;36m🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨\033[0m"
-	@echo "\033[1;33m🚀 LET'S MAKE IT UP 🚀\033[0m"
-	@if [ ! -d "node_modules" ]; then \
-		echo "\033[1;34mInstalling dependencies...\033[0m"; \
-		npm install; \
-	fi
-	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
-		echo "\033[1;35mGenerating SSL certificates...\033[0m"; \
-		./backend/scripts/generate-ssl.sh; \
-	fi
-	npm run dev:both
+# Color variables
+CYAN=\033[1;36m
+YELLOW=\033[1;33m
+BLUE=\033[1;34m
+MAGENTA=\033[1;35m
+RED=\033[1;31m
+GREEN=\033[1;32m
+RESET=\033[0m
+
+all: welcome-message start-up-elk start-up-app
+
+welcome-message:
+	@echo "$(CYAN)🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨$(RESET)"
+
+
+# ## START UP commands
+
+start-up-elk:
+	@echo "$(CYAN)📋 LET'S MAKE ELK UP 📈$(RESET)"
+	$(MAKE) -f Makefile.elk config-devops
+	$(MAKE) -f Makefile.elk setup-log-dir
+	$(MAKE) -f Makefile.elk elk-up
+	$(MAKE) -f Makefile.elk set-lifecycle
+
+start-up-app: setup-db check_env setup-certs
+	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
+	@echo "start up app"
+	@docker compose up app --build -d
+
+restart-app:
+	@docker compose down app && docker compose up app -d
+
+
+# ## down commands
+down-elk:
+	@(MAKE) -f Makefile.elk elk-down
+
+down-app:
+	@docker compose down app
+
+down:
+	@docker compose down
+
+
+# ## setup for app
+setup-db:
+	@echo "$(YELLOW)🏗 setup-db$(RESET)"
+	@touch db.sqlite
+
+rm-db: 
+	@echo "$(GREEN)🧼 remove database"
+	@rm db.sqlite
 
 check_env:
 	@if [ ! -f ".env" ]; then \
-		./srcs/check_env.sh; \
+		echo "$(RED) ERROR: .env doesn't exist$(RESET)"; \
+		exit 1; \
 	fi
 
-clean:
-	@echo "\033[1;31mStopping the development server...\033[0m"
-	@echo "\033[1;34mCleaning up node_modules and package-lock.json...\033[0m"
-	@rm -rf node_modules package-lock.json
-	@echo "\033[1;32mClean-up done.\033[0m"
 
-fclean: clean
-	@echo "\033[1;35mFull clean-up...\033[0m"
-	@rm -rf .vite
-	@rm -rf dist
-	@rm -rf build
-	@echo "\033[1;32mFull clean-up done.\033[0m"
-
-re: check_env
-	@echo "\033[1;35m🔄 WELCOME BACK TO GUMBUS_SOUP TRANSCENDENCE! 🔄\033[0m"
-	@echo "\033[1;33m⚡ LET'S RESTART AND MAKE IT UP AGAIN ⚡\033[0m"
-	npm install
+## certificates
+setup-certs:
+	@echo "$(YELLOW)🏗 setup certificates$(RESET)"
 	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
-		echo "\033[1;35mGenerating SSL certificates...\033[0m"; \
+		echo "$(YELLOW)Generating SSL certificates...$(RESET)"; \
 		./backend/scripts/generate-ssl.sh; \
 	fi
-	npm run dev:both
+
+rm-certs:
+	@echo "$(GREEN)🧼 remove certs$(RESET)"
+	@rm -rf backend/ssl/server.*
+
+
+
+clean: rm-certs rm-db
+	@docker compose down
+
+fclean: clean
+	@echo "$(GREEN)Full clean-up...$(RESET)"
+	@docker compose down -v
+	@echo "$(GREEN)Full clean-up done.$(RESET)"
+
+# npm run dev:both
 
 .PHONY: re clean fclean up

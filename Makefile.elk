@@ -22,7 +22,7 @@ elk-up:
 	docker compose up -d kibana logstash filebeat
 
 elk-down:
-	docker compose down
+	docker compose down filebeat logstash kibana es01
 
 elk-logs:
 	@echo "Showing es01 logs (Ctrl+C to stop):"

@@ -1,4 +1,5 @@
 import UserService from '../services/user.service.js';
+import { validateEmail, validatePassword } from '../plugins/auth-utils.js';
 
 class UserController {
   static async getAllUsers(request, reply) {
@@ -113,6 +114,20 @@ class UserController {
 
   static async createUser(request, reply) {
     try {
+      // SECURITY: Add email validation to prevent bypassing auth/register endpoint
+      const { email, passwordString } = request.body;
+      
+      if (!validateEmail(email)) {
+        reply.code(400);
+        return { error: 'Invalid email format' };
+      }
+
+      const passwordValidation = validatePassword(passwordString);
+      if (!passwordValidation.valid) {
+        reply.code(400);
+        return { error: 'Password validation failed', details: passwordValidation.errors };
+      }
+
       // XSS middleware already sanitized the input
       const user = await UserService.createUser(request.body);
       reply.code(201);

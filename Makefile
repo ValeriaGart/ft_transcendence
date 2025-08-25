@@ -25,10 +25,10 @@ start-up-elk:
 start-up-app: setup-db check_env setup-certs
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "start up app"
-	docker compose up app --build
+	docker compose up app --build -d
 
 start-app:
-	docker compose down app && docker compose up app
+	docker compose down app && docker compose up app -d
 
 
 # ## down commands

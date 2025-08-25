@@ -34,7 +34,7 @@ export function getAuthConfig() {
         maxAge: 60 * 60 * 1000, // 1 hour
         path: '/' // Accessible across the entire domain
       },
-      INACTIVITY_TIMEOUT: 15 * 60 * 1000 // 15 min
+      INACTIVITY_TIMEOUT: 1 * 60 * 1000 // 15 min
     },
 
   SECURITY: {

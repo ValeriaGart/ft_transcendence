@@ -27,7 +27,7 @@ start-up-app: setup-db check_env setup-certs
 	@echo "start up app"
 	docker compose up app --build -d
 
-start-app:
+restart-app:
 	docker compose down app && docker compose up app -d
 
 

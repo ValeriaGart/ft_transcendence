@@ -26,9 +26,6 @@ services:
       start_period: 10s
 
   setup:
-    # depends_on:
-    #   app:
-    #     condition: service_healthy
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
@@ -80,8 +77,6 @@ services:
       - transcendence_net
 
   es01:
-    # cap_add:
-    # - IPC_LOCK
     depends_on:
       setup:
         condition: service_healthy
@@ -162,11 +157,6 @@ services:
 
   logstash:
     image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
-    # build:
-    #   context: ./logstash/
-    #   dockerfile: ./Dockerfile
-    #   args:
-    #     STACK_VERSION: ${STACK_VERSION}
     ports:
       - 5044:5044
     volumes:
@@ -181,21 +171,11 @@ services:
     networks:
       - transcendence_net
 
-  # apm:
-  #   image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
-  #   depends_on:
-  #     kibana:
-  #       condition: service_healthy
-  #   ports: 
-  #     - 8200:8200
-  #   volumes:
-  #     - ./apm/config/apm-server.docker.yml:/usr/share/apm-server/apm-server.yml:ro
-  #     - certs:/usr/share/apm/config/certs
-
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
     volumes:
       - ./logs_backend:/usr/share/filebeat/logs_backend
+      - ./logs_es:/usr/share/filebeat/logs_es
       - ./devops/filebeat/config/filebeat.example.yml:/usr/share/filebeat/filebeat.yml
     depends_on:
       kibana:
@@ -212,7 +192,6 @@ volumes:
     driver: local
   kibanadata:
     driver: local
-  # sqlite_data:
 
 networks:
   transcendence_net:

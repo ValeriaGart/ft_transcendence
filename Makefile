@@ -25,10 +25,10 @@ start-up-elk:
 start-up-app: setup-db check_env setup-certs
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "start up app"
-	docker compose up app --build -d
+	@docker compose up app --build -d
 
 restart-app:
-	docker compose down app && docker compose up app -d
+	@docker compose down app && docker compose up app -d
 
 
 # ## down commands
@@ -36,10 +36,10 @@ down-elk:
 	@(MAKE) -f Makefile.elk elk-down
 
 down-app:
-	docker compose down app
+	@docker compose down app
 
 down:
-	docker compose down
+	@docker compose down
 
 
 # ## setup for app

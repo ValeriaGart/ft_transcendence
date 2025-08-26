@@ -1,11 +1,11 @@
 # Color variables
-CYAN=\033[1;36m
-YELLOW=\033[1;33m
-BLUE=\033[1;34m
-MAGENTA=\033[1;35m
-RED=\033[1;31m
-GREEN=\033[1;32m
-RESET=\033[0m
+CYAN=\033[1;36m # info
+YELLOW=\033[1;33m # setup/build
+BLUE=\033[1;34m 
+MAGENTA=\033[1;35m # clean
+RED=\033[1;31m  # error
+GREEN=\033[1;32m # process finished/ success
+RESET=\033[0m 
 
 all: welcome-message start-up-elk start-up-app invite-message
 
@@ -14,7 +14,7 @@ welcome-message:
 
 invite-message:
 	@IP=$$(ip -4 addr show scope global | grep inet | awk '{print $$2}' | cut -d/ -f1 | head -n1); \
-	echo "🌐 Share this link with your friends: http://$${IP}:5173"
+	echo "🌐 $(CYAN)Share this link with your friends:$(RESET) http://$${IP}:5173"
 
 # ## START UP commands
 
@@ -27,8 +27,9 @@ start-up-elk:
 
 start-up-app: setup-db check_env setup-certs invite-message
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
-	@echo "start up app"
+	@echo "$(YELLOW)🏗  spinning up container...$(RESET)"
 	@docker compose up app --build -d > docker_build.log 2>&1
+	@echo "$(GREEN)App has started up, have fun!$(RESET)"
 
 restart-app:
 	@docker compose down app && docker compose up app -d
@@ -51,12 +52,12 @@ logs-app:
 
 # ## setup for app
 setup-db:
-	@echo "$(YELLOW)🏗 setup-db$(RESET)"
+	@echo "$(YELLOW)🏗  setup-db$(RESET)"
 	@touch db.sqlite
 
 rm-db: 
-	@echo "$(GREEN)🧼 remove database"
-	@rm db.sqlite
+	@echo "$(MAGENTA)🧼 remove database"
+	@rm -f db.sqlite
 
 check_env:
 	@if [ ! -f ".env" ]; then \
@@ -67,26 +68,25 @@ check_env:
 
 ## certificates
 setup-certs:
-	@echo "$(YELLOW)🏗 setup certificates$(RESET)"
+	@echo "$(YELLOW)🏗  setup certificates$(RESET)"
 	@if [ ! -f "backend/ssl/server.crt" ] || [ ! -f "backend/ssl/server.key" ]; then \
 		echo "$(YELLOW)Generating SSL certificates...$(RESET)"; \
 		./backend/scripts/generate-ssl.sh; \
 	fi
 
 rm-certs:
-	@echo "$(GREEN)🧼 remove certs$(RESET)"
+	@echo "$(MAGENTA)🧼 remove certs$(RESET)"
 	@rm -rf backend/ssl/server.*
 
 
 
 clean: rm-certs rm-db
-	@rm docker_build.log
+	@rm -f docker_build.log
 	@docker compose down
 
 fclean: clean
-	@echo "$(GREEN)Full clean-up...$(RESET)"
 	@docker compose down -v
-	@echo "$(GREEN)Full clean-up done.$(RESET)"
+	@echo "$(MAGENTA)Full clean-up done.$(RESET)"
 
 # npm run dev:both
 

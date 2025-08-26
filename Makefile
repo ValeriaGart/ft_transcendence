@@ -56,7 +56,7 @@ setup-db:
 	@touch db.sqlite
 
 rm-db: 
-	@echo "$(MAGENTA)🧼 remove database"
+	@echo "$(MAGENTA)🧼 remove database$(RESET)"
 	@rm -f db.sqlite
 
 check_env:

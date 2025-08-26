@@ -18,14 +18,14 @@ invite-message:
 
 # ## START UP commands
 
-start-up-elk:
+start-up-elk: check_env down-elk
 	@echo "$(CYAN)📋 LET'S MAKE ELK UP 📈$(RESET)"
 	$(MAKE) -f Makefile.elk config-devops
 	$(MAKE) -f Makefile.elk setup-log-dir
 	$(MAKE) -f Makefile.elk elk-up
 	$(MAKE) -f Makefile.elk set-lifecycle
 
-start-up-app: setup-db check_env setup-certs invite-message
+start-up-app: down-app setup-db check_env setup-certs invite-message
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "$(YELLOW)🏗  spinning up container...$(RESET)"
 	@docker compose up app --build -d > docker_build.log 2>&1
@@ -80,11 +80,11 @@ rm-certs:
 
 
 
-clean: rm-certs rm-db
+clean: rm-certs
 	@rm -f docker_build.log
 	@docker compose down
 
-fclean: clean
+fclean: clean rm-db
 	@docker compose down -v
 	@echo "$(MAGENTA)Full clean-up done.$(RESET)"
 

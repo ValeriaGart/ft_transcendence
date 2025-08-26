@@ -24,12 +24,13 @@ start-up-elk: check_env down-elk
 	$(MAKE) -f Makefile.elk setup-log-dir
 	$(MAKE) -f Makefile.elk elk-up
 	$(MAKE) -f Makefile.elk set-lifecycle
+	@echo "$(GREEN)ELK has started up, have fun with all these logs!$(RESET)"
 
 start-up-app: down-app setup-db check_env setup-certs invite-message
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "$(YELLOW)🏗  spinning up container...$(RESET)"
 	@docker compose up app --build -d > docker_build.log 2>&1
-	@echo "$(GREEN)App has started up, have fun!$(RESET)"
+	@echo "$(GREEN)App has started up, let's get ponging!$(RESET)"
 
 restart-app:
 	@docker compose down app && docker compose up app -d
@@ -38,12 +39,15 @@ restart-app:
 # ## down commands
 down-elk:
 	@$(MAKE) -f Makefile.elk elk-down
+	@echo "$(GREEN)ELK was turned off!$(RESET)"
 
 down-app:
 	@docker compose down app
+	@echo "$(GREEN)App was turned off!$(RESET)"
 
 down:
 	@docker compose down
+	@echo "$(GREEN)Entire project was turned off!$(RESET)"
 
 # show logs
 logs-app:
@@ -58,6 +62,10 @@ setup-db:
 rm-db: 
 	@echo "$(MAGENTA)🧼 remove database$(RESET)"
 	@rm -f db.sqlite
+
+re-db: rm-db setup-db
+	@echo "$(GREEN)Database was restarted.$(RESET)"
+
 
 check_env:
 	@if [ ! -f ".env" ]; then \

@@ -80,6 +80,7 @@ rm-certs:
 
 
 clean: rm-certs rm-db
+	@rm docker_build.log
 	@docker compose down
 
 fclean: clean

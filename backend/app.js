@@ -61,7 +61,7 @@ await app.register(ws)
 
 // Register cookie plugin
 await app.register(cookie, {
-  secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-here-let-us-make-it-long-and-random'
+  secret: process.env.JWT_SECRET
 });
 
 // Register CORS

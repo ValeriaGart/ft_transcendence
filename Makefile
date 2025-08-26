@@ -37,7 +37,7 @@ restart-app:
 
 # ## down commands
 down-elk:
-	@(MAKE) -f Makefile.elk elk-down
+	@$(MAKE) -f Makefile.elk elk-down
 
 down-app:
 	@docker compose down app

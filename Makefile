@@ -7,11 +7,14 @@ RED=\033[1;31m
 GREEN=\033[1;32m
 RESET=\033[0m
 
-all: welcome-message start-up-elk start-up-app
+all: welcome-message start-up-elk start-up-app invite-message
 
 welcome-message:
 	@echo "$(CYAN)🔥 WELCOME TO GUMBUS_SOUP TRANSCENDENCE! ✨$(RESET)"
 
+invite-message:
+	@IP=$$(ip -4 addr show scope global | grep inet | awk '{print $$2}' | cut -d/ -f1 | head -n1); \
+	echo "🌐 Share this link with your friends: http://$${IP}:5173"
 
 # ## START UP commands
 
@@ -22,10 +25,10 @@ start-up-elk:
 	$(MAKE) -f Makefile.elk elk-up
 	$(MAKE) -f Makefile.elk set-lifecycle
 
-start-up-app: setup-db check_env setup-certs
+start-up-app: setup-db check_env setup-certs invite-message
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "start up app"
-	@docker compose up app --build -d
+	@docker compose up app --build -d > docker_build.log 2>&1
 
 restart-app:
 	@docker compose down app && docker compose up app -d
@@ -41,6 +44,10 @@ down-app:
 down:
 	@docker compose down
 
+# show logs
+logs-app:
+	@echo "Showing app logs (Ctrl+C to stop):"
+	docker compose logs -f app
 
 # ## setup for app
 setup-db:

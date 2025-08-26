@@ -1,5 +1,10 @@
 #!/bin/sh
 
+sudo mkdir -p ${LOG_PATH_BE}
+sudo chown ${USER}:${USER} ${LOG_PATH_BE}
+sudo chmod 750 ${LOG_PATH_BE}
+
+
 
 # ## create logrotate config file
 # ## # rotate 10 means maximum 10 logging files will be kept
@@ -11,7 +16,7 @@ mkdir -p /etc/logrotate.d
 touch /etc/logrotate.d/ft_transcendence
 echo "[Logrotate Setup]"
 cat << EOF > /etc/logrotate.d/ft_transcendence
-/workspaces/ft_transcendence/logs_backend/app.log {
+${LOG_PATH_BE}/app.log {
 	su root root
 	rotate 10
 	size 100k

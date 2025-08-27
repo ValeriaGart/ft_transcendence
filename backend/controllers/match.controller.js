@@ -62,17 +62,18 @@ class MatchController {
 	static async getMatchHistoryWithNicknames(request, reply) {
 		try {
 			const { id } = request.params;
-			log('Received ID param: ' + id + ' Type: ' + typeof id, DEBUG); // Debug log
+			log('getMatchHistoryWithNicknames: Received ID param: ' + id + ' Type: ' + typeof id, DEBUG); // Debug log
 			const matchHistory = await MatchService.getMatchHistoryWithNicknames(id);
-			log('Service returned: ' + matchHistory.length + ' matches', DEBUG); // Debug log
+			log('getMatchHistoryWithNicknames: Service returned: ' + matchHistory.length + ' matches', DEBUG); // Debug log
 			
+			log('getMatchHistoryWithNicknames successful', INFO);
 			return {
 				userId: parseInt(id),
 				matches: matchHistory,
 				total: matchHistory.length
 			};
 		} catch (error) {
-			log('Controller error: ' + error, DEBUG); // Debug log
+			log('getMatchHistoryWithNicknames Controller error: ' + error, WARN);
 			reply.code(500);
 			return { error: 'Failed to retrieve match history', details: error.message };
 		}
@@ -82,13 +83,14 @@ class MatchController {
 		try {
 			const userId = request.user.userId;
 			const matchHistory = await MatchService.getMatchHistoryWithNicknames(userId);
-			
+			log('getCurrentUserMatchHistory successful', INFO);
 			return {
 				userId,
 				matches: matchHistory,
 				total: matchHistory.length
 			};
 		} catch (error) {
+			log('getCurrentUserMatchHistory Controller error: ' + error, WARN);
 			reply.code(500);
 			return { error: 'Failed to retrieve match history', details: error.message };
 		}
@@ -98,6 +100,7 @@ class MatchController {
 		try {
 			const { id } = request.params;
 			const stats = await MatchService.getWinsLossesById(id);
+			log('getWinsLossesById successful', INFO);
 			
 			return {
 				userId: parseInt(id),
@@ -106,6 +109,7 @@ class MatchController {
 				total: stats.wins + stats.losses
 			};
 		} catch (error) {
+			log('getWinsLossesById Controller error: ' + error, WARN);
 			reply.code(500);
 			return { error: 'Failed to retrieve win/loss statistics', details: error.message };
 		}

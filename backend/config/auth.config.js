@@ -3,7 +3,7 @@
 export function getAuthConfig() {
   return {
     JWT: {
-      SECRET: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
+      SECRET: process.env.JWT_SECRET,
       EXPIRES_IN: '1h',
       ALGORITHM: 'HS256',
       ISSUER: 'ft-transcendence',

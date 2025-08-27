@@ -132,8 +132,7 @@ class AuthController {
 
       const passwordValidation = validatePassword(password);
       if (!passwordValidation.valid) {
-        log("Registration failed: Password validation failed", WARN);
-        log(passwordValidation.errors, DEBUG)
+        log(passwordValidation.errors, DEBUG);
         reply.code(400);
         return { error: 'Password validation failed', details: passwordValidation.errors };
       }
@@ -150,7 +149,7 @@ class AuthController {
         password,
         name: name || email.split('@')[0] // Use email prefix as default name
       });
-      log("Registration successful", IFNO);
+      log("Registration successful", INFO);
       return {
         success: true,
         message: 'Registration successful! Please sign in to continue.',

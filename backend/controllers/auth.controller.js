@@ -130,8 +130,7 @@ class AuthController {
 
       const passwordValidation = validatePassword(password);
       if (!passwordValidation.valid) {
-        log("Registration failed: Password validation failed", WARN);
-        log(passwordValidation.errors, DEBUG)
+        log(passwordValidation.errors, DEBUG);
         reply.code(400);
         return { error: 'Password validation failed', details: passwordValidation.errors };
       }

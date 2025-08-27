@@ -7,6 +7,8 @@ class UserController {
       const users = await UserService.getAllUsers();
       return users;
     } catch (error) {
+      log("getAllUsers failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve users', details: error.message };
     }
@@ -24,6 +26,8 @@ class UserController {
       
       return user;
     } catch (error) {
+      log("getUserById failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve user', details: error.message };
     }
@@ -51,6 +55,8 @@ class UserController {
         }
       };
     } catch (error) {
+      log("getCurrentUser failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to get user', details: error.message };
     }
@@ -80,6 +86,8 @@ class UserController {
         }
       };
     } catch (error) {
+      log("getCurrentUserAuthType failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to get auth type', details: error.message };
     }
@@ -107,6 +115,8 @@ class UserController {
         message: 'Password verified successfully'
       };
     } catch (error) {
+      log("verifyCurrentUserPassword failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to verify password', details: error.message };
     }
@@ -137,6 +147,8 @@ class UserController {
         user
       };
     } catch (error) {
+      log("createUser failed", WARN);
+      log(error, WARN);
       if (error.code === 'SQLITE_CONSTRAINT' && error.message.includes('UNIQUE')) {
         reply.code(409);
         return { error: 'Email already exists' };
@@ -160,6 +172,8 @@ class UserController {
         user
       };
     } catch (error) {
+      log("updateUser failed", WARN);
+      log(error, WARN);
       if (error.message === 'User not found') {
         reply.code(404);
         return { error: 'User not found' };
@@ -200,6 +214,8 @@ class UserController {
         user
       };
     } catch (error) {
+      log("patchUser failed", WARN);
+      log(error, WARN);
       if (error.message === 'User not found') {
         reply.code(404);
         return { error: 'User not found' };
@@ -246,6 +262,8 @@ class UserController {
 		expiresIn: authResult.expiresIn
       };
     } catch (error) {
+      log("loginUser failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Authentication failed', details: error.message };
     }
@@ -262,6 +280,8 @@ class UserController {
 			message: 'Logout successful'
 		};
 	} catch (error) {
+    log("logoutUser failed", WARN);
+    log(error, WARN);
 		reply.code(500);
 		return { error: 'Logout failed', details: error.message };
 	}
@@ -277,6 +297,8 @@ class UserController {
         message: 'User deleted successfully'
       };
     } catch (error) {
+      log("deleteUser failed", WARN);
+      log(error, WARN);
       if (error.message === 'User not found') {
         reply.code(404);
         return { error: 'User not found' };

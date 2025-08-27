@@ -10,6 +10,8 @@ class ProfileController {
       const profiles = await ProfileService.getAllProfiles();
       return profiles;
     } catch (error) {
+      log("getAllProfiles failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve profiles', details: error.message };
     }
@@ -27,6 +29,8 @@ class ProfileController {
 
       return profile;
     } catch (error) {
+      log("getProfileById failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve profile', details: error.message };
     }
@@ -45,9 +49,13 @@ class ProfileController {
       };
     } catch (error) {
       if (error.message === 'Profile not found') {
+        log("updateProfile failed: profile not found", WARN);
+        log(error, WARN);
         reply.code(404);
         return { error: 'Profile not found' };
       }
+      log("updateProfile failed", WARN);
+      log(error, WARN);
 
       reply.code(500);
       return { error: 'Failed to update profile', details: error.message };
@@ -60,12 +68,15 @@ class ProfileController {
       const profile = await ProfileService.getProfileByUserId(userId);
 
       if (!profile) {
+        log("getCurrentUserProfile failed: Profile not found", WARN);
         reply.code(404);
         return { error: 'Profile not found' };
       }
 
       return profile;
     } catch (error) {
+      log("getCurrentUserProfile failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve profile', details: error.message };
     }
@@ -107,11 +118,15 @@ class ProfileController {
       };
     } catch (error) {
       if (error.message === 'Profile not found') {
+        log("patchProfile failed: profile not found", WARN);
+        log(error, WARN);
         reply.code(404);
         return { error: 'Profile not found' };
       }
 
       if (error.message === 'Nickname already taken by another user') {
+        log("patchProfile failed: nickname already taken", WARN);
+        log(error, WARN);
         reply.code(409);
         return { 
           error: 'Nickname already taken', 
@@ -120,6 +135,8 @@ class ProfileController {
       }
 
       if (error.message.includes('Nickname validation failed')) {
+        log("patchProfile failed: nickname validation failed", WARN);
+        log(error, WARN);
         reply.code(400);
         return { 
           error: 'Invalid nickname format', 
@@ -127,6 +144,8 @@ class ProfileController {
           suggestions: await ProfileController.generateNicknameSuggestions(request.body.nickname)
         };
       }
+      log("patchProfile failed", WARN);
+      log(error, WARN);
 
       reply.code(500);
       return { error: 'Failed to update profile', details: error.message };
@@ -150,6 +169,8 @@ class ProfileController {
         baseNickname: cleanNickname(baseNickname)
       };
     } catch (error) {
+      log("suggestNickname failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to generate nickname suggestion', details: error.message };
     }
@@ -172,6 +193,7 @@ class ProfileController {
       return suggestions;
     } catch (error) {
       log(`Error generating nickname suggestions: ${error}`, WARN);
+      log(error, WARN);
       return [];
     }
   }
@@ -181,6 +203,7 @@ class ProfileController {
       const { nickname } = request.query;
 
       if (!nickname) {
+        log("checkNicknameAvailability failed: Nickname parameter is required", WARN);
         reply.code(400);
         return { error: 'Nickname parameter is required' };
       }
@@ -188,6 +211,7 @@ class ProfileController {
       // Validate nickname format
       const validation = validateNickname(nickname);
       if (!validation.isValid) {
+        log("checkNicknameAvailability failed: Nickname is invalid", WARN);
         return {
           available: false,
           reason: 'invalid_format',
@@ -206,6 +230,8 @@ class ProfileController {
         nickname: nickname
       };
     } catch (error) {
+      log("checkNicknameAvailability failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to check nickname availability', details: error.message };
     }
@@ -219,6 +245,7 @@ class ProfileController {
       // Get the uploaded file
       const data = await request.file();
       if (!data) {
+        log("uploadAvatar failed: no file uploaded", WARN);
         reply.code(400);
         return { error: 'No file uploaded' };
       }
@@ -226,6 +253,7 @@ class ProfileController {
       // Validate the file
       const validation = validateFile(data, 'AVATAR');
       if (!validation.valid) {
+        log("uploadAvatar failed: invalid file", WARN);
         reply.code(400);
         return { error: 'Invalid file', details: validation.errors };
       }
@@ -261,6 +289,8 @@ class ProfileController {
       };
       
     } catch (error) {
+      log("uploadAvatar failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to upload avatar', details: error.message };
     }

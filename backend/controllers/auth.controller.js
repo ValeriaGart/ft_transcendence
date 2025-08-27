@@ -148,7 +148,7 @@ class AuthController {
         password,
         name: name || email.split('@')[0] // Use email prefix as default name
       });
-      log("Registration successful", IFNO);
+      log("Registration successful", INFO);
       return {
         success: true,
         message: 'Registration successful! Please sign in to continue.',

@@ -32,3 +32,4 @@ dist/
 .env
 *.db
 *.sqlite
+public/uploads/avatars/*

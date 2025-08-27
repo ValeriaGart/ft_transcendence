@@ -15,6 +15,7 @@ services:
       - transcendence_net
     volumes:
       - ./db.sqlite:/workspaces/ft_transcendence/db.sqlite
+      - ./public/uploads/avatars:/workspaces/ft_transcendence/public/uploads/avatars
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - ${LOG_PATH_BE}:${LOG_PATH_BE}

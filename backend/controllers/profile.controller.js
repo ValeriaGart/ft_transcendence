@@ -11,6 +11,7 @@ class ProfileController {
       return profiles;
     } catch (error) {
       log("getAllProfiles failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve profiles', details: error.message };
     }
@@ -29,6 +30,7 @@ class ProfileController {
       return profile;
     } catch (error) {
       log("getProfileById failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve profile', details: error.message };
     }
@@ -48,10 +50,12 @@ class ProfileController {
     } catch (error) {
       if (error.message === 'Profile not found') {
         log("updateProfile failed: profile not found", WARN);
+        log(error, WARN);
         reply.code(404);
         return { error: 'Profile not found' };
       }
       log("updateProfile failed", WARN);
+      log(error, WARN);
 
       reply.code(500);
       return { error: 'Failed to update profile', details: error.message };
@@ -72,6 +76,7 @@ class ProfileController {
       return profile;
     } catch (error) {
       log("getCurrentUserProfile failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to retrieve profile', details: error.message };
     }
@@ -114,12 +119,14 @@ class ProfileController {
     } catch (error) {
       if (error.message === 'Profile not found') {
         log("patchProfile failed: profile not found", WARN);
+        log(error, WARN);
         reply.code(404);
         return { error: 'Profile not found' };
       }
 
       if (error.message === 'Nickname already taken by another user') {
         log("patchProfile failed: nickname already taken", WARN);
+        log(error, WARN);
         reply.code(409);
         return { 
           error: 'Nickname already taken', 
@@ -129,6 +136,7 @@ class ProfileController {
 
       if (error.message.includes('Nickname validation failed')) {
         log("patchProfile failed: nickname validation failed", WARN);
+        log(error, WARN);
         reply.code(400);
         return { 
           error: 'Invalid nickname format', 
@@ -137,6 +145,7 @@ class ProfileController {
         };
       }
       log("patchProfile failed", WARN);
+      log(error, WARN);
 
       reply.code(500);
       return { error: 'Failed to update profile', details: error.message };
@@ -161,6 +170,7 @@ class ProfileController {
       };
     } catch (error) {
       log("suggestNickname failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to generate nickname suggestion', details: error.message };
     }
@@ -183,6 +193,7 @@ class ProfileController {
       return suggestions;
     } catch (error) {
       log(`Error generating nickname suggestions: ${error}`, WARN);
+      log(error, WARN);
       return [];
     }
   }
@@ -220,6 +231,7 @@ class ProfileController {
       };
     } catch (error) {
       log("checkNicknameAvailability failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to check nickname availability', details: error.message };
     }
@@ -278,6 +290,7 @@ class ProfileController {
       
     } catch (error) {
       log("uploadAvatar failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Failed to upload avatar', details: error.message };
     }

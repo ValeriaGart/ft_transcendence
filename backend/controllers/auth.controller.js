@@ -160,6 +160,7 @@ class AuthController {
 
     } catch (error) {
       log("Registration failed", WARN);
+      log(error, WARN);
       reply.code(500);
       return { error: 'Registration failed', details: error.message };
     }
@@ -249,6 +250,7 @@ class AuthController {
       return { success: true, message: 'Logged out successfully' };
     } catch (error) { 
       log("Logout failed", WARN);
+      log(error, WARN);
       reply.code(500); 
       return { error: 'Logout failed', details: error.message }; }
   }
@@ -281,7 +283,7 @@ class AuthController {
       };
     } catch (error) { 
       log("Refresh failed: Token refresh failed", WARN);
-      log(error, DEBUG);
+      log(error, WARN);
       reply.code(500); 
       return { error: 'Token refresh failed', details: error.message }; 
     }

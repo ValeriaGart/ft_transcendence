@@ -36,7 +36,7 @@ class SessionService {
       } else {
         await dbRun('INSERT OR REPLACE INTO user_sessions (userId, sessionId, createdAt, lastSeenAt, revoked) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)', [userId, sessionId]);
       }
-      log(`[SessionService] startSession user=${userId} sessionId=${sessionId}`, DEBUG);
+      // log(`[SessionService] startSession user=${userId} sessionId=${sessionId}`, DEBUG);
     } catch (e) {
       log(`[SessionService.startSession] DB error: ${e.message}`, WARN);
       throw e;

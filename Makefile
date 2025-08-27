@@ -14,7 +14,7 @@ welcome-message:
 
 invite-message:
 	@IP=$$(ip -4 addr show scope global | grep inet | awk '{print $$2}' | cut -d/ -f1 | head -n1); \
-	echo "🌐 $(CYAN)Share this link with your friends:$(RESET) http://$${IP}:5173"
+	echo "🌐 $(CYAN)Share this link with your friends:$(RESET) https://$${IP}:5173"
 
 # ## START UP commands
 

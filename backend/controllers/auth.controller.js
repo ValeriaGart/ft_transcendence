@@ -58,6 +58,7 @@ class AuthController {
     } catch (error) { 
       reply.code(500);
       log("Google Signup failed.", WARN);
+      log(error, WARN);
       return { error: 'Google signup failed', details: error.message };
     }
   }
@@ -110,6 +111,7 @@ class AuthController {
       };
     } catch (error) { 
       log("Google Sign-in failed", WARN);
+      log(error, WARN);
       reply.code(500); 
       return { error: 'Google signin failed', details: error.message }; 
     }

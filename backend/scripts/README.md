@@ -19,8 +19,17 @@ This will:
 
 To avoid browser warnings, you need to trust the CA certificate:
 
+**Method 1 (Standard):**
 ```bash
 sudo cp backend/ssl/ca.crt /usr/local/share/ca-certificates/transcendence-ca.crt
+sudo update-ca-certificates
+```
+
+**Method 2 (If Method 1 doesn't work - e.g., on VMs):**
+```bash
+sudo mkdir -p /usr/share/ca-certificates/extra
+sudo cp backend/ssl/ca.crt /usr/share/ca-certificates/extra/transcendence-ca.crt
+echo "extra/transcendence-ca.crt" | sudo tee -a /etc/ca-certificates.conf
 sudo update-ca-certificates
 ```
 

@@ -1,5 +1,7 @@
 # ELK stack
 
+![alt text](ELK-stack.png)
+
 ## setting it up
 following the docker compose tutorial in the elastic documentation
 

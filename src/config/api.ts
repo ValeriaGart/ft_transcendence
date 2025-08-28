@@ -2,16 +2,17 @@
 // Detect if we're using SSL based on the current page protocol
 const isSSL = typeof window !== 'undefined' && window.location.protocol === 'https:';
 const wsProtocol = isSSL ? 'wss:' : 'ws:';
-const defaultPort = isSSL ? '3443' : '3000';
 
 // Determine WebSocket URL based on environment
 const getDefaultWsUrl = () => {
-  // In development with Vite proxy, use relative path
-  if (import.meta.env.DEV) {
-    return '/ws';
-  }
-  // In production or direct connection, use full URL
-  return `${wsProtocol}//${window.location.hostname}:${defaultPort}`;
+  // Use the same host as the current page (nginx proxy)
+  // This connects to wss://hostname/hello-ws through the nginx proxy
+  const baseUrl = typeof window !== 'undefined' 
+    ? `${wsProtocol}//${window.location.host}` 
+    : `${wsProtocol}//localhost`;
+  
+  console.log('Using secure WebSocket URL via nginx proxy:', baseUrl);
+  return baseUrl;
 };
 
 const API_CONFIG = {

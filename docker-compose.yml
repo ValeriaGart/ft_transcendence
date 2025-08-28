@@ -55,6 +55,12 @@ services:
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
+          "  - name: logstash\n"\
+          "    dns:\n"\
+          "      - logstash\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
           > config/certs/instances.yml;
           bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
           unzip config/certs/certs.zip -d config/certs;
@@ -179,6 +185,7 @@ services:
       - ${LOG_PATH_BE}:/usr/share/filebeat/logs_backend
       - ${LOG_PATH_ES}:/usr/share/filebeat/logs_es
       - ./devops/filebeat/config/filebeat.example.yml:/usr/share/filebeat/filebeat.yml
+      - certs:/usr/share/filebeat/config/certs
     depends_on:
       kibana:
         condition: service_healthy

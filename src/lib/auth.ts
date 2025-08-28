@@ -1,5 +1,6 @@
 import { getApiUrl, getWebSocketUrl, API_CONFIG } from '../config/api';
 import { WebSocketService } from './webSocket';
+import SecureStorage from './secureStorage';
 
 /**
  * Authentication service for managing user tokens and login state
@@ -24,7 +25,7 @@ class AuthService {
   };
 
   private listeners: Set<(state: AuthState) => void> = new Set();
-
+  private secureStorage = SecureStorage.getInstance();
   private constructor() {
     // Initialize with stored data immediately, then verify with backend
     this.loadFromStorageSync();
@@ -42,32 +43,26 @@ class AuthService {
   }
 
   /**
-   * Load authentication state from localStorage synchronously
+   * Load authentication state from secure storage synchronously
    */
   private loadFromStorageSync(): void {
     try {
-      const token = localStorage.getItem('auth_token');
-      const userStr = localStorage.getItem('auth_user');
+      const token = this.secureStorage.getSecret('auth_token');
+      const user = this.secureStorage.getSecret('auth_user');
       
-      console.log('AuthService: Loading from storage - token:', token ? 'exists' : 'none', 'user:', userStr ? 'exists' : 'none');
-      
-      if (token && userStr) {
-        const user = JSON.parse(userStr);
+      if (token && user) {
         this.state = {
           isAuthenticated: true,
           user,
           token
         };
-        console.log('AuthService: Loaded auth state from storage:', this.state);
-      } else {
-        console.log('AuthService: No stored auth data found');
+        console.log('AuthService: Loaded auth state from storage');
       }
     } catch (error) {
-      console.error('Error loading auth state from storage:', error);
+      console.error('AuthService: Error loading from storage');
       this.clearAuth();
     }
   }
-
   /**
    * Verify stored authentication with backend
    */
@@ -128,27 +123,27 @@ class AuthService {
   }
 
   /**
-   * Save authentication state to localStorage
+   * Save authentication state to secure storage
    */
   private saveToStorage(): void {
     try {
       if (this.state.token && this.state.user) {
-        localStorage.setItem('auth_token', this.state.token);
-        localStorage.setItem('auth_user', JSON.stringify(this.state.user));
+        this.secureStorage.setSecret('auth_token', this.state.token);
+        this.secureStorage.setSecret('auth_user', this.state.user);
       } else {
         this.clearStorage();
       }
     } catch (error) {
-      console.error('Error saving auth state to storage:', error);
+      console.error('AuthService: Error saving to storage');
     }
   }
 
   /**
-   * Clear authentication data from localStorage
+   * Clear authentication data from secure storage
    */
   private clearStorage(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    this.secureStorage.removeSecret('auth_token');
+    this.secureStorage.removeSecret('auth_user');
   }
 
   /**
@@ -216,8 +211,7 @@ class AuthService {
         const user = data.user;
         const token = data.token;
 
-        console.log('AuthService: Login successful, storing user:', user);
-        console.log('AuthService: Token:', token);
+        console.log('AuthService: Login successful');
 
         this.state = {
           isAuthenticated: true,
@@ -510,12 +504,6 @@ class AuthService {
    */
   public async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const token = this.getToken();
-    console.log('AuthService.authenticatedFetch:', { 
-      url, 
-      hasToken: !!token, 
-      tokenLength: token ? token.length : 0,
-      method: options.method || 'GET'
-    });
     
     const headers: any = {
       ...options.headers,
@@ -525,7 +513,7 @@ class AuthService {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     } else {
-      console.warn('AuthService.authenticatedFetch: No token available!');
+      console.warn('AuthService: No token available for request');
     }
 
     return fetch(url, {

@@ -29,11 +29,11 @@ start-up-elk: check_env down-elk
 start-up-app: down-app setup-db check_env setup-certs invite-message
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "$(YELLOW)🏗  spinning up container...$(RESET)"
-	@docker compose up app --build -d > docker_build.log 2>&1
+	@docker compose up app nginx --build -d > docker_build.log 2>&1
 	@echo "$(GREEN)App has started up, let's get ponging!$(RESET)"
 
 restart-app:
-	@docker compose down app && docker compose up app -d
+	@docker compose down app nginx && docker compose up app nginx -d
 
 
 # ## down commands
@@ -42,7 +42,7 @@ down-elk:
 	@echo "$(GREEN)ELK was turned off!$(RESET)"
 
 down-app:
-	@docker compose down app
+	@docker compose down app nginx
 	@echo "$(GREEN)App was turned off!$(RESET)"
 
 down:

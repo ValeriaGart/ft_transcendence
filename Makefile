@@ -73,6 +73,9 @@ check_env:
 		exit 1; \
 	fi
 
+# ls -la /var/log/ft_transcendence/logs_backend
+# rm -rf /var/log/ft_transcendence/logs_backend/*
+
 
 ## certificates
 setup-certs:

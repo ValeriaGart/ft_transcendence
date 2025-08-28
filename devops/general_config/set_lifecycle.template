@@ -1,5 +1,5 @@
 {
-  "index_patterns": ["logstash_*"],
+  "index_patterns": ["logs-logstash_*"],
   "data_stream": {},
   "template": {
     "settings": {

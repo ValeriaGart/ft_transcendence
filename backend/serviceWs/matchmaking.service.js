@@ -71,6 +71,7 @@ class MatchMakingService {
 		}
 		if (RoomValidationService.roomValidation(message) === false) {
 			log("[matchMakingInit] Room could not be validated", WARN);
+			log("[matchMakingInit] Room could not be validated, sending ERROR to client", WARN);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
@@ -83,6 +84,7 @@ class MatchMakingService {
 		{
 			if (await RoomUtilsService.playersBusy(this.RoomService.rooms, message.players) === true) {
 				log("[matchMakingInit] some of the players are busy, cancelling match", INFO);
+				log("[matchMakingInit] some of the players are busy, cancelling match, sending ERROR to client", WARN);
 				await this.WebsocketService.sendMessageToClient(connection, {
 					type: "ERROR",
 					sender: "__server",
@@ -100,6 +102,7 @@ class MatchMakingService {
 
 		} catch (error) {
 			log("Error: " + error.message, ERROR);
+			log("Error: " + error.message, ", sending ERROR to client", WARN);
 
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
@@ -125,6 +128,7 @@ class MatchMakingService {
 			await this.startMatch(newRoom);
 		} catch (error) {
 			log("Error: " + error.message, ERROR);
+		//	log("Error: " + error.message, ", sending ERROR to client", WARN);
 
 			await RoomUtilsService.sendMessageToAllPlayers(this.WebsocketService, roomStorage, this.createCancelMatchMessage(roomStorage));
 			this.RoomService.destroyRoom(roomStorage.id);
@@ -155,6 +159,7 @@ class MatchMakingService {
 			await this.RoomService.destroyRoom(room.id);
 		} catch (error) {
 			log(error.message, ERROR);
+			log("[cancelMatch] sending ERROR to client", WARN);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
@@ -180,6 +185,7 @@ class MatchMakingService {
 			
 		} catch (error) {
 			log(error.message, ERROR);
+			log("[saveFinishMatch] sending ERROR to client", WARN);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",
@@ -211,6 +217,7 @@ class MatchMakingService {
 		
 		} catch (error) {
 			log(error.message, ERROR);
+			log("[MatchMakingService savefinishmatch] sending ERROR to client", WARN);
 			await this.WebsocketService.sendMessageToClient(connection, {
 				type: "ERROR",
 				sender: "__server",

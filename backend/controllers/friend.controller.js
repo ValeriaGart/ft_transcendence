@@ -5,8 +5,8 @@ import { log, DEBUG, INFO, WARN, ERROR } from '../utils/logger.utils.js';
 class FriendController {
 	static async getAllFriendships(request, reply) {
 		try {
-			log(`[FriendController] getAllFriendships`, DEBUG);
 			const friend = await FriendService.getAllFriendships();
+			log(`[FriendController] getAllFriendships successful`, DEBUG);
 			return friend;
 		} catch (error) {
 			log(`[FriendController] Error in getAllFriendships: ` + error.message, WARN);
@@ -18,8 +18,8 @@ class FriendController {
 	static async getAllFriendshipsUserId(request, reply) {
 		try {
 			const { friend_id } = request.params;
-			log(`[FriendController] getAllFriendshipsUserId ${friend_id}`, DEBUG);
 			const friend = await FriendService.getAllFriendshipsUserId(friend_id);
+			log(`[FriendController] getAllFriendshipsUserId ${friend_id} successful`, DEBUG);
 			return friend;
 		} catch (error) {
 			log(`[FriendController] Error in getAllFriendshipsUserId: ${error.message}`, WARN);
@@ -32,8 +32,8 @@ class FriendController {
 	static async getFriendshipStatus(request, reply) {
 		try {
 			const { friend_id1, friend_id2 } = request.query;
-			log(`[FriendController] getFriendshipStatus of users ${friend_id1} and ${friend_id2}`, DEBUG);
 			const friendstatus = await FriendService.getFriendshipStatus(friend_id1, friend_id2);
+			log(`[FriendController] getFriendshipStatus of users ${friend_id1} and ${friend_id2} successful`, DEBUG);
 			return friendstatus;
 		} catch (error) {
 			log(`[FriendController] Error in getFriendshipStatus: ${error.message}`, WARN);
@@ -54,9 +54,11 @@ class FriendController {
 			} catch (error) {
 				log(`[FriendController] Error resolving nickname '${friend_nickname}': ${error.message}`, WARN);
 				if (typeof error.message === 'string' && error.message.includes('No such user')) {
+					log(`[FriendController] requestFriend failed: User with nickname not found` + error.message, WARN);
 					reply.code(404);
 					return { error: 'User not found', details: `No user found with nickname '${friend_nickname}'` };
 				} else {
+					log(`[FriendController] requestFriend failed: Failed to resolve user: ` + error.message, WARN);
 					reply.code(500);
 					return { error: 'Failed to resolve user', details: error.message };
 				}

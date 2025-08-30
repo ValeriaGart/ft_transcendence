@@ -1,5 +1,5 @@
 import { GameEngine } from "./gameEngine.ts";
-import { GameState } from "./types.ts";
+import { GameMode, GameState, OpponentMode } from "./types.ts";
 
 export class GameStateMachine {
 	private _currentState: GameState = GameState.START;
@@ -60,7 +60,11 @@ export class GameStateMachine {
 	}
 
 	private handlePausedState() {
-		if (this._engine._pongGame)
+		if (this._engine._pongGame) {
+			if (this._engine._pongGame._oppMode == OpponentMode.ONLINE) {
+				this.transition(GameState.GAME);
+			}
 			this._engine._pongGame._pauseScreen.drawPauseScreen();
+		}
 	}
 }

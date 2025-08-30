@@ -4,6 +4,14 @@ filebeat.inputs:
   enabled: true
   paths:
     - /usr/share/filebeat/logs_backend/*.log*
+  tags: ["app"]
+
+- type: filestream
+  id: my-es01-dockerstream-id
+  enabled: true
+  paths:
+    - /usr/share/filebeat/logs_es/*.log
+  tags: ["es01"]
 
 output.logstash:
   hosts: ["logstash:5044"]

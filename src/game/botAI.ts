@@ -14,7 +14,7 @@ export class BotAI{
 			key: keypress,
 			cancelable: true,
 			bubbles: true,
-			location: 0
+			location: 1
 		});
 		document.dispatchEvent(event);
 	}

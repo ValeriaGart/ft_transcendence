@@ -39,6 +39,14 @@ echo "🔐 Generating CA and backend SSL certificates..."
 # Get your computer's primary IPv4 address
 IP_ADDR=$(ip -4 addr show scope global | grep inet | awk '{print $2}' | cut -d/ -f1 | head -n1)
 
+# Check if IP_ADDR is empty
+if [[ -z "$IP_ADDR" ]]; then
+    echo "❌ Error: Unable to determine the primary IPv4 address."
+    echo "   Ensure your network interface is up and has an assigned IP address."
+    exit 1
+fi
+
+
 # Create a temporary OpenSSL config with SAN for localhost and your IP
 SAN_CONFIG="$SSL_DIR/san.cnf"
 cat > "$SAN_CONFIG" <<EOF

@@ -399,20 +399,23 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
         <button id="local-bestof" class="px-6 py-3 bg-[#B784F2] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Best of 1v1</button>
         <button id="local-infinite" class="px-6 py-3 bg-[#81C3C3] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Infinite 1v1</button>
         <button id="local-tournament" class="px-6 py-3 bg-[#EE9C47] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Local Tournament</button>
-        <button id="local-teams" class="px-6 py-3 bg-[#9C89B8] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Teams (2v2)</button>
+        <button id=">" class="px-6 py-3 bg-[#9C89B8] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Teams (2v2)</button>
+        <button id="local-breakout" class="px-6 py-3 bg-[#aaa546] text-white font-['Irish_Grover'] text-lg rounded-2xl hover:scale-105 transition-transform duration-300 cursor-pointer">Breakout (1v1)</button>
       </div>
     `;
     const bestBtn = this.element.querySelector('#local-bestof') as HTMLButtonElement | null;
     const infBtn = this.element.querySelector('#local-infinite') as HTMLButtonElement | null;
     const tourBtn = this.element.querySelector('#local-tournament') as HTMLButtonElement | null;
     const teamsBtn = this.element.querySelector('#local-teams') as HTMLButtonElement | null;
+    const teamsBrk = this.element.querySelector('#local-breakout') as HTMLButtonElement | null;
     if (bestBtn) bestBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('bestof'); });
     if (infBtn) infBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('infinite'); });
     if (tourBtn) tourBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalTournamentConfirm(); });
     if (teamsBtn) teamsBtn.addEventListener('click', (e) => { e.preventDefault(); this.showLocalTeamsConfirm(); });
+    if (teamsBrk) teamsBrk.addEventListener('click', (e) => { e.preventDefault(); this.showLocalConfirm('breakout'); });
   }
 
-  private showLocalConfirm(mode: 'bestof' | 'infinite' = 'bestof'): void {
+  private showLocalConfirm(mode: 'bestof' | 'infinite' | 'breakout' = 'bestof'): void {
     const content = this.element.querySelector('.text-center') as HTMLElement | null;
     if (!content) return;
     content.innerHTML = `

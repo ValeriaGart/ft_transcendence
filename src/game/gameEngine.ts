@@ -22,7 +22,7 @@ export class GameEngine {
 	public _gameStateMachine: GameStateMachine;
 	public _pongGame: PongGame | BreakoutGame | null = null;
 	private _inputHandler: InputHandler;
-	private _tournament: Tournament | undefined = undefined;
+	public _tournament: Tournament | undefined = undefined;
 
 	//game variables
 	public _roomID: string | null = null;
@@ -89,7 +89,7 @@ export class GameEngine {
 			var p4: Player = new Player('bot3', 4, true, this._p4ID);
 
 			this._tournament = new Tournament(this, p1, p2, p3, p4, mode, oppMode);
-			this._tournament.battleOne();
+			this._tournament.preBattle(1);
 		}
 		if (this._p1ID && this._p2ID && this._p3ID && this._p4ID) {
 			var p1: Player = new Player(this._p1Nick ?? 'player', 4, this._p1AI, this._p1ID);

@@ -16,8 +16,8 @@ export class Tournament {
 	private _p3: number;
 	private _p4: number;
 	private _pnumbers: number[];
-	private _waiting: number = 0;
-	private _ready: number = 0;
+	public _waiting: number = 0;
+	public _ready: number = 0;
 	private _received: boolean = false;
 	private _waitNumber = 3;
 
@@ -43,6 +43,9 @@ export class Tournament {
 		}
 		if (p4.isBot()) {
 			this._waitNumber -= 1;
+		}
+		if (this._oppMode != OpponentMode.ONLINE) {
+			this._waitNumber = 1;
 		}
 
 		if (oppMode == OpponentMode.SINGLE) {
@@ -168,8 +171,8 @@ export class Tournament {
 	public async battleOne() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
+		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
 		// this.logPlayerStatus();
-		if (this._oppMode == OpponentMode.ONLINE) {
 			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'FIRST ROUND');
@@ -186,7 +189,6 @@ export class Tournament {
 					return;
 				}
 			}
-		}
 		this._ready = 0;
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2], this._players[this._p3], this._players[this._p4], 1);
 		// Ensure gameplay begins immediately in local mode
@@ -198,8 +200,8 @@ export class Tournament {
 	public async battleTwo(){
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
+		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
 		// this.logPlayerStatus();
-		if (this._oppMode == OpponentMode.ONLINE) {
 			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'SECOND ROUND');
@@ -216,7 +218,6 @@ export class Tournament {
 					return;
 				}
 			}
-		}
 		this._ready = 0;
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], this._players[this._p1], this._players[this._p2], 2);
 		if (this._oppMode !== OpponentMode.ONLINE) {
@@ -272,8 +273,8 @@ export class Tournament {
 	public async battleThree() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
+		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
 		// this.logPlayerStatus();
-		if (this._oppMode == OpponentMode.ONLINE) {
 			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p3].getName(), this._players[this._p4].getName(), 'BATTLE FOR 3RD PLACE');
@@ -292,14 +293,13 @@ export class Tournament {
 			}
 			this._ready = 0;
 			this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p3], this._players[this._p4], this._players[this._p1], this._players[this._p2], 3);
-		}
 	}
 
 	public async battleFour() {
 		this.resetSide();
 		this._engine._gameStateMachine.transition(GameState.PRE_BATTLE_SCREEN);
+		this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
 		// this.logPlayerStatus();
-		if (this._oppMode == OpponentMode.ONLINE) {
 			const startMs = Date.now();
 			while (this._ready < this._waitNumber) {
 				this._PreBattleScreen.drawPreBattleScreen(this._players[this._p1].getName(), this._players[this._p2].getName(), 'BATTLE FOR 1ST PLACE');
@@ -316,7 +316,6 @@ export class Tournament {
 					return;
 				}
 			}
-		}
 		this._ready = 0;
 		this._engine._pongGame = new PongGame(this._engine, this._mode, this._oppMode, this._players[this._p1], this._players[this._p2],  this._players[this._p3], this._players[this._p4], 4);
 		if (this._oppMode !== OpponentMode.ONLINE) {

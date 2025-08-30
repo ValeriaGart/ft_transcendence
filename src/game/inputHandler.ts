@@ -180,6 +180,10 @@ export class InputHandler {
 	private handleTouchDown(event: TouchEvent): void {
 		if (this._engine._gameStateMachine.getCurrentState() == GameState.GAME) {
 			const touch = (event as TouchEvent).touches[0];
+			
+			if (!touch || !touch.clientX || touch.clientY) {
+				return;
+			}
 
 			if (this._engine._pongGame?._mode == GameMode.TEAMS) {
 				if (touch.clientX <= window.innerWidth / 2 && touch.clientX > window.innerWidth / 4
@@ -231,6 +235,9 @@ export class InputHandler {
 	private handleTouchUp(event: TouchEvent): void {
 		if (this._engine._gameStateMachine.getCurrentState() == GameState.GAME) {
 			const touch = (event as TouchEvent).touches[0];
+			if (!touch || !touch.clientX || touch.clientY) {
+				return;
+			}
 
 			if (this._engine._pongGame?._mode == GameMode.TEAMS) {
 				if (touch.clientX <= window.innerWidth / 2 && touch.clientX > window.innerWidth / 4

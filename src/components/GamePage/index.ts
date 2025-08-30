@@ -136,10 +136,7 @@ export class GamePage extends Component {
 
         // Check if we have a stored STARTMATCH message from StartGamePopUp
         const ws = WebSocketService.getInstance();
-        const storedMessage = ws.getLastStartMatchMessage();
-        
-        console.log('GamePage: storedMessage =', storedMessage);
-        
+        const storedMessage = ws.getLastStartMatchMessage(); 
         if (storedMessage) {
             console.log('Found stored STARTMATCH message, creating canvas and starting game...');
             this.createCanvas();

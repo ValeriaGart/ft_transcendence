@@ -44,8 +44,6 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
    */
   protected onMount(): void {
     console.log('StartGamePopUp onMount called');
-    console.log('StartGamePopUp: Element:', this.element);
-    console.log('StartGamePopUp: Element HTML:', this.element.innerHTML);
     // Save default content to restore for AI popup
     const content = this.element.querySelector('.text-center') as HTMLElement | null;
     if (content) {
@@ -127,8 +125,7 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
     const handleInvitation = (event: MessageEvent) => {
       try {
         const parsedData = JSON.parse(event.data);
-        console.log('StartGamePopUp received message:', parsedData);
-        
+
         if (parsedData.type === "INVITATION" && parsedData.roomId) {
           console.log('Received 1v1 invitation, showing accept/decline options...');
           // Store the invitation data
@@ -150,7 +147,6 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
           parsedData.type === "INFO" && parsedData.roomId &&
           typeof parsedData.message === 'string' && parsedData.message.includes("room was created")
         ) {
-          console.log('Received room creation info:', parsedData);
           // If AI flow is active, do NOT show waiting popup
           if (this.state.gameMode === 'ai') {
             console.log('AI mode active: ignoring waiting popup');
@@ -318,8 +314,6 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
    */
   private showPopup(): void {
     console.log('StartGamePopUp: Attempting to show popup');
-    console.log('StartGamePopUp: Element:', this.element);
-    console.log('StartGamePopUp: Element HTML:', this.element.innerHTML);
     
     // The element itself is the popup
     const popupElement = this.element;
@@ -328,7 +322,6 @@ export class StartGamePopUp extends Component<StartGamePopUpState> {
       console.log('StartGamePopUp: Popup shown');
     } else {
       console.error('StartGamePopUp: Popup element not found');
-      console.log('StartGamePopUp: Available elements:', this.element.innerHTML);
     }
   }
 

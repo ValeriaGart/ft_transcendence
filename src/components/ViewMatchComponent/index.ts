@@ -55,6 +55,10 @@ export class ViewMatchComponent extends Component<ViewMatchProps, ViewMatchState
         friendships = await friendsResp.json();
       } else if (friendsResp.status === 400 || friendsResp.status === 404) {
         friendships = [];
+      } else if (friendsResp.status === 401) {
+        this.setState({ error: 'log in to see their friends:)', loading: false });
+        this.renderFriends();
+        return;
       } else {
         throw new Error('Failed to load friendships');
       }
@@ -112,7 +116,7 @@ export class ViewMatchComponent extends Component<ViewMatchProps, ViewMatchState
       container.innerHTML = `
         <div id="view-friends" class="flex flex-col items-start justify-start h-[500px] lg:h-[600px] w-full relative bg-[#F0F7F7]">
           <div id="view-friend-list" class="flex flex-col items-start justify-start h-full w-full overflow-y-auto">
-            <div class="text-red-500 font-['Irish_Grover'] px-[5%] py-4">${error}</div>
+            <div class="text-red-400 font-['Irish_Grover'] px-[5%] py-4">${error}</div>
           </div>
         </div>
       `;

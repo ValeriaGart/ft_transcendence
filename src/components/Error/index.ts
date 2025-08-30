@@ -67,9 +67,7 @@ export class Error extends Component<ErrorProps, ErrorState> {
         });
     }
 
-    protected onMount(): void {
-        console.log('Error component onMount called, message:', this.state.message);
-        
+    protected onMount(): void {       
         // Update the text immediately after mount
         this.updateErrorText();
 

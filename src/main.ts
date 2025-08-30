@@ -11,21 +11,13 @@ import { GamePage } from "./components/GamePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ViewPage } from "./components/ViewPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { authService } from "./lib/auth";
 import { StartGamePopUp } from "./components/StartGamePopUp";
 import { registerComponent } from "./lib/blitz-ts/componentRegistry";
 
 
 // Register all components automatically
 autoRegisterComponents().then(() => {
-  console.log('All components registered. Available custom elements:');
-  console.log('blitz-start-game-popup:', customElements.get('blitz-start-game-popup'));
-  console.log('blitz-match-component:', customElements.get('blitz-match-component'));
-  
-  // List all registered blitz components
-  const allBlitzComponents = Object.keys(customElements).filter(name => name.startsWith('blitz-'));
-  console.log('All registered blitz components:', allBlitzComponents);
-  
+
   // Manually register StartGamePopUp if it wasn't auto-registered
   if (!customElements.get('blitz-start-game-popup')) {
     console.log('Manually registering StartGamePopUp component...');
@@ -38,22 +30,12 @@ autoRegisterComponents().then(() => {
   (window as any).blitzNavigate = (path: string) => Router.getInstance().navigate(path);
 });
 
-console.log('=== APP STARTUP DEBUG ===');
-console.log('Current URL:', window.location.href);
-console.log('Current pathname:', window.location.pathname);
-console.log('Stored token:', localStorage.getItem('auth_token') ? 'exists' : 'none');
-console.log('Stored user:', localStorage.getItem('auth_user') ? 'exists' : 'none');
-console.log('AuthService state:', authService.getAuthState());
-console.log('=== END DEBUG ===');
-
 // Create global ErrorBoundary
 const globalErrorBoundary = new ErrorBoundary({
     onError: (error, errorInfo) => {
         console.error('Global ErrorBoundary caught an error:', error, errorInfo);
     }
 });
-
-console.log('Global ErrorBoundary created:', globalErrorBoundary);
 
 // Mount global ErrorBoundary to document.body
 globalErrorBoundary.mount(document.body);

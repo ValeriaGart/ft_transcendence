@@ -355,11 +355,9 @@ export class Router {
         if (!component) {
           component = new this.currentRoute.component(this.currentParams);
           this.componentCache.set(cacheKey, component);
-          console.log('Router: Created new component instance:', component);
           component.mount(this.rootElement);
           console.log('Router: Component mounted successfully');
         } else {
-          console.log('Router: Reusing cached component instance:', component);
           // Update the cached component with new parameters
           if (component.props) {
             component.props = { ...component.props, ...this.currentParams };

@@ -23,6 +23,7 @@ interface SettingsPageState {
   showError: boolean;
   errorMessage: string | null;
   isGoogleUser: boolean;
+  pendingDeletion?: boolean;
 }
 
 export class SettingsPage extends Component<SettingsPageState> {
@@ -35,6 +36,7 @@ export class SettingsPage extends Component<SettingsPageState> {
     showError: false,
     errorMessage: null,
     isGoogleUser: false,
+    pendingDeletion: false,
   }
 
   constructor() {
@@ -204,7 +206,7 @@ export class SettingsPage extends Component<SettingsPageState> {
   }
 
   protected onMount(): void {
-    console.log('SettingsPage onMount called, current URL:', window.location.pathname);
+    console.log('SettingsPage onMount called, current URL');
     
     // Reset state to initial values when mounting
     this.setState({
@@ -332,8 +334,6 @@ export class SettingsPage extends Component<SettingsPageState> {
         pendingChanges.email = currentEmail;
       }
 
-      console.log('Pending changes:', pendingChanges);
-      
       if (Object.keys(pendingChanges).length === 0) {
         Router.getInstance().navigate('/user');
       }
@@ -430,8 +430,6 @@ export class SettingsPage extends Component<SettingsPageState> {
         }
         
         const { authType } = authTypeResult;
-        console.log('User auth type:', authType);
-        
         // Only verify password for password-based users
         if (authType.isPasswordUser || authType.isHybridUser) {
           const passwordInput = this.element.querySelector('#password') as HTMLInputElement;
@@ -465,9 +463,24 @@ export class SettingsPage extends Component<SettingsPageState> {
          
         }
         
-        // Password is valid (or not needed), now update the user data
+        // If we came here for deletion, run deletion after password confirmation
+        if (this.state.pendingDeletion) {
+          try {
+            const result = await authService.deleteUser();
+            if (result.success) {
+              Router.getInstance().navigate('/');
+            } else {
+              this.showError('Failed to delete user: ' + result.error);
+            }
+          } catch (error) {
+            this.showError('An error occurred while deleting your account');
+          }
+          this.setState({ isLoading: false, pendingDeletion: false });
+          return;
+        }
+
+        // Otherwise proceed with normal updates
         await this.updateUserData();
-        
         Router.getInstance().navigate('/user');
         
       } catch (error) {
@@ -517,32 +530,39 @@ export class SettingsPage extends Component<SettingsPageState> {
 
     this.addEventListener('#settings_page2 #delete_button', 'click', async (e) => {
       e.preventDefault();
-      console.log('Delete user button clicked from page 2, deleting user account');
-      
-      // Show custom confirmation dialog
+      console.log('Delete user button clicked from page 2');
+
+      try {
+        const authTypeResult = await authService.getUserAuthType();
+        if (authTypeResult.success) {
+          const { authType } = authTypeResult;
+          const requiresPassword = authType.isPasswordUser || authType.isHybridUser;
+          if (requiresPassword) {
+            // Use existing confirm password page flow
+            this.setState({ currentPage: 'confirm', pendingDeletion: true });
+            this.updatePageVisibility();
+            return;
+          }
+        }
+      } catch {}
+
+      // If password not required, proceed with normal confirm dialog
       ConfirmDialogManager.showConfirm(
         'Are you sure you want to delete your account?',
         this.element,
         async () => {
-          // User clicked "Yes" - proceed with deletion
           try {
             const result = await authService.deleteUser();
             if (result.success) {
-              console.log('User deleted successfully');
               Router.getInstance().navigate('/');
             } else {
-              console.error('Delete user failed:', result.error);
               this.showError('Failed to delete user: ' + result.error);
             }
           } catch (error) {
-            console.error('Delete user error:', error);
             this.showError('An error occurred while deleting your account');
           }
         },
-        () => {
-          // User clicked "No" - do nothing
-          console.log('User cancelled account deletion');
-        }
+        () => {}
       );
     });
 
@@ -681,8 +701,6 @@ export class SettingsPage extends Component<SettingsPageState> {
     const passwordChangePage = this.element.querySelector('#change_password_confirm') as HTMLElement;
     const page1 = this.element.querySelector('#settings_page1') as HTMLElement;
     const page2 = this.element.querySelector('#settings_page2') as HTMLElement;
-
-    console.log('Found elements:', { confirmPage: !!confirmPage, passwordChangePage: !!passwordChangePage, page1: !!page1, page2: !!page2 });
 
     // Hide all pages first
     if (confirmPage) {
@@ -881,7 +899,6 @@ export class SettingsPage extends Component<SettingsPageState> {
     
   protected onUnmount(): void {
     console.log('SettingsPage onUnmount called');
-    // Cleanup any subscriptions or timers here
   }
 
   render() {}

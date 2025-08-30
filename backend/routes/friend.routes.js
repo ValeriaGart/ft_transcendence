@@ -9,7 +9,7 @@ async function routes(fastify, options) {
 	fastify.get('/friend', FriendController.getAllFriendships);
 
 	fastify.get('/friend/:friend_id', {
-		schema: { params: requestFriendSchema },
+		schema: { params: { type: 'object', properties: { friend_id: { type: 'integer' } }, required: ['friend_id'] } },
 		preHandler: [fastify.authenticate]
 	}, FriendController.getAllFriendshipsUserId);
 	

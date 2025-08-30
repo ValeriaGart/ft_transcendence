@@ -41,7 +41,7 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
 
   constructor(props?: ProtectedRouteProps) {
     super(props || { children: [] });
-    console.log('ProtectedRoute constructor called with props:', props);
+    console.log('ProtectedRoute constructor called');
     
     // Mark state properties as structural so they trigger re-renders
     this.markStructural('isAuthenticated', 'isLoading', 'showLoading', 'showUnauthenticated', 'showAuthenticated');
@@ -112,9 +112,6 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
   private renderCurrentPage(): void {
     // Use the currentPath from props if available, otherwise fall back to window.location.pathname
     const currentPath = this.props.currentPath || window.location.pathname;
-    console.log('ProtectedRoute: renderCurrentPage called for path:', currentPath);
-    console.log('ProtectedRoute: props.currentPath:', this.props.currentPath);
-    console.log('ProtectedRoute: window.location.pathname:', window.location.pathname);
     
     // Prevent multiple calls to renderCurrentPage
     if (this.hasRenderedCurrentPage === currentPath) {
@@ -139,7 +136,6 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
   private renderUserPage(): void {
     console.log('ProtectedRoute: renderUserPage called');
     const slot = this.element.querySelector('blitz-slot');
-    console.log('ProtectedRoute: Found slot:', slot);
     
     if (slot) {
       // Only clear and remount if not already mounted
@@ -164,7 +160,6 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
       }
     } else {
       this.retryCount++;
-      console.error(`ProtectedRoute: No slot found for UserPage, retry ${this.retryCount}/5`);
       
       // Only retry up to 5 times
       if (this.retryCount < 5) {
@@ -258,8 +253,6 @@ export class ProtectedRoute extends Component<ProtectedRouteProps, ProtectedRout
 
   render() {
     console.log('ProtectedRoute: render called');
-    console.log('ProtectedRoute: state:', this.state);
-    console.log('ProtectedRoute: props:', this.props);
     
     // The template handles all conditional rendering now
     // Just trigger renderCurrentPage when authenticated and not loading

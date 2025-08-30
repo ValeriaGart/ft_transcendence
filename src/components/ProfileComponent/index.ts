@@ -257,11 +257,6 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       const currentUser = authService.getCurrentUser();
       const email = currentUser?.email || 'Unknown';
       const truncatedEmail = this.truncateEmail(email);
-      
-      // Log the current user and auth token
-      console.log('ProfileComponent: Current user:', currentUser);
-      console.log('ProfileComponent: Auth token exists:', !!authService.getToken());
-      
       // Get profile data from API
       const response = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       

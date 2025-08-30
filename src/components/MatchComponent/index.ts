@@ -248,7 +248,7 @@ export class MatchComponent extends Component<MatchComponentState> {
         "oppMode": "online"
       };
 
-      console.log('Sending 1v1 match request:', JSON.stringify(msg));
+      console.log('Sending 1v1 match request');
       ws.sendMessage(JSON.stringify(msg));
       
       // Show the popup for 1v1 matches too
@@ -264,7 +264,6 @@ export class MatchComponent extends Component<MatchComponentState> {
   }
 
   private async startTournament(selectedFriendIds: number[]): Promise<void> {
-    console.log('Starting tournament with selected friends:', selectedFriendIds);
     try {
       // Ask initiator to choose mode: classic tournament or teams (2v2)
       const choice = await new Promise<'tournament'|'teams'|null>((resolve) => {
@@ -304,7 +303,6 @@ export class MatchComponent extends Component<MatchComponentState> {
         const b = localStorage.getItem('current_room_id'); if (b) roomIds.push(b);
         for (const id of Array.from(new Set(roomIds))) {
           const cancel = { type: 5, roomId: id, status: 'cancel' } as any;
-          console.log('Pre-start tournament: sending cancel for lingering room', cancel);
           ws.sendMessage(JSON.stringify(cancel));
         }
         if (roomIds.length) {
@@ -382,7 +380,7 @@ export class MatchComponent extends Component<MatchComponentState> {
         gameMode: choice === 'teams' ? 'teams' : 'tournament',
         oppMode: 'online'
       };
-      console.log('Sending tournament request:', JSON.stringify(msg));
+      console.log('Sending tournament request');
       ws.sendMessage(JSON.stringify(msg));
 
       // Inform StartGamePopUp about pending participants for better waiting UI
@@ -430,7 +428,6 @@ export class MatchComponent extends Component<MatchComponentState> {
       console.log('confirm-friend-btn clicked');
       const button = e.target as HTMLElement;
       const initiatorId = button.getAttribute('data-initiator-id');
-      console.log('Initiator ID:', initiatorId);
       this.handleConfirmFriend(parseInt(initiatorId || '0'));
     });
 
@@ -502,7 +499,7 @@ export class MatchComponent extends Component<MatchComponentState> {
 
       if (response.ok) {
         const allFriendships: Friendship[] = await response.json();
-        console.log('All friendships received:', allFriendships);
+        console.log('All friendships received');
         
         // Filter friendships to only include the current user's friendships
         const currentUser = authService.getCurrentUser();
@@ -516,8 +513,6 @@ export class MatchComponent extends Component<MatchComponentState> {
         const userFriendships = allFriendships.filter(friendship => 
           friendship.initiator_id === currentUserId || friendship.recipient_id === currentUserId
         );
-        
-        console.log('Filtered friendships for user', currentUserId, ':', userFriendships);
         
         this.setState({ 
           friendships: userFriendships || [],
@@ -583,9 +578,6 @@ export class MatchComponent extends Component<MatchComponentState> {
       if (currentUser?.id) {
         userIds.delete(currentUser.id);
       }
-
-      console.log('Fetching profiles for user IDs:', Array.from(userIds));
-
       // Fetch profiles for each user
       const userProfiles: Record<number, { nickname?: string }> = {};
       
@@ -613,7 +605,6 @@ export class MatchComponent extends Component<MatchComponentState> {
       }
 
       this.setState({ userProfiles });
-      console.log('User profiles loaded:', userProfiles);
     } catch (error) {
       console.error('Error fetching user profiles:', error);
     }
@@ -730,7 +721,6 @@ export class MatchComponent extends Component<MatchComponentState> {
    * Handle friend selection for 1v1 game
    */
   public handleFriendSelection(friendId: number): void {
-    console.log('Friend selected:', friendId);
     const current = new Set<number>(this.state.selectedFriendIds);
     if (current.has(friendId)) {
       current.delete(friendId);
@@ -858,7 +848,6 @@ export class MatchComponent extends Component<MatchComponentState> {
                Confirm
              </button>
            `;
-           console.log('Created confirm button for friendship:', friendship.id, 'initiator:', friendship.initiator_id);
         }
       }
 
@@ -909,10 +898,8 @@ export class MatchComponent extends Component<MatchComponentState> {
         const buttonId = `confirm-btn-${friendship.id}`;
         const button = document.getElementById(buttonId);
         if (button) {
-          console.log('Adding event listener to button:', buttonId);
           button.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('Direct button click for friendship:', friendship.id);
             this.handleConfirmFriend(friendship.initiator_id);
           });
         }
@@ -941,7 +928,6 @@ export class MatchComponent extends Component<MatchComponentState> {
    * Handle online status updates from WebSocket
    */
   private handleOnlineStatusUpdate(onlineFriends: number[]): void {
-    console.log('Online friends update received:', onlineFriends);
     this.setState({ onlineFriends });
     this.renderFriendshipsList(); // Re-render to update status indicators
   }

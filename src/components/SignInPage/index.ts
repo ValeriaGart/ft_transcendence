@@ -297,7 +297,6 @@ export class SignInPage extends Component<SignInPageState> {
             console.log('Google credential response received for signin');
 
             const result = await authService.googleSignin(response.credential);
-            console.log('Google signin result:', result);
 
             if (result.success) {
                 console.log('Google signin successful');

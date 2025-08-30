@@ -85,6 +85,7 @@ setup-certs:
 rm-certs:
 	@echo "$(MAGENTA)🧼 remove certs$(RESET)"
 	@rm -rf backend/ssl/server.*
+	@rm -rf backend/ssl/ca.*
 
 
 

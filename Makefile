@@ -37,6 +37,8 @@ build-up-elk: check_env down-elk
 start-up-app: down-app setup-db check_env setup-certs invite-message
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "$(YELLOW)🏗  spinning up container...$(RESET)"
+	@sudo mkdir -p /var/log/ft_transcendence/logs_backend
+	@sudo mkdir -p /var/log/ft_transcendence/logs_es
 	@docker compose up app nginx --build -d > docker_build.log 2>&1
 	@echo "$(GREEN)App has started up, let's get ponging!$(RESET)"
 

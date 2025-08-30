@@ -39,7 +39,7 @@ export function getAuthConfig() {
 
   SECURITY: {
     MAX_LOGIN_ATTEMPTS: 12,
-    LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
+    LOCKOUT_DURATION: 2 * 60 * 1000, // 2 minutes
     RATE_LIMIT: {
       MAX_REQUESTS: 100,
       WINDOW_MS: 15 * 60 * 1000 // 15 minutes

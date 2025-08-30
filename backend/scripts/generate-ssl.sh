@@ -44,6 +44,8 @@ if [[ -z "$IP_ADDR" ]]; then
     echo "❌ Error: Unable to determine the primary IPv4 address."
     echo "   Ensure your network interface is up and has an assigned IP address."
     exit 1
+else
+    echo "✅ Detected primary IPv4 address: $IP_ADDR"
 fi
 
 

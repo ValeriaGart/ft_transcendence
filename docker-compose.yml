@@ -1,13 +1,10 @@
 
 services:
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "5173:5173"  # Expose to host
-      - "3000:3000"  # http backend
-      - "3443:3443"  # https backend
     environment:
       - NODE_ENV=production
       - LOG_PATH_BE=${LOG_PATH_BE}
@@ -26,6 +23,20 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "443:443"   # HTTPS only
+      - "80:80"     # HTTP redirect to HTTPS
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend/ssl/server.crt:/etc/ssl/certs/server.crt:ro
+      - ./backend/ssl/server.key:/etc/ssl/private/server.key:ro
+    depends_on:
+      - app
+    networks:
+      - transcendence_net
 
   setup:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}

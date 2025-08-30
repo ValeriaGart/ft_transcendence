@@ -34,12 +34,12 @@ export function getAuthConfig() {
         maxAge: 60 * 60 * 1000, // 1 hour
         path: '/' // Accessible across the entire domain
       },
-      INACTIVITY_TIMEOUT: 1 * 60 * 1000 // 15 min
+      INACTIVITY_TIMEOUT: 7 * 60 * 1000 // 7 min
     },
 
   SECURITY: {
-    MAX_LOGIN_ATTEMPTS: 5,
-    LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
+    MAX_LOGIN_ATTEMPTS: 12,
+    LOCKOUT_DURATION: 2 * 60 * 1000, // 2 minutes
     RATE_LIMIT: {
       MAX_REQUESTS: 100,
       WINDOW_MS: 15 * 60 * 1000 // 15 minutes

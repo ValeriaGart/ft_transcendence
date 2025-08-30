@@ -13,7 +13,8 @@ export enum GameMode {
 	INFINITE = 'infinite',
 	BEST_OF = 'best of 5',
 	TOURNAMENT = 'tournament',
-	TEAMS = 'teams'
+	TEAMS = 'teams',
+	BREAKOUT = 'breakout'
 }
 
 export enum OpponentMode {
@@ -28,6 +29,18 @@ export interface GameStats {
 	paddlePositions: { left: number; right: number, ml: number, mr: number};
 	paddleVelocity: { left: number; right: number, ml: number, mr: number};
 	paddleDirection: { left: number; right: number, ml: number, mr: number};
+	scores: { left: number; right: number};
+	pnumber: number;
+}
+
+export interface BreakoutStats {
+	ball1Position: { x: number; y: number};
+	ball1Velocity: { x: number; y: number};
+	ball2Position: { x: number; y: number};
+	ball2Velocity: { x: number; y: number};
+	paddlePositions: { left: number; right: number};
+	paddleVelocity: { left: number; right: number};
+	paddleDirection: { left: number; right: number};
 	scores: { left: number; right: number};
 	pnumber: number;
 }

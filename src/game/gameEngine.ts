@@ -8,6 +8,7 @@ import { Player } from './player.ts';
 import { Tournament } from './tournament.ts';
 import { OpponentScreen } from './opponentSelectScreen.ts';
 import { WebSocketService } from "../lib/webSocket";
+import { BreakoutGame } from './breakoutGame.ts';
 
 export class GameEngine {
 	//standard classes
@@ -19,7 +20,7 @@ export class GameEngine {
 	public _opponentScreen: OpponentScreen
 	public _selectScreen: SelectScreen;
 	public _gameStateMachine: GameStateMachine;
-	public _pongGame: PongGame | null = null;
+	public _pongGame: PongGame | BreakoutGame | null = null;
 	private _inputHandler: InputHandler;
 	private _tournament: Tournament | undefined = undefined;
 
@@ -71,6 +72,9 @@ export class GameEngine {
 	public startGame(mode: GameMode, oppMode: OpponentMode): void {
 		if (mode == GameMode.TOURNAMENT) {
 			this.tournamentHandler(mode, oppMode);
+		}
+		else if (mode == GameMode.BREAKOUT) {
+			this.breakoutHandler(mode, oppMode);
 		}
 		else {
 			this.singleGameHandler(mode, oppMode);
@@ -140,6 +144,14 @@ export class GameEngine {
 			var playerOne: Player = new Player(this._p1Nick ?? 'player1', 0, false, this._p1ID);
 			var playerTwo: Player = new Player(this._p2Nick ?? 'player2', 0, false, this._p2ID);
 			this._pongGame = new PongGame(this, mode, oppMode, playerOne, playerTwo);
+		}
+	}
+
+	private breakoutHandler(mode: GameMode, oppMode: OpponentMode) {
+		if (mode == GameMode.BREAKOUT && this._p1ID && this._p2ID) {
+			var p1: Player = new Player(this._p1Nick ?? 'player1', 0, false, this._p1ID);
+			var p2: Player = new Player(this._p2Nick ?? 'player2', 0, false, this._p1ID);
+			this._pongGame = new BreakoutGame(this, mode, oppMode, p1, p2);
 		}
 	}
 
@@ -276,6 +288,9 @@ export class GameEngine {
 				break;
 			case 'teams':
 				this._gameMode = GameMode.TEAMS;
+				break;
+			case 'breakout' :
+				this._gameMode = GameMode.BREAKOUT;
 				break;
 			default:
 				console.error('Invalid game mode:', this._gameModeStr, " defaulting to mode select");

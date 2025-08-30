@@ -18,4 +18,8 @@ export const colours: Colours = {
     pauseBG: '#162b2bff',
     paddle: '#fff5b5',
     ball: '#ffdaf9ff'
-}
+};
+export const BLOCK_WIDTH = 70;
+export const BLOCK_HEIGHT = 30;
+export const BLOCK_ROWS = 3;
+export const BLOCK_COLLUMNS = 5;

@@ -1,10 +1,11 @@
+import type { BreakoutGame } from "./breakoutGame.ts";
 import { colours } from "./constants.ts";
 import { PongGame } from "./pongGame.ts";
 
 export class WinScreen {
-	private _pongGame: PongGame
+	private _pongGame: PongGame | BreakoutGame
 
-	constructor(game: PongGame) {
+	constructor(game: PongGame | BreakoutGame) {
 		this._pongGame = game;
 	}
 	

@@ -1,7 +1,6 @@
 import { BALL_RADIUS, BALL_SPEED, EXTRA_PADDLE_DISTANCE_FROM_BORDER, EXTRA_PADDLE_HEIGHT, EXTRA_PADDLE_SPEED, EXTRA_PADDLE_WIDTH, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH } from './constants.ts';
 import { PongGame } from './pongGame.ts';
 import { GameMode } from './types.ts';
-import { getRandomAngle, getRandomDirection } from './utils.ts';
 
 export class CollisionHandler {
 	private _pongGame: PongGame

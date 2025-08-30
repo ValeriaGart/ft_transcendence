@@ -1,5 +1,5 @@
 import type { BreakoutGame } from './breakoutGame.ts';
-import { BALL_RADIUS, BALL_SPEED, BLOCK_COLLUMNS, BLOCK_HEIGHT, BLOCK_ROWS, BLOCK_WIDTH, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH } from './constants.ts';
+import { BALL_RADIUS, BALL_SPEED, BLOCK_COLUMNS, BLOCK_HEIGHT, BLOCK_ROWS, BLOCK_WIDTH, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH } from './constants.ts';
 
 export class BreakoutCollisionHandler {
 	private _breakoutGame: BreakoutGame
@@ -115,9 +115,9 @@ export class BreakoutCollisionHandler {
 	}
 
 	private Blocks(): void {
-		const start = (this._breakoutGame._engine._canvas.width / 4) - ((BLOCK_WIDTH * BLOCK_COLLUMNS) / 2);
+		const start = (this._breakoutGame._engine._canvas.width / 4) - ((BLOCK_WIDTH * BLOCK_COLUMNS) / 2);
 		for (var row = 0; row < BLOCK_ROWS; row++) {
-			for (var col = 0; col < BLOCK_COLLUMNS; col++) {
+			for (var col = 0; col < BLOCK_COLUMNS; col++) {
 				if (this._breakoutGame._blocks[row][col] == true) {
 
 					var blockLeft = start + ((5 + BLOCK_WIDTH) * (col));
@@ -153,9 +153,9 @@ export class BreakoutCollisionHandler {
 	}
 
 	private Blocks2(): void {
-		const start = ((this._breakoutGame._engine._canvas.width / 4) * 3) - ((BLOCK_WIDTH * BLOCK_COLLUMNS) / 2);
+		const start = ((this._breakoutGame._engine._canvas.width / 4) * 3) - ((BLOCK_WIDTH * BLOCK_COLUMNS) / 2);
 		for (var row = 0; row < BLOCK_ROWS; row++) {
-			for (var col = 0; col < BLOCK_COLLUMNS; col++) {
+			for (var col = 0; col < BLOCK_COLUMNS; col++) {
 				if (this._breakoutGame._blocks2[row][col] == true) {
 
 					var blockLeft = start + ((5 + BLOCK_WIDTH) * (col));

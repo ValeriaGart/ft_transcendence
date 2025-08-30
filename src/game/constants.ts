@@ -22,4 +22,4 @@ export const colours: Colours = {
 export const BLOCK_WIDTH = 70;
 export const BLOCK_HEIGHT = 30;
 export const BLOCK_ROWS = 3;
-export const BLOCK_COLLUMNS = 5;
+export const BLOCK_COLUMNS = 5;

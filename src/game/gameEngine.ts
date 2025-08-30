@@ -150,7 +150,7 @@ export class GameEngine {
 	private breakoutHandler(mode: GameMode, oppMode: OpponentMode) {
 		if (mode == GameMode.BREAKOUT && this._p1ID && this._p2ID) {
 			var p1: Player = new Player(this._p1Nick ?? 'player1', 0, false, this._p1ID);
-			var p2: Player = new Player(this._p2Nick ?? 'player2', 0, false, this._p1ID);
+			var p2: Player = new Player(this._p2Nick ?? 'player2', 0, false, this._p2ID);
 			this._pongGame = new BreakoutGame(this, mode, oppMode, p1, p2);
 		}
 	}

@@ -1,6 +1,6 @@
-import GameEngine from './gameEngine.ts';
+import type GameEngine from './gameEngine.ts';
 import { type BreakoutStats, GameMode, GameState, OpponentMode, type PaddleSide } from './types.ts';
-import { BALL_SPEED, BLOCK_COLLUMNS, BLOCK_ROWS, EXTRA_PADDLE_HEIGHT, EXTRA_PADDLE_SPEED, PADDLE_HEIGHT, PADDLE_SPEED } from './constants.ts';
+import { BALL_SPEED, BLOCK_COLUMNS, BLOCK_ROWS, PADDLE_HEIGHT, PADDLE_SPEED } from './constants.ts';
 import { PauseScreen } from './pauseScreen.ts';
 import { Player } from './player.ts';
 import { WinScreen } from './winScreen.ts';
@@ -30,8 +30,8 @@ export class BreakoutGame {
 	public _p4: Player | null = null;
 	private _lastBroadcastTimeMs: number = 0;
 	private _running: boolean = true;
-	public _blocks: boolean[][] = new Array(BLOCK_ROWS).fill(true).map(() => new Array(BLOCK_COLLUMNS).fill(true));
-	public _blocks2: boolean[][] = new Array(BLOCK_ROWS).fill(true).map(() => new Array(BLOCK_COLLUMNS).fill(true));
+	public _blocks: boolean[][] = new Array(BLOCK_ROWS).fill(true).map(() => new Array(BLOCK_COLUMNS).fill(true));
+	public _blocks2: boolean[][] = new Array(BLOCK_ROWS).fill(true).map(() => new Array(BLOCK_COLUMNS).fill(true));
 
 	constructor(engine: GameEngine, mode: GameMode, opponent: OpponentMode, p1?: Player, p2?: Player) {
 		this._engine = engine;
@@ -52,7 +52,7 @@ export class BreakoutGame {
 			paddlePositions: { left: (this._engine._canvas.width / 4) - (PADDLE_HEIGHT / 2), right: ((this._engine._canvas.width / 4) * 3) - (PADDLE_HEIGHT / 2)},
 			paddleDirection: {left: 0, right: 0},
 			paddleVelocity: { left :0, right: 0},
-			scores: { left: BLOCK_ROWS * BLOCK_COLLUMNS, right: BLOCK_ROWS * BLOCK_COLLUMNS},
+			scores: { left: BLOCK_ROWS * BLOCK_COLUMNS, right: BLOCK_ROWS * BLOCK_COLUMNS},
 			pnumber: this._engine._urp
 		}
 		this._collisionHandler = new BreakoutCollisionHandler(this);
@@ -132,7 +132,7 @@ export class BreakoutGame {
 		}
 		else if (this._gameStats.pnumber == this._p2.getPnumber()) {
 			this._gameStats.paddlePositions.left = msg.paddlePositions.left;
-			this._gameStats.scores.left = msg.score.left
+			this._gameStats.scores.left = msg.scores.left
 			this._gameStats.ball1Position = msg.ball1Position;
 			this._gameStats.ball1Velocity = msg.ball1Velocity;
 		}

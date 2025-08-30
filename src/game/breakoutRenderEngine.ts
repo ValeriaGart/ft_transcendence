@@ -1,5 +1,5 @@
 import type { BreakoutGame } from './breakoutGame.ts';
-import { BALL_RADIUS, BLOCK_COLLUMNS, BLOCK_HEIGHT, BLOCK_ROWS, BLOCK_WIDTH, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH, colours } from './constants.ts';
+import { BALL_RADIUS, BLOCK_COLUMNS, BLOCK_HEIGHT, BLOCK_ROWS, BLOCK_WIDTH, PADDLE_DISTANCE_FROM_BORDER, PADDLE_HEIGHT, PADDLE_WIDTH, colours } from './constants.ts';
 import { GameMode } from './types.ts';
 
 export class BreakoutRenderEngine {
@@ -132,9 +132,9 @@ export class BreakoutRenderEngine {
 	}
 
 	private drawBlocks(): void {
-		const start = (this._breakoutGame._engine._canvas.width / 4) - ((BLOCK_WIDTH * BLOCK_COLLUMNS) / 2);
+		const start = (this._breakoutGame._engine._canvas.width / 4) - ((BLOCK_WIDTH * BLOCK_COLUMNS) / 2);
 		for (var row = 0; row < BLOCK_ROWS; row++) {
-			for (var col = 0; col < BLOCK_COLLUMNS; col++) {
+			for (var col = 0; col < BLOCK_COLUMNS; col++) {
 				if (this._breakoutGame._blocks[row][col] == true) {
 					this._breakoutGame._engine._ctx.fillStyle = colours.paddle;
 					this._breakoutGame._engine._ctx.fillRect(
@@ -149,9 +149,9 @@ export class BreakoutRenderEngine {
 	}
 
 	private drawBlocks2(): void {
-		const start = ((this._breakoutGame._engine._canvas.width / 4) * 3) - ((BLOCK_WIDTH * BLOCK_COLLUMNS) / 2);
+		const start = ((this._breakoutGame._engine._canvas.width / 4) * 3) - ((BLOCK_WIDTH * BLOCK_COLUMNS) / 2);
 		for (var row = 0; row < BLOCK_ROWS; row++) {
-			for (var col = 0; col < BLOCK_COLLUMNS; col++) {
+			for (var col = 0; col < BLOCK_COLUMNS; col++) {
 				if (this._breakoutGame._blocks2[row][col] == true) {
 					this._breakoutGame._engine._ctx.fillStyle = colours.paddle;
 					this._breakoutGame._engine._ctx.fillRect(

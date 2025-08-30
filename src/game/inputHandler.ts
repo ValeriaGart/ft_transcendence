@@ -13,6 +13,10 @@ export class InputHandler {
 	public setupEventListeners(): void {
 		window.addEventListener('keydown', this.handleKeyDown.bind(this));
 		window.addEventListener('keyup', this.handleKeyUp.bind(this));
+		document.addEventListener('mousedown', (this.handleMouseDown.bind(this)));
+		document.addEventListener('mouseup', (this.handleMouseUp.bind(this)));
+		document.addEventListener('touchstart', (this.handleTouchDown.bind(this)));
+		document.addEventListener('touchend', (this.handleTouchUp.bind(this)));
 
 		// Map browser Back button to behave like Escape and keep user on game view
 		try {
@@ -62,6 +66,86 @@ export class InputHandler {
 			case GameState.GAME:
 				this.handleGameScreenUp(event);
 				break;
+		}
+	}
+
+	private generateKeyPress(keypress: string, eventType: string): void {
+		const event = new KeyboardEvent(eventType, {
+			key: keypress,
+			cancelable: true,
+			bubbles: true,
+			location: 0
+		});
+		document.dispatchEvent(event);
+	}
+
+	private handleMouseDown(event: MouseEvent): void {
+		if (this._engine._gameStateMachine.getCurrentState() == GameState.GAME) {
+			if (event.clientX <= window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('w', 'keydown');
+			}
+			if (event.clientX <= window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('s', 'keydown');
+			}
+			if (event.clientX > window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('ArrowUp', 'keydown');
+			}
+			if (event.clientX > window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('ArrowDown', 'keydown');
+			}
+		}
+	}
+
+	private handleMouseUp(event: MouseEvent): void {
+		if (this._engine._gameStateMachine.getCurrentState() == GameState.GAME) {
+			if (event.clientX <= window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('w', 'keyup');
+			}
+			if (event.clientX <= window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('s', 'keyup');
+			}
+			if (event.clientX > window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('ArrowUp', 'keyup');
+			}
+			if (event.clientX > window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('ArrowDown', 'keyup');
+			}
+		}
+	}
+
+	private handleTouchDown(event: TouchEvent): void {
+		if (this._engine._gameStateMachine.getCurrentState() == GameState.GAME) {
+			const touch = (event as TouchEvent).touches[0];
+			if (touch.clientX <= window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('w', 'keydown');
+			}
+			if (touch.clientX <= window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('s', 'keydown');
+			}
+			if (touch.clientX > window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('ArrowUp', 'keydown');
+			}
+			if (touch.clientX > window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('ArrowDown', 'keydown');
+			}
+		}
+	}
+
+	private handleTouchUp(event: TouchEvent): void {
+		if (this._engine._gameStateMachine.getCurrentState() == GameState.GAME) {
+			const touch = (event as TouchEvent).touches[0];
+			if (touch.clientX <= window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('w', 'keyup');
+			}
+			if (touch.clientX <= window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('s', 'keyup');
+			}
+			if (touch.clientX > window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+				this.generateKeyPress('ArrowUp', 'keyup');
+			}
+			if (touch.clientX > window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+				this.generateKeyPress('ArrowDown', 'keyup');
+			}
 		}
 	}
 

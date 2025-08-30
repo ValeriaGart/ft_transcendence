@@ -37,22 +37,22 @@ class WebsocketService {
 			}
 		}
 		log("[WebSocket] user connected " + connection.userId, INFO);
-		this.broadcast({
-			type: "BROADCAST",
-			sender: '__server',
-			message: `id ${wsid} joined`
-		}, connection);
+		// this.broadcast({
+		// 	type: "BROADCAST",
+		// 	sender: '__server',
+		// 	message: `id ${wsid} joined`
+		// }, connection);
 		this.matchMakingService.reconnectPlayerToAllRooms(connection);
 	}
 	
 	handleLeave(connection) {
 		connection.on('close', async () => {
 			log("[WebSocket] user disconnected " + connection.userId);
-			this.broadcast({
-				type: "BROADCAST",
-				sender: '__server',
-				message: `id ${connection.userId} left`
-			});
+			// this.broadcast({
+			// 	type: "BROADCAST",
+			// 	sender: '__server',
+			// 	message: `id ${connection.userId} left`
+			// });
 			await sleep (WebsocketService.WS_TIMEOUT_DISCONNECT);
 			this.matchMakingService.disconnectPlayerFromAllRooms(connection);
 		});

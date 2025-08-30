@@ -26,6 +26,14 @@ start-up-elk: check_env down-elk
 	$(MAKE) -f Makefile.elk set-lifecycle
 	@echo "$(GREEN)ELK has started up, have fun with all these logs!$(RESET)"
 
+build-up-elk: check_env down-elk
+	@echo "$(CYAN)📋 LET'S MAKE ELK UP 📈$(RESET)"
+	$(MAKE) -f Makefile.elk config-devops
+	$(MAKE) -f Makefile.elk setup-log-dir
+	$(MAKE) -f Makefile.elk elk-up-build
+	$(MAKE) -f Makefile.elk set-lifecycle
+	@echo "$(GREEN)ELK has started up, have fun with all these logs!$(RESET)"
+
 start-up-app: down-app setup-db check_env setup-certs invite-message
 	@echo "$(CYAN)🚀 LET'S MAKE APP UP 🚀$(RESET)"
 	@echo "$(YELLOW)🏗  spinning up container...$(RESET)"
@@ -102,4 +110,5 @@ fclean: clean rm-db
 
 # npm run dev:both
 
-.PHONY: re clean fclean up
+.PHONY: all welcome-message invite-message start-up-elk build-up-elk start-up-app restart-app down-elk down-app down \
+logs-app setup-db rm-db re-db check_env setup-certs rm-certs clean fclean

@@ -4,7 +4,7 @@ LOG_PATH_ES=/var/log/ft_transcendence/logs_es
 LOG_PATH_BE=/var/log/ft_transcendence/logs_backend
 
 
-.PHONY: elk-up elk-down elk-logs set-lifecycle
+.PHONY: elk-up elk-up-build elk-down elk-logs set-lifecycle
 
 config-devops:
 	sudo sysctl -w vm.max_map_count=262144
@@ -20,6 +20,16 @@ elk-up:
 	@nohup docker compose logs -f es01 > ${LOG_PATH_ES}/$(ES_LOG_FILE) 2>&1 &
 	@echo "Starting the rest of the ELK stack..."
 	docker compose up -d kibana logstash filebeat
+
+elk-up-build:
+	@echo "Starting es01..."
+	docker compose up --build -d es01
+	@echo "Waiting for es01 to be healthy..."
+	@while [ "$$(docker inspect -f '{{.State.Health.Status}}' $$(docker compose ps -q es01))" != "healthy" ]; do sleep 2; done
+	@echo "Redirecting es01 logs to ${LOG_PATH_ES}/$(ES_LOG_FILE) in background..."
+	@nohup docker compose logs -f es01 > ${LOG_PATH_ES}/$(ES_LOG_FILE) 2>&1 &
+	@echo "Starting the rest of the ELK stack..."
+	docker compose up --build -d kibana logstash filebeat
 
 elk-down:
 	docker compose down filebeat logstash kibana es01

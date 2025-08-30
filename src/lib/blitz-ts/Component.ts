@@ -27,7 +27,6 @@ type EventBinding = {
 
 // Pre-load all component templates from the filesystem
 const templates = import.meta.glob<string>('/src/components/*/template.html', { eager: true, query: '?raw', import: 'default' });
-console.log('Loaded templates:', Object.keys(templates));
 
 /**
  * Base Component class that provides core functionality for UI components
@@ -469,7 +468,6 @@ export abstract class Component<Props extends Record<string, any> = Record<strin
     
     // First try to find the element within the component's root element
     let element = this.element.querySelector(selector) as HTMLElement;
-    console.log(`Found with querySelector:`, element);
     
     // If not found, try searching within the entire component tree (including slot content)
     if (!element) {

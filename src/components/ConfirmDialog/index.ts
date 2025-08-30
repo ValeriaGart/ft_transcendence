@@ -66,8 +66,6 @@ export class ConfirmDialog extends Component<ConfirmDialogProps, ConfirmDialogSt
     }
 
     protected onMount(): void {
-        console.log('ConfirmDialog component onMount called, message:', this.state.message);
-        
         // Update the text immediately after mount
         this.updateConfirmText();
 
@@ -90,15 +88,12 @@ export class ConfirmDialog extends Component<ConfirmDialogProps, ConfirmDialogSt
         const confirmText = this.element.querySelector("p") as HTMLElement;
         if (confirmText) {
             confirmText.textContent = this.state.message;
-            console.log('Updated confirm text to:', confirmText.textContent);
         } else {
             console.log('Could not find confirm text element');
         }
     }
 
-    render() {
-        console.log('ConfirmDialog component render called, isVisible:', this.state.isVisible, 'message:', this.state.message);
-        
+    render() {      
         if (!this.state.isVisible) {
             this.element.style.display = 'none';
             return;

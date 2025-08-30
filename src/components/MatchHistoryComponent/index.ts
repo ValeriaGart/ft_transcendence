@@ -249,10 +249,8 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
   }
 
   public previousPage(): void {
-    const totalPages = Math.max(1, Math.ceil((this.state.matches || []).length / (this.state.pageSize || 2)));
     if (this.state.currentPage > 1) {
       const newPage = this.state.currentPage - 1;
-      console.log('Prev page ->', newPage, 'of', totalPages);
       this.setState({ 
         currentPage: newPage,
         showPagination: this.state.totalPages > 1,
@@ -270,7 +268,6 @@ export class MatchHistoryComponent extends Component<MatchHistoryComponentState>
     const totalPages = Math.max(1, Math.ceil((this.state.matches || []).length / (this.state.pageSize || 2)));
     if (this.state.currentPage < totalPages) {
       const newPage = this.state.currentPage + 1;
-      console.log('Next page ->', newPage, 'of', totalPages);
       this.setState({ 
         currentPage: newPage,
         showPagination: this.state.totalPages > 1,

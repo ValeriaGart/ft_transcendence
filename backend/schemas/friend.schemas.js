@@ -22,3 +22,11 @@ export const friendStatusSchema = {
 	},
 	required: [ 'friend_id1', 'friend_id2' ]
 };
+
+export const friendIdParamSchema = {
+  type: 'object',
+  properties: {
+    friend_id: { type: 'integer' }
+  },
+  required: ['friend_id']
+};

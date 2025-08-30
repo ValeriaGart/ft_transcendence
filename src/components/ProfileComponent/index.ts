@@ -139,6 +139,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
     if (profileComponent && pictureSelector) {
       profileComponent.style.display = 'flex';
       pictureSelector.style.display = 'none';
+      this.rerenderProfileView();
     }
   }
 
@@ -168,6 +169,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         });
         this.hidePictureSelector();
         this.updateProfileImageFit();
+        try { window.location.reload(); } catch {}
       } else {
         const errorData = await updateResponse.json();
         console.error('Failed to update profile picture:', errorData);
@@ -208,6 +210,7 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         });
         this.hidePictureSelector();
         this.updateProfileImageFit();
+        try { window.location.reload(); } catch {}
         
         // Force reload profile data to ensure consistency
         this.hasLoadedData = false;
@@ -254,11 +257,6 @@ export class ProfileComponent extends Component<ProfileComponentState> {
       const currentUser = authService.getCurrentUser();
       const email = currentUser?.email || 'Unknown';
       const truncatedEmail = this.truncateEmail(email);
-      
-      // Log the current user and auth token
-      console.log('ProfileComponent: Current user:', currentUser);
-      console.log('ProfileComponent: Auth token exists:', !!authService.getToken());
-      
       // Get profile data from API
       const response = await authService.authenticatedFetch(getApiUrl('/profiles/me'));
       
@@ -359,6 +357,18 @@ export class ProfileComponent extends Component<ProfileComponentState> {
         classList.remove('object-cover');
         if (!classList.contains('object-contain')) classList.add('object-contain');
       }
+    } catch {}
+  }
+  
+  private rerenderProfileView(): void {
+    try {
+      const img = this.element.querySelector('#profile-picture') as HTMLImageElement | null;
+      if (!img) return;
+      // Cache-bust uploads to avoid stale image after upload
+      const url = this.state.profilePictureUrl || '/art/profile/profile_no.svg';
+      const needsBust = url.startsWith('/uploads/');
+      img.src = needsBust ? `${url}?t=${Date.now()}` : url;
+      this.updateProfileImageFit();
     } catch {}
   }
     

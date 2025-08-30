@@ -210,9 +210,6 @@ export class SignUpPage extends Component<SignUpPageState> {
         const target = e.target as HTMLInputElement;
         const newEmail = target.value;
         const isValid = this.validateEmail(newEmail);
-        
-        console.log('Email changed:', { newEmail, isValid });
-        
         this.setState({ 
             email: newEmail, 
             isEmailValid: isValid 
@@ -252,9 +249,7 @@ export class SignUpPage extends Component<SignUpPageState> {
         const target = e.target as HTMLInputElement;
         const newPassword = target.value;
         const isValid = this.validatePassword(newPassword);
-        
-        console.log('Password changed:', { newPassword, isValid });
-        
+
         // Update password requirements visibility
         const requirementsElement = this.element.querySelector('#password_requirements') as HTMLElement;
         if (requirementsElement) {
@@ -278,10 +273,7 @@ export class SignUpPage extends Component<SignUpPageState> {
         const target = e.target as HTMLInputElement;
         const newConfirmPassword = target.value;
         const isValid = newConfirmPassword === this.state.password;
-        
-        console.log('Confirm Password changed:', { newConfirmPassword, isValid });
-        
-        this.setState({ 
+       this.setState({ 
             confirmPassword: newConfirmPassword, 
             isConfirmPasswordValid: isValid 
         });
@@ -524,7 +516,5 @@ export class SignUpPage extends Component<SignUpPageState> {
 
     }
 
-    render() {
-        console.log(this.state);
-    }
+    render() {}
 }

@@ -58,7 +58,6 @@ class AuthService {
           user,
           token
         };
-        console.log('AuthService: Loaded auth state from storage:', this.state);
       } else {
         console.log('AuthService: No stored auth data found');
       }

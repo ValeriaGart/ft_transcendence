@@ -537,6 +537,9 @@ export class InputHandler {
 				"roomId": this._engine._roomID,
 				"_gameState": "ready"
 			};
+			if (this._oppMode != OpponentMode.ONLINE) {
+				this._engine._tournament._ready += 1;
+			}
 			const gameStateString = JSON.stringify(msg);
 			this._engine._ws.sendMessage(gameStateString);
 			this._engine._gameStateMachine.transition(GameState.GAME);

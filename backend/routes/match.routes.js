@@ -34,7 +34,7 @@ async function routes(fastify, options) {
 		schema: { params: matchParamsSchema }
 	}, MatchController.getWinsLossesById);
 
-	// Start a new match
+/* 	// Start a new match
 	fastify.post('/match/startgame', {
 		schema: {
 			body: matchStartSchema
@@ -47,6 +47,7 @@ async function routes(fastify, options) {
 			body: matchFinishSchema
 		}
 	}, MatchController.finishMatch);
+ */
 
 	// Delete a match by match ID
 	fastify.delete('/match/:id', {

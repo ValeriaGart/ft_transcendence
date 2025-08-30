@@ -181,7 +181,7 @@ export class InputHandler {
 		if (this._engine._gameStateMachine.getCurrentState() == GameState.GAME) {
 			const touch = (event as TouchEvent).touches[0];
 			
-			if (!touch || !touch.clientX || touch.clientY) {
+			if (!touch || !touch.clientX || !touch.clientY) {
 				return;
 			}
 

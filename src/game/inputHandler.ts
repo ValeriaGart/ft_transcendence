@@ -111,6 +111,20 @@ export class InputHandler {
 					this.generateKeyPress('ArrowDown', 'keydown');
 				}
 			}
+			else if (this._engine._pongGame?._mode && this._engine._pongGame._mode === GameMode.BREAKOUT) {
+				if (event.clientX <= window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('a', 'keydown');
+				}
+				if (event.clientX <= window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('d', 'keydown');
+				}
+				if (event.clientX > window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('ArrowLeft', 'keydown');
+				}
+				if (event.clientX > window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('ArrowRight', 'keydown');
+				}
+			}
 			else {
 				if (event.clientX <= window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
 					this.generateKeyPress('w', 'keydown');
@@ -158,6 +172,20 @@ export class InputHandler {
 				}
 				if (event.clientX > (window.innerWidth / 4) * 3 && event.clientY > window.innerHeight / 2) {
 					this.generateKeyPress('ArrowDown', 'keyup');
+				}
+			}
+			else if (this._engine._pongGame?._mode && this._engine._pongGame._mode === GameMode.BREAKOUT) {
+				if (event.clientX <= window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('a', 'keyup');
+				}
+				if (event.clientX <= window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('d', 'keyup');
+				}
+				if (event.clientX > window.innerWidth / 2 && event.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('ArrowLeft', 'keyup');
+				}
+				if (event.clientX > window.innerWidth / 2 && event.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('ArrowRight', 'keyup');
 				}
 			}
 			else {
@@ -215,6 +243,20 @@ export class InputHandler {
 					this.generateKeyPress('ArrowDown', 'keydown');
 				}
 			}
+			else if (this._engine._pongGame?._mode && this._engine._pongGame._mode === GameMode.BREAKOUT) {
+				if (touch.clientX <= window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('a', 'keydown');
+				}
+				if (touch.clientX <= window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('d', 'keydown');
+				}
+				if (touch.clientX > window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('ArrowLeft', 'keydown');
+				}
+				if (touch.clientX > window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('ArrowRight', 'keydown');
+				}
+			}
 			else {
 				if (touch.clientX <= window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
 					this.generateKeyPress('w', 'keydown');
@@ -267,6 +309,20 @@ export class InputHandler {
 				}
 				if (touch.clientX > (window.innerWidth / 4) * 3 && touch.clientY > window.innerHeight / 2) {
 					this.generateKeyPress('ArrowDown', 'keyup');
+				}
+			}
+			else if (this._engine._pongGame?._mode && this._engine._pongGame._mode === GameMode.BREAKOUT) {
+				if (touch.clientX <= window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('a', 'keyup');
+				}
+				if (touch.clientX <= window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('d', 'keyup');
+				}
+				if (touch.clientX > window.innerWidth / 2 && touch.clientY <= window.innerHeight / 2) {
+					this.generateKeyPress('ArrowLeft', 'keyup');
+				}
+				if (touch.clientX > window.innerWidth / 2 && touch.clientY > window.innerHeight / 2) {
+					this.generateKeyPress('ArrowRight', 'keyup');
 				}
 			}
 			else {
